@@ -102,22 +102,41 @@
           <systemProperties>
             <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
           </systemProperties>
-          <properties>
-            <excludeTags>${excludeTags}</excludeTags>
-          </properties>
+          <excludedGroups>${excludeTags}</excludedGroups>
         </configuration>
-        <dependencies>
-          <dependency>
-            <groupId>org.junit.platform</groupId>
-            <artifactId>junit-platform-surefire-provider</artifactId>
-            <version>1.1.0-RC1</version>
-          </dependency>
-          <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.1.0-RC1</version>
-          </dependency>
-        </dependencies>
+      </plugin>
+      <plugin>
+        <groupId>com.github.alexcojocaru</groupId>
+        <artifactId>elasticsearch-maven-plugin</artifactId>
+        <!-- REPLACE THE FOLLOWING WITH THE PLUGIN VERSION YOU NEED -->
+        <version>${elasticsearch.maven.plugin.version}</version>
+        <configuration>
+          <!-- REPLACE THE FOLLOWING WITH THE ELASTICSEARCH VERSION YOU NEED -->
+          <version>${version.elasticSearch}</version>
+          <clusterName>test</clusterName>
+          <transportPort>9300</transportPort>
+          <httpPort>9200</httpPort>
+        </configuration>
+        <executions>
+          <!--
+              The elasticsearch maven plugin goals are by default bound to the
+              pre-integration-test and post-integration-test phases
+          -->
+          <execution>
+            <id>start-elasticsearch</id>
+            <phase>pre-integration-test</phase>
+            <goals>
+              <goal>runforked</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>stop-elasticsearch</id>
+            <phase>post-integration-test</phase>
+            <goals>
+              <goal>stop</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
