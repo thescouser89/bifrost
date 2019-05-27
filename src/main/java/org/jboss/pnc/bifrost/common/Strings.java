@@ -22,7 +22,7 @@ public class Strings {
                 map.put(keyValue[0], keyValue[1]);
             }
         } catch (RuntimeException e) {
-            throw new RuntimeException("Invalid input string: " + string + ".", e);
+            throw new RuntimeException("Invalid key:value string: [" + string + "]", e);
         }
         return map;
     }

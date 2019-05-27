@@ -6,6 +6,7 @@ import org.jboss.pnc.bifrost.source.dto.Direction;
 import org.jboss.pnc.bifrost.source.dto.Line;
 
 import javax.inject.Inject;
+import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import java.io.BufferedWriter;
@@ -20,6 +21,7 @@ import java.util.function.Consumer;
 /**
  * @author <a href="mailto:matejonnet@gmail.com">Matej Lazar</a>
  */
+@Path("/")
 public class RestImpl implements Rest {
 
     @Inject
@@ -66,7 +68,7 @@ public class RestImpl implements Rest {
     }
 
     @Override
-    public List<Line> getLines(String matchFilters, String prefixFilters, Line afterLine, Direction direction, int maxLines)
+    public List<Line> getLines(String matchFilters, String prefixFilters, Line afterLine, Direction direction, Integer maxLines)
             throws IOException {
         List<Line> lines = new ArrayList<>();
         Consumer<Line> onLine = line -> lines.add(line);

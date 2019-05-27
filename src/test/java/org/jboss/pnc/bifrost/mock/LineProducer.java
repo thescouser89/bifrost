@@ -1,4 +1,4 @@
-package org.jboss.pnc.bifrost.source.mock;
+package org.jboss.pnc.bifrost.mock;
 
 import org.jboss.pnc.bifrost.source.dto.Line;
 
@@ -12,16 +12,16 @@ import java.util.UUID;
 public class LineProducer {
 
     public static Line getLine(Integer lineNumber, boolean last, String ctx) {
-        return new Line(
-                UUID.randomUUID().toString(),
-                Long.toString(System.currentTimeMillis()),
-                "org.jboss.pnc._userlog_",
-                "Message " + lineNumber,
-                last,
-                ctx,
-                false,
-                null
-        );
+        return Line.newBuilder()
+                .id(UUID.randomUUID().toString())
+                .timestamp(Long.toString(System.currentTimeMillis()))
+                .logger("org.jboss.pnc._userlog_")
+                .message("Message " + lineNumber)
+                .last(last)
+                .ctx(ctx)
+                .tmp(false)
+                .exp(null)
+                .build();
     }
 
     public static List<Line> getLines(Integer numberOfLines, String ctx) {

@@ -114,7 +114,17 @@ public class ElasticSearch {
         String expire = getString(source, exp);
 
         this.logger.info("Constructing line ...");
-        return new Line(id, timestamp, logger, message, last, ctx, tmp, expire);
+//        return new Line(id, timestamp, logger, message, last, ctx, tmp, expire);
+        return Line.newBuilder()
+                .id(id)
+                .timestamp(timestamp)
+                .logger(logger)
+                .message(message)
+                .last(last)
+                .ctx(ctx)
+                .tmp(tmp)
+                .exp(expire)
+                .build();
     }
 
     private String getString(Map<String, Object> source, String fieldName) {

@@ -35,6 +35,9 @@ public class DataProvider {
     //TODO move out of endpoint
     Subscriptions subscriptions;
 
+    public DataProvider() {
+    }
+
     @Inject
     public DataProvider(ElasticSearchConfig elasticSearchConfig) throws Exception {
         this.elasticSearch = new ElasticSearch(elasticSearchConfig);

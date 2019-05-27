@@ -13,7 +13,7 @@
     <maven.compiler.target>1.8</maven.compiler.target>
     <version.elasticSearch>5.6.15</version.elasticSearch>
     <elasticsearch.maven.plugin.version>6.10</elasticsearch.maven.plugin.version>
-    <excludeTags>debug-test</excludeTags>
+    <excludeTags>debug-test,elasticsearch-test</excludeTags>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -40,6 +40,10 @@
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-resteasy-jsonb</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
       <artifactId>quarkus-junit5</artifactId>
       <scope>test</scope>
     </dependency>
@@ -57,18 +61,18 @@
       <artifactId>quarkus-smallrye-rest-client</artifactId>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-annotations</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.datatype</groupId>
-      <artifactId>jackson-datatype-jdk8</artifactId>
-    </dependency>
+    <!--<dependency>-->
+      <!--<groupId>com.fasterxml.jackson.core</groupId>-->
+      <!--<artifactId>jackson-annotations</artifactId>-->
+    <!--</dependency>-->
+    <!--<dependency>-->
+      <!--<groupId>com.fasterxml.jackson.core</groupId>-->
+      <!--<artifactId>jackson-databind</artifactId>-->
+    <!--</dependency>-->
+    <!--<dependency>-->
+      <!--<groupId>com.fasterxml.jackson.datatype</groupId>-->
+      <!--<artifactId>jackson-datatype-jdk8</artifactId>-->
+    <!--</dependency>-->
     <dependency>
       <groupId>org.elasticsearch.client</groupId>
       <artifactId>elasticsearch-rest-high-level-client</artifactId>
@@ -87,6 +91,13 @@
         <groupId>io.quarkus</groupId>
         <artifactId>quarkus-maven-plugin</artifactId>
         <version>${quarkus.version}</version>
+        <configuration>
+          <uberJar>true</uberJar>
+          <ignoredEntries>
+            <ignoredEntry>META-INF/ECLIPSE_.RSA</ignoredEntry>
+            <ignoredEntry>META-INF/ECLIPSE_.SF</ignoredEntry>
+          </ignoredEntries>
+        </configuration>
         <executions>
           <execution>
             <goals>
@@ -105,46 +116,13 @@
           <excludedGroups>${excludeTags}</excludedGroups>
         </configuration>
       </plugin>
-      <plugin>
-        <groupId>com.github.alexcojocaru</groupId>
-        <artifactId>elasticsearch-maven-plugin</artifactId>
-        <!-- REPLACE THE FOLLOWING WITH THE PLUGIN VERSION YOU NEED -->
-        <version>${elasticsearch.maven.plugin.version}</version>
-        <configuration>
-          <!-- REPLACE THE FOLLOWING WITH THE ELASTICSEARCH VERSION YOU NEED -->
-          <version>${version.elasticSearch}</version>
-          <clusterName>test</clusterName>
-          <transportPort>9300</transportPort>
-          <httpPort>9200</httpPort>
-        </configuration>
-        <executions>
-          <!--
-              The elasticsearch maven plugin goals are by default bound to the
-              pre-integration-test and post-integration-test phases
-          -->
-          <execution>
-            <id>start-elasticsearch</id>
-            <phase>pre-integration-test</phase>
-            <goals>
-              <goal>runforked</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>stop-elasticsearch</id>
-            <phase>post-integration-test</phase>
-            <goals>
-              <goal>stop</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
     </plugins>
   </build>
   <profiles>
     <profile>
       <id>debug-test</id>
       <properties>
-        <excludeTags>none</excludeTags>
+        <excludeTags>elasticsearch-test</excludeTags>
       </properties>
     </profile>
     <profile>
@@ -185,6 +163,49 @@
                     <native.image.path>${project.build.directory}/${project.build.finalName}-runner</native.image.path>
                   </systemProperties>
                 </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>elasticsearch-test</id>
+      <properties>
+        <excludeTags>debug-test</excludeTags>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.github.alexcojocaru</groupId>
+            <artifactId>elasticsearch-maven-plugin</artifactId>
+            <!-- REPLACE THE FOLLOWING WITH THE PLUGIN VERSION YOU NEED -->
+            <version>${elasticsearch.maven.plugin.version}</version>
+            <configuration>
+              <!-- REPLACE THE FOLLOWING WITH THE ELASTICSEARCH VERSION YOU NEED -->
+              <version>${version.elasticSearch}</version>
+              <clusterName>test</clusterName>
+              <transportPort>9300</transportPort>
+              <httpPort>9200</httpPort>
+            </configuration>
+            <executions>
+              <!--
+                  The elasticsearch maven plugin goals are by default bound to the
+                  pre-integration-test and post-integration-test phases
+              -->
+              <execution>
+                <id>start-elasticsearch</id>
+                <phase>pre-integration-test</phase>
+                <goals>
+                  <goal>runforked</goal>
+                </goals>
+              </execution>
+              <execution>
+                <id>stop-elasticsearch</id>
+                <phase>post-integration-test</phase>
+                <goals>
+                  <goal>stop</goal>
+                </goals>
               </execution>
             </executions>
           </plugin>

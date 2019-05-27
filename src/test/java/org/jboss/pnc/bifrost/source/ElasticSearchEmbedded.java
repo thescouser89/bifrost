@@ -1,46 +1,18 @@
 package org.jboss.pnc.bifrost.source;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import org.apache.http.HttpEntity;
-import org.apache.http.entity.ContentType;
-import org.apache.http.nio.entity.NStringEntity;
-import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.action.index.IndexResponse;
-import org.elasticsearch.client.Request;
-import org.elasticsearch.client.RestClient;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.common.xcontent.XContentType;
-import org.elasticsearch.rest.RestStatus;
-import org.jboss.pnc.bifrost.common.ObjectMapperProvider;
-import org.jboss.pnc.bifrost.source.dto.Direction;
-import org.jboss.pnc.bifrost.source.dto.Line;
-import org.jboss.pnc.bifrost.source.mock.LineProducer;
-import org.jboss.pnc.bifrost.test.Wait;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.jboss.pnc.bifrost.test.ElasticsearchEmbeddedTest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
 
 /**
  * @author <a href="mailto:matejonnet@gmail.com">Matej Lazar</a>
  */
-//@QuarkusTest
-public class ElasticSearchIT {
+@ElasticsearchEmbeddedTest
+public class ElasticSearchEmbedded {
 
-    private static Logger logger = LoggerFactory.getLogger(ElasticSearchIT.class);
+    private static Logger logger = LoggerFactory.getLogger(ElasticSearchEmbedded.class);
 
     private static String[] indexes = new String[] { "test" };
 
@@ -52,7 +24,7 @@ public class ElasticSearchIT {
         .build();
 
     private static ClientFactory clientFactory = new ClientFactory(elasticSearchConfig);
-
+/*
     @BeforeAll
     public static void beforeTest() throws Exception {
         RestClient lowLevelRestClient = clientFactory.getConnectedClient();
@@ -219,5 +191,5 @@ public class ElasticSearchIT {
             restClient.close();
         }
     }
-
+*/
 }
