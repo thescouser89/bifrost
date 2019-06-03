@@ -24,7 +24,8 @@ public class ElasticSearchEmbedded {
         .build();
 
     private static ClientFactory clientFactory = new ClientFactory(elasticSearchConfig);
-/*
+    //TODO end-to-end test
+    /*
     @BeforeAll
     public static void beforeTest() throws Exception {
         RestClient lowLevelRestClient = clientFactory.getConnectedClient();

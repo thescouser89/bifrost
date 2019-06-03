@@ -1,6 +1,9 @@
 package org.jboss.pnc.bifrost.common.scheduler;
 
+import org.jboss.pnc.bifrost.Config;
+
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
@@ -19,9 +22,22 @@ import java.util.function.Consumer;
 @ApplicationScoped
 public class Subscriptions {
 
-    private final Map<Subscription, ScheduledFuture> subscriptions = new ConcurrentHashMap<>();
+    private Map<Subscription, ScheduledFuture> subscriptions;
 
-    private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(4); //TODO configurable
+    private ScheduledExecutorService executor;
+
+    /**
+     * CDI workaround
+     */
+    @Deprecated
+    public Subscriptions() {
+    }
+
+    @Inject
+    public Subscriptions(Config config) {
+        subscriptions = new ConcurrentHashMap<>();
+        executor = Executors.newScheduledThreadPool(config.getSourcePollThreads());
+    }
 
     public void submit(Runnable task) {
         executor.submit(task);
@@ -66,7 +82,7 @@ public class Subscriptions {
         backOffRunnable.setRunnable(internalTask);
         backOffRunnable.setCancelHook(() -> unsubscribe(subscription));
 
-        ScheduledFuture<?> scheduledFuture = executor.scheduleAtFixedRate(backOffRunnable, 0, backOffRunnableConfig.getPoolIntervalMillis(), TimeUnit.MILLISECONDS);
+        ScheduledFuture<?> scheduledFuture = executor.scheduleAtFixedRate(backOffRunnable, 0, backOffRunnableConfig.getPollIntervalMillis(), TimeUnit.MILLISECONDS);
         subscriptions.put(subscription, scheduledFuture);
     }
 

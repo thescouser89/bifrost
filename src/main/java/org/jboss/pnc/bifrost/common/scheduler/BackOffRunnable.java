@@ -1,5 +1,7 @@
 package org.jboss.pnc.bifrost.common.scheduler;
 
+import java.util.Optional;
+
 /**
  * @author <a href="mailto:matejonnet@gmail.com">Matej Lazar</a>
  */
@@ -12,7 +14,7 @@ public class BackOffRunnable implements Runnable {
 
     private Runnable runnable;
 
-    private Runnable cancelHook;
+    private Optional<Runnable> cancelHook = Optional.empty();
 
     public BackOffRunnable(BackOffRunnableConfig backOffRunnableConfig) {
         this.config = backOffRunnableConfig;
@@ -40,7 +42,7 @@ public class BackOffRunnable implements Runnable {
 
     private void validateTimeout() {
         if (System.currentTimeMillis() - lastResult > config.getTimeOutMillis()) {
-            cancelHook.run();
+            cancelHook.ifPresent(Runnable::run);
         }
     }
 
@@ -49,6 +51,6 @@ public class BackOffRunnable implements Runnable {
     }
 
     public void setCancelHook(Runnable cancelHook) {
-        this.cancelHook = cancelHook;
+        this.cancelHook = Optional.ofNullable(cancelHook);
     }
 }

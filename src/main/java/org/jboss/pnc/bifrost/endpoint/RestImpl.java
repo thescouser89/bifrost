@@ -42,7 +42,7 @@ public class RestImpl implements Rest {
                         writer.close();
                     }
                 } catch (IOException e) {
-                    dataProvider.unsubscibe(subscription);
+                    dataProvider.unsubscribe(subscription);
                 }
             };
             if (follow) {
@@ -59,7 +59,7 @@ public class RestImpl implements Rest {
                         prefixFilters,
                         Optional.ofNullable(afterLine),
                         Direction.ASC,
-                        -1,
+                        Optional.empty(),
                         onLine
                 );
             }
@@ -72,7 +72,13 @@ public class RestImpl implements Rest {
             throws IOException {
         List<Line> lines = new ArrayList<>();
         Consumer<Line> onLine = line -> lines.add(line);
-        dataProvider.get(matchFilters, prefixFilters, Optional.ofNullable(afterLine), direction, maxLines, onLine);
+        dataProvider.get(
+                matchFilters,
+                prefixFilters,
+                Optional.ofNullable(afterLine),
+                direction,
+                Optional.ofNullable(maxLines),
+                onLine);
         return lines;
     }
 

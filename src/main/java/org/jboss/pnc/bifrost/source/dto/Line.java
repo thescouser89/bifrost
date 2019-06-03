@@ -29,11 +29,13 @@ public class Line {
 
     private String exp;
 
+    private String subscriptionTopic;
+
     public static Builder newBuilder() {
         return new Builder();
     }
 
-    public static Line fromString(String json) { //TODO remove me
+    public static Line fromString(String json) {
         Jsonb jsonb = JsonbBuilder.create();
         return jsonb.fromJson(json, Line.class);
     }

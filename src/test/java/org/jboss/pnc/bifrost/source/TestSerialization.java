@@ -49,32 +49,7 @@ public class TestSerialization {
         Assertions.assertEquals("abc123", deserializedLines.get(0).getCtx());
     }
 
-    //
-//    @Test
-//    public void shouldSerializeAndDeserializeLine() throws IOException {
-//        ObjectMapper objectMapper = new ObjectMapper();
-//
-//        Line line1 = new Line(
-//                "1",
-//                "1548633600000",
-//                this.getClass().getName(),
-//                "line1",
-//                false,
-//                "dsfdo",
-//                false,
-//                "111111"
-//        );
-//
-//        String asString = objectMapper.writeValueAsString(line1);
-//
-//        System.out.println(asString);
-//
-//        Line line = objectMapper.readValue(asString, Line.class);
-//
-//        byte[] byteLine = objectMapper.writeValueAsBytes(line1);
-//        System.out.println("Byteline: " + new String(byteLine));
-//
-//    }
+
 
 
     /*

@@ -15,6 +15,8 @@ import org.jboss.pnc.bifrost.source.dto.Line;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
@@ -24,6 +26,7 @@ import java.util.function.Consumer;
 /**
  * @author <a href="mailto:matejonnet@gmail.com">Matej Lazar</a>
  */
+@ApplicationScoped
 public class ElasticSearch {
 
     private final Logger logger = LoggerFactory.getLogger(ElasticSearch.class);
@@ -33,6 +36,10 @@ public class ElasticSearch {
 
     private String[] indexes;
 
+    public ElasticSearch() {
+    }
+
+    @Inject
     public ElasticSearch(ElasticSearchConfig elasticSearchConfig) throws Exception {
         lowLevelRestClient = new ClientFactory(elasticSearchConfig).getConnectedClient();
         this.indexes = elasticSearchConfig.getIndexes().split(",");
@@ -43,7 +50,7 @@ public class ElasticSearch {
         try {
             lowLevelRestClient.close();
         } catch (IOException e) {
-            e.printStackTrace(); //TODO
+            logger.error("Cannot close Elastisearch client.", e);
         }
     }
 
@@ -56,15 +63,15 @@ public class ElasticSearch {
             Map<String, String> prefixFilters,
             Optional<Line> searchAfter,
             Direction direction,
-            int maxLines,
+            int fetchSize,
             Consumer<Line> onLine) throws IOException {
-        logger.info("Searching ...");
+        logger.debug("Searching ...");
         BoolQueryBuilder queryBuilder = getQueryBuilder(matchFilters, prefixFilters);
 
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
         sourceBuilder
                 .query(queryBuilder)
-                .size(maxLines + 1)
+                .size(fetchSize + 1)
                 .from(0)
                 //TODO need _id as doc type https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-search-after.html
             //    .sort(new FieldSortBuilder("timestamp").order(direction.getSortOrder()))
@@ -85,13 +92,15 @@ public class ElasticSearch {
         SearchResponse response = client.search(searchRequest);
 
         SearchHits responseHits = response.getHits();
-        logger.info("Total hits: {}, limited to {}.", responseHits.getTotalHits(), maxLines);
+        logger.info("Total hits: {}, limited to {}.", responseHits.getTotalHits(), fetchSize);
         int hitNum = 0;
 
-        //loop until maxLines or all the elements are read
-        //note that (maxLines + 1) is used as a limit in the query to check if there are more results
+        /**
+         * loop until fetchSize or all the elements are read
+         * note that (fetchSize + 1) is used as a limit in the query to check if there are more results
+         */
         Iterator<SearchHit> responseHitIterator = responseHits.iterator();
-        while (responseHitIterator.hasNext() && hitNum < maxLines) {
+        while (responseHitIterator.hasNext() && hitNum < fetchSize) {
             hitNum++;
             SearchHit hit = responseHitIterator.next();
             boolean last = !responseHitIterator.hasNext();
@@ -102,7 +111,7 @@ public class ElasticSearch {
 
     private Line getLine(SearchHit hit, boolean last) {
         Map<String, Object> source = hit.getSourceAsMap();
-        logger.info("Received line {}", source); //TODO debug
+        logger.trace("Received line {}", source);
 
         String id = source.get("id").toString();
         String timestamp = source.get("timestamp").toString();
@@ -114,7 +123,6 @@ public class ElasticSearch {
         String expire = getString(source, exp);
 
         this.logger.info("Constructing line ...");
-//        return new Line(id, timestamp, logger, message, last, ctx, tmp, expire);
         return Line.newBuilder()
                 .id(id)
                 .timestamp(timestamp)

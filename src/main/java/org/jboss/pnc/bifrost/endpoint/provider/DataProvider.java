@@ -1,24 +1,21 @@
 package org.jboss.pnc.bifrost.endpoint.provider;
 
+import org.jboss.logging.Logger;
+import org.jboss.pnc.bifrost.Config;
+import org.jboss.pnc.bifrost.common.ObjectReference;
 import org.jboss.pnc.bifrost.common.Strings;
 import org.jboss.pnc.bifrost.common.scheduler.BackOffRunnableConfig;
 import org.jboss.pnc.bifrost.common.scheduler.Subscription;
 import org.jboss.pnc.bifrost.common.scheduler.Subscriptions;
 import org.jboss.pnc.bifrost.source.ElasticSearch;
-import org.jboss.pnc.bifrost.source.ElasticSearchConfig;
-import org.jboss.pnc.bifrost.source.ResultProcessor;
+import org.jboss.pnc.bifrost.source.ResultDecorator;
 import org.jboss.pnc.bifrost.source.dto.Direction;
 import org.jboss.pnc.bifrost.source.dto.Line;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.ws.rs.core.StreamingOutput;
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 /**
@@ -27,76 +24,22 @@ import java.util.function.Consumer;
 @ApplicationScoped
 public class DataProvider {
 
-    //TODO configurable
-    BackOffRunnableConfig backOffRunnableConfig = new BackOffRunnableConfig(1000L, 10, 5 * 60000, 1000);
-
-    ElasticSearch elasticSearch;
-    ResultProcessor resultProcessor;
-    //TODO move out of endpoint
-    Subscriptions subscriptions;
-
-    public DataProvider() {
-    }
+    private Logger logger = Logger.getLogger(DataProvider.class);
 
     @Inject
-    public DataProvider(ElasticSearchConfig elasticSearchConfig) throws Exception {
-        this.elasticSearch = new ElasticSearch(elasticSearchConfig);
-        resultProcessor = new ResultProcessor(elasticSearch);
-        this.subscriptions = new Subscriptions();
-    }
+    BackOffRunnableConfig backOffRunnableConfig;
 
-    public void getAllLines(String matchFilters, String prefixFilters, Line afterLine, boolean follow) {
-        //TODO unfollow on client connection close. do we end in onLine IOException ?
-        Subscription subscription = new Subscription();
-        Consumer<Subscriptions.TaskParameters<Line>> searchTask = (parameters) -> {
-            Optional<Line> lastResult = Optional.ofNullable(parameters.getLastResult());
+    @Inject
+    Config config;
 
-            try {
-                resultProcessor.get(
-                        matchFilters,
-                        prefixFilters,
-                        lastResult,
-                        Direction.ASC,
-                        1000 //TODO configurable
-                );
-            } catch (IOException e) {
-                e.printStackTrace(); //TODO
-            }
-        };
+    @Inject
+    ElasticSearch elasticSearch;
 
-        StreamingOutput stream = outputStream -> {
-            Writer writer = new BufferedWriter(new OutputStreamWriter(outputStream));
+    @Inject
+    Subscriptions subscriptions;
 
-            Consumer<Line> onLine = line -> {
-                try {
-                    writer.write(line.asString());
-                    if (line.isLast()) {
-                        writer.flush();
-                        writer.close();
-                    }
-                } catch (IOException e) {
-                    subscriptions.unsubscribe(subscription);
-                }
-            };
-            if (follow) {
-                subscriptions.subscribe(
-                        subscription,
-                        searchTask,
-                        Optional.ofNullable(afterLine),
-                        onLine,
-                        backOffRunnableConfig
-                );
-            } else {
-                subscriptions.run(
-                        searchTask,
-                        Optional.ofNullable(afterLine),
-                        onLine
-                );
-            }
-        };
-    }
-
-    public void unsubscibe(Subscription subscription) {
+    public void unsubscribe(Subscription subscription) {
+        subscriptions.unsubscribe(subscription);
     }
 
     public void subscribe(String matchFilters,
@@ -105,25 +48,65 @@ public class DataProvider {
             Consumer<Line> onLine,
             Subscription subscription) {
 
+        ResultDecorator resultProcessor = new ResultDecorator(elasticSearch);
+
+        Consumer<Subscriptions.TaskParameters<Line>> searchTask = (parameters) -> {
+            Optional<Line> lastResult = Optional.ofNullable(parameters.getLastResult());
+            Consumer<Line> onLineInternal = line ->  parameters.getResultConsumer().accept(line);
+            try {
+                resultProcessor.get(
+                        onLineInternal,
+                        matchFilters,
+                        prefixFilters,
+                        lastResult,
+                        Direction.ASC,
+                        config.maxSourceFetchSize
+                );
+            } catch (IOException e) {
+                //TODO unsubscribe ?
+                logger.error("Error getting data from Elasticsearch.", e);
+            }
+        };
+
+        subscriptions.subscribe(
+                subscription,
+                searchTask,
+                afterLine,
+                onLine,
+                backOffRunnableConfig
+        );
     }
 
     /**
      * Blocking call, <code>onLine<code/> is called in the calling thread.
      */
-    public void get(String matchFilters, String prefixFilters, Optional<Line> afterLine, Direction direction, int fetchSize, Consumer<Line> onLine) throws IOException {
-        final AtomicReference<Line> lastLine;
+    public void get(
+            String matchFilters,
+            String prefixFilters,
+            Optional<Line> afterLine,
+            Direction direction,
+            Optional<Integer> maxLines,
+            Consumer<Line> onLine) throws IOException {
+
+        final ObjectReference<Line> lastLine;
         if (afterLine.isPresent()) {
             // Make sure line is marked as last. Being non last will result in endless loop in case of no results.
-            lastLine = new AtomicReference<>(afterLine.get().cloneBuilder().last(true).build());
+            lastLine = new ObjectReference<>(afterLine.get().cloneBuilder().last(true).build());
         } else {
-            lastLine = new AtomicReference<>();
+            lastLine = new ObjectReference<>();
         }
 
+        final int[] fetchedLines = {0};
+        Consumer<Line> onLineInternal = line -> {
+            fetchedLines[0]++;
+            lastLine.set(line);
+            onLine.accept(line);
+        };
         do {
-            Consumer<Line> onLineInternal = line -> {
-                lastLine.set(line);
-                onLine.accept(line);
-            };
+            int fetchSize = getFetchSize(fetchedLines[0], maxLines);
+            if (fetchSize < 1) {
+                break;
+            }
             elasticSearch.get(
                     Strings.toMap(matchFilters),
                     Strings.toMap(prefixFilters),
@@ -132,5 +115,16 @@ public class DataProvider {
                     fetchSize,
                     onLineInternal);
         } while (lastLine.get() != null && !lastLine.get().isLast());
+    }
+
+    private int getFetchSize(int fetchedLines, Optional<Integer> maxLines) {
+        int defaultFetchSize = config.getDefaultSourceFetchSize();
+        if (maxLines.isPresent()) {
+            int max = maxLines.get();
+            if (fetchedLines + defaultFetchSize > max) {
+                return max - fetchedLines;
+            }
+        }
+        return defaultFetchSize;
     }
 }

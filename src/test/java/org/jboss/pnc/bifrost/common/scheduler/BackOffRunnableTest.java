@@ -1,6 +1,7 @@
 package org.jboss.pnc.bifrost.common.scheduler;
 
 import io.quarkus.test.junit.QuarkusTest;
+import org.jboss.pnc.bifrost.mock.BackOffRunnableConfigFactory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -12,7 +13,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 @QuarkusTest
 public class BackOffRunnableTest {
 
-    BackOffRunnableConfig config = new BackOffRunnableConfig(100L, 5, 60000, 100L);
+    BackOffRunnableConfig config = BackOffRunnableConfigFactory
+            .get(100L, 5, 60000, 100L);
 
     @Test
     public void shouldRun() throws InterruptedException {

@@ -59,7 +59,7 @@ public class RemoteConnectionTest {
     public void shouldConnectToRemoteCluster() throws Exception {
         ElasticSearch elasticSearch = new ElasticSearch(elasticSearchConfig);
 
-        ResultProcessor provider = new ResultProcessor(elasticSearch);
+        ResultDecorator provider = new ResultDecorator(elasticSearch);
         List<Line> lines = provider.get("", "", Optional.empty(), Direction.DESC, 10);
         lines.forEach(line -> logger.info("line: " + line));
     }
