@@ -1,6 +1,5 @@
 package org.jboss.pnc.bifrost.endpoint.websocket;
 
-import com.thetransactioncompany.jsonrpc2.JSONRPC2Notification;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2ParseException;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Request;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
@@ -20,11 +19,9 @@ import javax.websocket.ContainerProvider;
 import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
 import javax.websocket.Session;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -76,15 +73,9 @@ public class SubscriptionTest {
                 }
                 received++;
             }
+            session.close();
             Assertions.assertEquals(5, received);
         }
-    }
-
-    private Line getLine(String lineJson) throws JSONRPC2ParseException, IllegalAccessException, InvocationTargetException {
-        HashMap<String,String> lineMap = (HashMap<String, String>) JSONRPC2Notification.parse(lineJson).getPositionalParams().get(0);
-        Line line = new Line();
-        BeanUtils.populate(line, lineMap);
-        return line;
     }
 
     @Test
@@ -115,8 +106,8 @@ public class SubscriptionTest {
                 }
                 received++;
             }
+            session.close();
             Assertions.assertEquals(5, received);
-
         }
     }
 
