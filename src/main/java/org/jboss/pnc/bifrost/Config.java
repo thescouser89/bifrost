@@ -18,7 +18,7 @@ public class Config {
     private int defaultSourceFetchSize;
 
     @ConfigProperty(name = "bifrost.maxSourceFetchSize", defaultValue = "1000")
-    public int maxSourceFetchSize;
+    private int maxSourceFetchSize;
 
     @ConfigProperty(name = "bifrost.sourcePollThreads", defaultValue = "4")
     private int sourcePollThreads;

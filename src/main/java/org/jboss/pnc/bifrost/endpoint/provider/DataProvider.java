@@ -8,7 +8,6 @@ import org.jboss.pnc.bifrost.common.scheduler.BackOffRunnableConfig;
 import org.jboss.pnc.bifrost.common.scheduler.Subscription;
 import org.jboss.pnc.bifrost.common.scheduler.Subscriptions;
 import org.jboss.pnc.bifrost.source.ElasticSearch;
-import org.jboss.pnc.bifrost.source.ResultDecorator;
 import org.jboss.pnc.bifrost.source.dto.Direction;
 import org.jboss.pnc.bifrost.source.dto.Line;
 
@@ -48,20 +47,17 @@ public class DataProvider {
             Consumer<Line> onLine,
             Subscription subscription) {
 
-        ResultDecorator resultProcessor = new ResultDecorator(elasticSearch);
-
         Consumer<Subscriptions.TaskParameters<Line>> searchTask = (parameters) -> {
             Optional<Line> lastResult = Optional.ofNullable(parameters.getLastResult());
             Consumer<Line> onLineInternal = line ->  parameters.getResultConsumer().accept(line);
             try {
-                resultProcessor.get(
-                        onLineInternal,
-                        matchFilters,
-                        prefixFilters,
+                elasticSearch.get(
+                        Strings.toMap(matchFilters),
+                        Strings.toMap(prefixFilters),
                         lastResult,
                         Direction.ASC,
-                        config.maxSourceFetchSize
-                );
+                        config.getDefaultSourceFetchSize(),
+                        onLineInternal);
             } catch (IOException e) {
                 //TODO unsubscribe ?
                 logger.error("Error getting data from Elasticsearch.", e);
@@ -127,4 +123,5 @@ public class DataProvider {
         }
         return defaultFetchSize;
     }
+
 }

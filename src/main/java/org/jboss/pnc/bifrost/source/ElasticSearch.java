@@ -10,6 +10,7 @@ import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.jboss.pnc.bifrost.source.dto.Direction;
 import org.jboss.pnc.bifrost.source.dto.Line;
 import org.slf4j.Logger;
@@ -73,9 +74,7 @@ public class ElasticSearch {
                 .query(queryBuilder)
                 .size(fetchSize + 1)
                 .from(0)
-                //TODO need _id as doc type https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-search-after.html
-            //    .sort(new FieldSortBuilder("timestamp").order(direction.getSortOrder()))
-            //    .sort(new FieldSortBuilder("id").order(direction.getSortOrder()))
+                .sort(new FieldSortBuilder("timestamp").order(direction.getSortOrder()))
         ;
         if (searchAfter.isPresent()) {
             Object[] searchAfterTimeStampId = new Object[]{searchAfter.get().getTimestamp(), searchAfter.get().getId()};

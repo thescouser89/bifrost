@@ -1,12 +1,11 @@
 package org.jboss.pnc.bifrost.source;
 
+import jdk.nashorn.internal.ir.annotations.Ignore;
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.BasicHttpEntity;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
-import org.jboss.pnc.bifrost.source.dto.Direction;
-import org.jboss.pnc.bifrost.source.dto.Line;
 import org.jboss.pnc.bifrost.test.DebugTest;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -17,8 +16,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
 
 /**
  * @author <a href="mailto:matejonnet@gmail.com">Matej Lazar</a>
@@ -55,12 +52,11 @@ public class RemoteConnectionTest {
         lowLevelRestClient.close();
     }
 
-    @Test
+    @Test @Ignore
     public void shouldConnectToRemoteCluster() throws Exception {
-        ElasticSearch elasticSearch = new ElasticSearch(elasticSearchConfig);
-
-        ResultDecorator provider = new ResultDecorator(elasticSearch);
-        List<Line> lines = provider.get("", "", Optional.empty(), Direction.DESC, 10);
-        lines.forEach(line -> logger.info("line: " + line));
+//        ElasticSearch elasticSearch = new ElasticSearch(elasticSearchConfig);
+//        DataProvider provider = new DataProvider(elasticSearch);
+//        List<Line> lines = provider.get("", "", Optional.empty(), Direction.DESC, 10);
+//        lines.forEach(line -> logger.info("line: " + line));
     }
 }
