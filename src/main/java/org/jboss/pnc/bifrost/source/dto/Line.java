@@ -25,7 +25,7 @@ public class Line {
 
     private String ctx;
 
-    private boolean tmp;
+    private Boolean tmp;
 
     private String exp;
 
@@ -48,7 +48,7 @@ public class Line {
         builder.message = copy.getMessage();
         builder.last = copy.isLast();
         builder.ctx = copy.getCtx();
-        builder.tmp = copy.isTmp();
+        builder.tmp = copy.getTmp();
         builder.exp = copy.getExp();
         return builder;
     }
@@ -79,7 +79,7 @@ public class Line {
 
         private String ctx;
 
-        private boolean tmp;
+        private Boolean tmp;
 
         private String exp;
 
@@ -116,7 +116,7 @@ public class Line {
             return this;
         }
 
-        public Builder tmp(boolean tmp) {
+        public Builder tmp(Boolean tmp) {
             this.tmp = tmp;
             return this;
         }

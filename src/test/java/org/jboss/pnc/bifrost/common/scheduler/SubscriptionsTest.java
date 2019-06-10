@@ -1,14 +1,17 @@
 package org.jboss.pnc.bifrost.common.scheduler;
 
 import io.quarkus.test.junit.QuarkusTest;
-import org.jboss.pnc.bifrost.test.Wait;
+import org.jboss.logging.Logger;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 
@@ -18,6 +21,8 @@ import java.util.function.Consumer;
 @QuarkusTest
 public class SubscriptionsTest {
 
+    private final Logger logger = Logger.getLogger(SubscriptionsTest.class);
+
     @Inject
     BackOffRunnableConfig backOffRunnableConfig;
 
@@ -26,9 +31,9 @@ public class SubscriptionsTest {
 
     @Test
     public void shouldSubcribeTaskAndRunIt() throws TimeoutException, InterruptedException {
-        List<String> results = new ArrayList<>();
+        BlockingQueue<String> resultsQueue = new ArrayBlockingQueue<>(100);
         Consumer<String> onResult = line -> {
-            results.add(line);
+            resultsQueue.add(line);
         };
 
         Subscription subscription = new Subscription("1", "A");
@@ -46,10 +51,13 @@ public class SubscriptionsTest {
                 backOffRunnableConfig
         );
 
-
-        Wait.forCondition(()->results.size() == 10, 3, ChronoUnit.SECONDS);
-
-        results.forEach(System.out::println);
+        List<String> results = new ArrayList<>();
+        while (results.size() < 5) {
+            String result = resultsQueue.poll(5, TimeUnit.SECONDS);
+            results.add(result);
+        }
+        results.forEach(r -> logger.info(r));
+        Assertions.assertTrue(results.get(0).startsWith("Result 0"));
 
         subscriptions.unsubscribeAll();
     }

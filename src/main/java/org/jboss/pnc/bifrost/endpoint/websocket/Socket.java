@@ -133,6 +133,7 @@ public class Socket {
     }
 
     private void sendLine(RemoteEndpoint.Async remote, Line line) {
+        logger.trace("Sending line as binary message: " + line.asString());
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         jsonb.toJson(line, byteArrayOutputStream); // JsonbConfig.ENCODING default is UTF-8
         remote.sendBinary(ByteBuffer.wrap(byteArrayOutputStream.toByteArray()), lineResponseHandler);

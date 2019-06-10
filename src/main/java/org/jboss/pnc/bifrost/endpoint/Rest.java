@@ -23,11 +23,17 @@ public interface Rest {
     @GET
     @Path("/text")
     @Produces(MediaType.TEXT_PLAIN)
-    Response getAllLines(String matchFilters, String prefixFilters, Line afterLine, boolean follow);
+    Response getAllLines(
+            @QueryParam("matchFilters") String matchFilters,
+            @QueryParam("prefixFilters") String prefixFilters,
+            @QueryParam("afterLine") Line afterLine,
+            @QueryParam("direction") Direction direction,
+            @QueryParam("maxLines") Integer maxLines,
+            @QueryParam("follow") boolean follow);
 
     @GET
     @Path("/")
-    @Produces("application/json")
+    @Produces(MediaType.APPLICATION_JSON)
     List<Line> getLines(
             @QueryParam("matchFilters") String matchFilters,
             @QueryParam("prefixFilters") String prefixFilters,
@@ -35,5 +41,15 @@ public interface Rest {
             @QueryParam("direction") Direction direction,
             @QueryParam("maxLines") Integer maxLines)
             throws IOException;
+
+    @GET
+    @Path("/test/ready")
+    @Produces(MediaType.APPLICATION_JSON)
+    Response readinessProbe();
+
+    @GET
+    @Path("/test/status")
+    @Produces(MediaType.APPLICATION_JSON)
+    Response livenessProbe();
 
 }

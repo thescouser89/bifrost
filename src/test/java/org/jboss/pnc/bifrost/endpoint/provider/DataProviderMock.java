@@ -9,8 +9,6 @@ import org.jboss.pnc.bifrost.source.dto.Line;
 import javax.annotation.Priority;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Alternative;
-import javax.inject.Inject;
-import java.io.IOException;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
@@ -23,34 +21,27 @@ import java.util.function.Consumer;
 @Alternative()
 @Priority(1)
 @ApplicationScoped
-public class MockDataProvider extends DataProvider {
+public class DataProviderMock extends DataProvider {
 
     Deque<Line> lines = new LinkedList<>();
 
-    @Inject
-    Subscriptions subscriptions;
+//    @Inject
+//    Subscriptions subscriptions;
 
-    public MockDataProvider() {
+    public DataProviderMock() {
         super();
     }
 
-    @Override
     public void get(
             String matchFilters,
             String prefixFilters,
             Optional<Line> afterLine,
             Direction direction,
             Optional<Integer> maxLines,
-            Consumer<Line> onLine) throws
-            IOException {
-
+            Consumer<Line> onLine) {
         LineProducer.getLines(5, "abc123").forEach(
                 line -> onLine.accept(line)
         );
-    }
-
-    public void unsubscribe(Subscription subscription) {
-        subscriptions.unsubscribe(subscription);
     }
 
     public void subscribe(String matchFilters,
@@ -65,6 +56,11 @@ public class MockDataProvider extends DataProvider {
                 Line line = lines.pop();
                 parameters.getResultConsumer().accept(line);
             }
+//            try {
+//                TimeUnit.MILLISECONDS.sleep(200);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
         };
 
         subscriptions.subscribe(

@@ -65,9 +65,9 @@ public class Subscriptions {
             BackOffRunnableConfig backOffRunnableConfig
             ) {
 
-        AtomicReference<T> lastResult = new AtomicReference<>(initialLastResult.orElse(null));
         BackOffRunnable backOffRunnable = new BackOffRunnable(backOffRunnableConfig);
 
+        AtomicReference<T> lastResult = new AtomicReference<>(initialLastResult.orElse(null)); //TODO no need for atomic
         Runnable internalTask = () -> {
             Consumer<T> onResultInternal = result -> {
                 lastResult.set(result);

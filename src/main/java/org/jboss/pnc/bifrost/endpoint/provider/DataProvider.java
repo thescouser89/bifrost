@@ -2,15 +2,17 @@ package org.jboss.pnc.bifrost.endpoint.provider;
 
 import org.jboss.logging.Logger;
 import org.jboss.pnc.bifrost.Config;
-import org.jboss.pnc.bifrost.common.ObjectReference;
+import org.jboss.pnc.bifrost.common.Reference;
 import org.jboss.pnc.bifrost.common.Strings;
 import org.jboss.pnc.bifrost.common.scheduler.BackOffRunnableConfig;
 import org.jboss.pnc.bifrost.common.scheduler.Subscription;
 import org.jboss.pnc.bifrost.common.scheduler.Subscriptions;
 import org.jboss.pnc.bifrost.source.ElasticSearch;
+import org.jboss.pnc.bifrost.source.ElasticSearchConfig;
 import org.jboss.pnc.bifrost.source.dto.Direction;
 import org.jboss.pnc.bifrost.source.dto.Line;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.io.IOException;
@@ -32,10 +34,17 @@ public class DataProvider {
     Config config;
 
     @Inject
-    ElasticSearch elasticSearch;
+    ElasticSearchConfig elasticSearchConfig;
 
     @Inject
     Subscriptions subscriptions;
+
+    ElasticSearch elasticSearch;
+
+    @PostConstruct
+    public void init() {
+        elasticSearch = new ElasticSearch(elasticSearchConfig);
+    }
 
     public void unsubscribe(Subscription subscription) {
         subscriptions.unsubscribe(subscription);
@@ -84,12 +93,12 @@ public class DataProvider {
             Optional<Integer> maxLines,
             Consumer<Line> onLine) throws IOException {
 
-        final ObjectReference<Line> lastLine;
+        final Reference<Line> lastLine;
         if (afterLine.isPresent()) {
             // Make sure line is marked as last. Being non last will result in endless loop in case of no results.
-            lastLine = new ObjectReference<>(afterLine.get().cloneBuilder().last(true).build());
+            lastLine = new Reference<>(afterLine.get().cloneBuilder().last(true).build());
         } else {
-            lastLine = new ObjectReference<>();
+            lastLine = new Reference<>();
         }
 
         final int[] fetchedLines = {0};

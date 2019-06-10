@@ -7,7 +7,7 @@ import io.quarkus.test.common.http.TestHTTPResource;
 import io.quarkus.test.junit.QuarkusTest;
 import org.apache.commons.beanutils.BeanUtils;
 import org.jboss.logging.Logger;
-import org.jboss.pnc.bifrost.endpoint.provider.MockDataProvider;
+import org.jboss.pnc.bifrost.endpoint.provider.DataProviderMock;
 import org.jboss.pnc.bifrost.mock.LineProducer;
 import org.jboss.pnc.bifrost.source.dto.Line;
 import org.junit.jupiter.api.Assertions;
@@ -41,7 +41,7 @@ public class SubscriptionTest {
     private static final LinkedBlockingDeque<Line> LINES = new LinkedBlockingDeque<>();
 
     @Inject
-    MockDataProvider mockDataProvider;
+    DataProviderMock mockDataProvider;
 
     @TestHTTPResource("/socket")
     URI uri;
@@ -76,6 +76,7 @@ public class SubscriptionTest {
             session.close();
             Assertions.assertEquals(5, received);
         }
+        TimeUnit.MILLISECONDS.sleep(250); //wait clean for shutdown
     }
 
     @Test
@@ -90,7 +91,8 @@ public class SubscriptionTest {
             SubscribeDto parameters = new SubscribeDto();
             parameters.setMatchFilters("");
             parameters.setPrefixFilters("");
-            JSONRPC2Request request = new JSONRPC2Request(methodSubscribe.getName(), BeanUtils.describe(parameters));
+            Map<String, Object> parameterMap = (Map)BeanUtils.describe(parameters);
+            JSONRPC2Request request = new JSONRPC2Request(methodSubscribe.getName(), parameterMap, Integer.valueOf(2));
             session.getAsyncRemote().sendText(request.toJSONString());
 
             Result result = RESULTS.poll(10, TimeUnit.SECONDS);
@@ -109,6 +111,7 @@ public class SubscriptionTest {
             session.close();
             Assertions.assertEquals(5, received);
         }
+        TimeUnit.MILLISECONDS.sleep(250); //wait clean for shutdown
     }
 
     @ClientEndpoint

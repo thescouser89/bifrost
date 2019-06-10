@@ -2,12 +2,12 @@ package org.jboss.pnc.bifrost.source;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
-import javax.enterprise.context.Dependent;
+import javax.enterprise.context.ApplicationScoped;
 
 /**
  * @author <a href="mailto:matejonnet@gmail.com">Matej Lazar</a>
  */
-@Dependent
+@ApplicationScoped
 public class ElasticSearchConfig {
 
     @ConfigProperty(name = "elasticsearch.hosts")

@@ -1,11 +1,15 @@
 package org.jboss.pnc.bifrost.common.scheduler;
 
+import org.jboss.logging.Logger;
+
 import java.util.Optional;
 
 /**
  * @author <a href="mailto:matejonnet@gmail.com">Matej Lazar</a>
  */
 public class BackOffRunnable implements Runnable {
+
+    private final static Logger logger = Logger.getLogger(BackOffRunnable.class);
 
     private final BackOffRunnableConfig config;
 
@@ -32,11 +36,13 @@ public class BackOffRunnable implements Runnable {
         if (backOffNextCycles > 0L) {
             backOffNextCycles--;
             validateTimeout();
+            logger.trace("Cycle skipped.");
             return;
         }
         Long backOff = (System.currentTimeMillis() - lastResult) / config.getDelayMillis();
 
         backOffNextCycles = Long.min(backOff - 1, config.getMaxBackOffCycles());
+        logger.trace("Running task ...");
         runnable.run();
     }
 

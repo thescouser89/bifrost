@@ -6,7 +6,6 @@ import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
@@ -16,9 +15,8 @@ import org.jboss.pnc.bifrost.source.dto.Line;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
@@ -27,7 +25,6 @@ import java.util.function.Consumer;
 /**
  * @author <a href="mailto:matejonnet@gmail.com">Matej Lazar</a>
  */
-@ApplicationScoped
 public class ElasticSearch {
 
     private final Logger logger = LoggerFactory.getLogger(ElasticSearch.class);
@@ -37,12 +34,19 @@ public class ElasticSearch {
 
     private String[] indexes;
 
-    public ElasticSearch() {
+    private ElasticSearchConfig elasticSearchConfig;
+
+    public ElasticSearch(ElasticSearchConfig elasticSearchConfig) {
+        this.elasticSearchConfig = elasticSearchConfig;
+        init();
     }
 
-    @Inject
-    public ElasticSearch(ElasticSearchConfig elasticSearchConfig) throws Exception {
-        lowLevelRestClient = new ClientFactory(elasticSearchConfig).getConnectedClient();
+    public void init() {
+        try {
+            lowLevelRestClient = new ClientFactory(elasticSearchConfig).getConnectedClient();
+        } catch (Exception e) {
+            logger.error("Cannot connect client.", e);
+        }
         this.indexes = elasticSearchConfig.getIndexes().split(",");
         client = new RestHighLevelClient(lowLevelRestClient);
     }
@@ -74,16 +78,18 @@ public class ElasticSearch {
                 .query(queryBuilder)
                 .size(fetchSize + 1)
                 .from(0)
-                .sort(new FieldSortBuilder("timestamp").order(direction.getSortOrder()))
+                .sort(new FieldSortBuilder("@timestamp").order(direction.getSortOrder()))
+                .sort(new FieldSortBuilder("_uid").order(direction.getSortOrder()))
         ;
         if (searchAfter.isPresent()) {
-            Object[] searchAfterTimeStampId = new Object[]{searchAfter.get().getTimestamp(), searchAfter.get().getId()};
+            String timestamp = searchAfter.get().getTimestamp();
+            Object[] searchAfterTimeStampId = new Object[]{ Instant.parse(timestamp).toEpochMilli(), searchAfter.get().getId()};
             sourceBuilder.searchAfter(searchAfterTimeStampId);
         } else {
             //TODO tailFromNow vs tailFromBeginning
-            RangeQueryBuilder timestampRange = QueryBuilders.rangeQuery("timestamp");
+            //RangeQueryBuilder timestampRange = QueryBuilders.rangeQuery("@timestamp");
             //timestampRange.from(System.currentTimeMillis() - 5000); //TODO parametrize how long back
-            queryBuilder.must(timestampRange);
+            //queryBuilder.must(timestampRange);
         }
 
         SearchRequest searchRequest = new SearchRequest(indexes);
@@ -109,19 +115,18 @@ public class ElasticSearch {
     }
 
     private Line getLine(SearchHit hit, boolean last) {
-        Map<String, Object> source = hit.getSourceAsMap();
+        Map<String, Object> source = hit.getSource();
         logger.trace("Received line {}", source);
 
-        String id = source.get("id").toString();
-        String timestamp = source.get("timestamp").toString();
-        String logger = source.get("logger").toString();
+//        String id = source.get("_type").toString() + "#" + source.get("_id").toString();
+        String id =hit.getType() + "#" + hit.getId();
+        String timestamp = source.get("@timestamp").toString();
+        String logger = source.get("loggerName").toString();
         String message = source.get("message").toString();
-        String ctx = source.get("ctx").toString();
-        boolean tmp = Boolean.parseBoolean(source.get("tmp").toString());
-        String exp = "exp";
-        String expire = getString(source, exp);
+        String ctx = getString(source, "mdc.requestContext");
+        Boolean tmp = getBoolean(source, "tmp");
+        String expire = getString(source, "exp");
 
-        this.logger.info("Constructing line ...");
         return Line.newBuilder()
                 .id(id)
                 .timestamp(timestamp)
@@ -140,6 +145,15 @@ public class ElasticSearch {
             return null;
         } else {
             return obj.toString();
+        }
+    }
+
+    private Boolean getBoolean(Map<String, Object> source, String fieldName) {
+        Object obj = source.get(fieldName);
+        if (obj == null) {
+            return null;
+        } else {
+            return Boolean.parseBoolean(obj.toString());
         }
     }
 

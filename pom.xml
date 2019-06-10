@@ -31,6 +31,26 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
+      <dependency>
+        <groupId>org.elasticsearch.client</groupId>
+        <artifactId>elasticsearch-rest-client</artifactId>
+        <version>${version.elasticSearch}</version>
+      </dependency>
+      <!--<dependency>-->
+        <!--<groupId>org.apache.httpcomponents</groupId>-->
+        <!--<artifactId>httpclient</artifactId>-->
+        <!--<version>4.5.2</version>-->
+      <!--</dependency>-->
+      <!--<dependency>-->
+        <!--<groupId>org.apache.httpcomponents</groupId>-->
+        <!--<artifactId>httpcore</artifactId>-->
+        <!--<version>4.4.5</version>-->
+      <!--</dependency>-->
+      <!--<dependency>-->
+        <!--<groupId>org.apache.httpcomponents</groupId>-->
+        <!--<artifactId>httpcomponents-core</artifactId>-->
+        <!--<version>4.4.5</version>-->
+      <!--</dependency>-->
     </dependencies>
   </dependencyManagement>
   <dependencies>
@@ -77,6 +97,12 @@
       <groupId>org.elasticsearch.client</groupId>
       <artifactId>elasticsearch-rest-high-level-client</artifactId>
       <version>${version.elasticSearch}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-core</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.projectlombok</groupId>
@@ -95,6 +121,7 @@
       <version>1.9.3</version>
     </dependency>
   </dependencies>
+
   <build>
     <plugins>
       <plugin>

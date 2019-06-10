@@ -3,13 +3,13 @@ package org.jboss.pnc.bifrost.common;
 /**
  * @author <a href="mailto:matejonnet@gmail.com">Matej Lazar</a>
  */
-public class ObjectReference<T> {
+public class Reference<T> {
     T value;
 
-    public ObjectReference() {
+    public Reference() {
     }
 
-    public ObjectReference(T initialValue) {
+    public Reference(T initialValue) {
         value = initialValue;
     }
 
