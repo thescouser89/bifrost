@@ -1,6 +1,7 @@
 package org.jboss.pnc.bifrost.common.scheduler;
 
 import org.jboss.pnc.bifrost.Config;
+import org.jboss.pnc.bifrost.common.Reference;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -13,7 +14,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 /**
@@ -67,7 +67,7 @@ public class Subscriptions {
 
         BackOffRunnable backOffRunnable = new BackOffRunnable(backOffRunnableConfig);
 
-        AtomicReference<T> lastResult = new AtomicReference<>(initialLastResult.orElse(null)); //TODO no need for atomic
+        Reference<T> lastResult = new Reference<>(initialLastResult.orElse(null));
         Runnable internalTask = () -> {
             Consumer<T> onResultInternal = result -> {
                 lastResult.set(result);

@@ -112,6 +112,10 @@ public class ElasticSearch {
             Line line = getLine(hit, last);
             onLine.accept(line);
         }
+
+        if (hitNum == 0) {
+            onLine.accept(null);
+        }
     }
 
     private Line getLine(SearchHit hit, boolean last) {

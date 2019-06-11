@@ -1,7 +1,6 @@
 package org.jboss.pnc.bifrost.endpoint;
 
 import org.jboss.logging.Logger;
-import org.jboss.pnc.bifrost.common.Reference;
 import org.jboss.pnc.bifrost.common.scheduler.Subscription;
 import org.jboss.pnc.bifrost.endpoint.provider.DataProvider;
 import org.jboss.pnc.bifrost.source.dto.Direction;
@@ -43,21 +42,26 @@ public class RestImpl implements Rest {
             Integer maxLines,
             boolean follow) {
 
-        ArrayBlockingQueue<Line> queue = new ArrayBlockingQueue(1024); //TODO
-
-        Reference<Boolean> complete = new Reference<>(false);
+        ArrayBlockingQueue<Optional<Line>> queue = new ArrayBlockingQueue(1024); //TODO
 
         Subscription subscription = new Subscription();
 
         StreamingOutput stream = outputStream -> {
             while (true) {
                 try {
-                    Writer writer = new BufferedWriter(new OutputStreamWriter(outputStream));
-                    Line line = queue.take();
-                    logger.trace("Sending line ..." + line.asString());
-                    writer.write(line.asString() + "\n");
-                    writer.flush();
-                    if (line.isLast() && follow == false) { //when follow is true, the connection must be terminated from the client side
+                    Optional<Line> maybeLine = queue.take();
+                    if (maybeLine.isPresent()) {
+                        Line line = maybeLine.get();
+                        logger.trace("Sending line: " + line.asString());
+                        Writer writer = new BufferedWriter(new OutputStreamWriter(outputStream));
+                        writer.write(line.asString() + "\n");
+                        writer.flush();
+                        if (line.isLast() && follow == false) { //when follow is true, the connection must be terminated from the client side
+                            complete(subscription, outputStream);
+                            break;
+                        }
+                    } else { //empty line indicating end of results
+                        logger.info("Closing connection, no results.");
                         complete(subscription, outputStream);
                         break;
                     }
@@ -70,54 +74,52 @@ public class RestImpl implements Rest {
                     complete(subscription, outputStream);
                     break;
                 }
-                if (complete.get()) {
-                    complete(subscription, outputStream);
-                }
             }
         };
 
         int[] receivedLines = {0};
         Consumer<Line> onLine = line -> {
             try {
-                logger.trace("Adding line to output queue: " + line.asString());
-                receivedLines[0]++;
-                queue.offer(line, 5, TimeUnit.SECONDS); //TODO
+                if (line != null) {
+                    logger.trace("Adding line to output queue: " + line.asString());
+                    queue.offer(Optional.of(line), 5, TimeUnit.SECONDS); //TODO
+                    receivedLines[0]++;
 
-                if (maxLines != null && receivedLines[0] >= maxLines) {
-                    logger.debug("Received max lines, unsubscribing ...");
+                    if (maxLines != null && receivedLines[0] >= maxLines) {
+                        logger.debug("Received max lines, unsubscribing ...");
+                        queue.offer(Optional.empty(), 5, TimeUnit.SECONDS); //TODO
+                        dataProvider.unsubscribe(subscription);
+                    }
+                }
+
+                if (follow == false && (line == null || line.isLast())) {
+                    logger.debug("Received no results, unsubscribing and closing ...");
+                    //signal connection close
+                    queue.offer(Optional.empty(), 5, TimeUnit.SECONDS); //TODO
                     dataProvider.unsubscribe(subscription);
-                    complete.set(true);
+                }
+
+                if (follow == true) {
+                    //TODO unsubscribe on broken connection and no lines
                 }
             } catch (Exception e) {
-                dataProvider.unsubscribe(subscription);
-                complete.set(true);
+                logger.warn("Unsubscribing due to the exception.", e);
+                try {
+                    queue.offer(Optional.empty(), 5, TimeUnit.SECONDS); //TODO
+                    dataProvider.unsubscribe(subscription);
+                } catch (InterruptedException e1) {
+                    logger.error("Unable to signal end of content.", e);
+                }
             }
         };
-        if (follow) {
-            dataProvider.subscribe(
-                    matchFilters,
-                    prefixFilters,
-                    Optional.ofNullable(afterLine),
-                    onLine,
-                    subscription
-            );
-        } else {
-            Consumer<Line> onLineInternal = line -> {
-                onLine.accept(line);
-                if (line.isLast()) {
-                    logger.debug("Received last line, unsubscribing ...");
-                    dataProvider.unsubscribe(subscription);
-                    complete.set(true);
-                }
-            };
-            dataProvider.subscribe(
-                    matchFilters,
-                    prefixFilters,
-                    Optional.ofNullable(afterLine),
-                    onLineInternal,
-                    subscription
-            );
-        }
+        dataProvider.subscribe(
+                matchFilters,
+                prefixFilters,
+                Optional.ofNullable(afterLine),
+                onLine,
+                subscription,
+                Optional.ofNullable(maxLines)
+        );
 
         return Response.ok(stream).build();
     }

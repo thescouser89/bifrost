@@ -54,21 +54,21 @@ public class DataProvider {
             String prefixFilters,
             Optional<Line> afterLine,
             Consumer<Line> onLine,
-            Subscription subscription) {
+            Subscription subscription,
+            Optional<Integer> maxLines) {
+
+        final int[] fetchedLines = {0};
 
         Consumer<Subscriptions.TaskParameters<Line>> searchTask = (parameters) -> {
             Optional<Line> lastResult = Optional.ofNullable(parameters.getLastResult());
-            Consumer<Line> onLineInternal = line ->  parameters.getResultConsumer().accept(line);
+            Consumer<Line> onLineInternal = line ->  {
+                fetchedLines[0]++;
+                parameters.getResultConsumer().accept(line);
+            };
             try {
-                elasticSearch.get(
-                        Strings.toMap(matchFilters),
-                        Strings.toMap(prefixFilters),
-                        lastResult,
-                        Direction.ASC,
-                        config.getDefaultSourceFetchSize(),
-                        onLineInternal);
+                readFromSource(matchFilters, prefixFilters, getFetchSize(fetchedLines[0], maxLines), lastResult, onLineInternal);
             } catch (IOException e) {
-                //TODO unsubscribe ?
+                subscriptions.unsubscribe(subscription);
                 logger.error("Error getting data from Elasticsearch.", e);
             }
         };
@@ -80,6 +80,21 @@ public class DataProvider {
                 onLine,
                 backOffRunnableConfig
         );
+    }
+
+    protected void readFromSource(
+            String matchFilters,
+            String prefixFilters,
+            int fetchSize,
+            Optional<Line> lastResult,
+            Consumer<Line> onLine) throws IOException {
+        elasticSearch.get(
+                Strings.toMap(matchFilters),
+                Strings.toMap(prefixFilters),
+                lastResult,
+                Direction.ASC,
+                fetchSize,
+                onLine);
     }
 
     /**

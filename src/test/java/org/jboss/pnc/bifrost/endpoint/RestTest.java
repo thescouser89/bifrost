@@ -26,7 +26,6 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author <a href="mailto:matejonnet@gmail.com">Matej Lazar</a>
@@ -61,44 +60,62 @@ public class RestTest {
     @Test
     public void shouldGetTextStream() throws Exception {
         int numLines = 10;
+        List<Line> lines = LineProducer.getLines(numLines, "xx");
+        dataProvider.addAllLines(lines);
+        List<String> receivedLines = new ArrayList<>();
+
+        Client client = ClientBuilder.newClient();
+        WebTarget target = client.target("http://localhost:8081/text");
+        ResteasyWebTarget rtarget = (ResteasyWebTarget) target;
+        rtarget.setChunked(true);
+
+        Invocation.Builder request = rtarget.request(MediaType.TEXT_PLAIN);
+        Invocation invocation = request.buildGet();
+        InputStream inputStream = invocation.invoke(InputStream.class);
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+        logger.info("Reading stream ...");
+        try {
+            for (String line; (line = reader.readLine()) != null; ) {
+                logger.info("Log line: " + line);
+                receivedLines.add(line);
+            }
+        } catch (Exception e) {
+            logger.error("Client error: ", e);
+        }
+
+        Assertions.assertEquals(10, receivedLines.size());
+    }
+
+    @Test
+    public void shouldGetTextStreamWithMaxLinesLimit() throws Exception {
+        int numLines = 10;
         Semaphore semaphore = new Semaphore(0);
         List<Line> lines = LineProducer.getLines(numLines, "xx");
         dataProvider.addAllLines(lines);
         List<String> receivedLines = new ArrayList<>();
 
-        Thread thread = new Thread(() -> {
-            Client client = ClientBuilder.newClient();
-            WebTarget target = client.target("http://localhost:8081/text");
-            ResteasyWebTarget rtarget = (ResteasyWebTarget) target;
-            rtarget.setChunked(true);
+        Client client = ClientBuilder.newClient();
+        int maxLines = 2;
+        WebTarget target = client.target("http://localhost:8081/text?maxLines=" + maxLines);
+        ResteasyWebTarget rtarget = (ResteasyWebTarget) target;
+        rtarget.setChunked(true);
 
-            Invocation.Builder request = rtarget.request(MediaType.TEXT_PLAIN);
-            Invocation invocation = request.buildGet();
-            InputStream inputStream = invocation.invoke(InputStream.class);
+        Invocation.Builder request = rtarget.request(MediaType.TEXT_PLAIN);
+        Invocation invocation = request.buildGet();
+        InputStream inputStream = invocation.invoke(InputStream.class);
 
-            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-            logger.info("Reading stream ...");
-            try {
-                for (String line; (line = reader.readLine()) != null; ) {
-                    logger.info("Log line: " + line);
-                    receivedLines.add(line);
-                    if (receivedLines.size() == numLines) {
-                        semaphore.release();
-                    }
-                }
-            } catch (Exception e) {
-                logger.error("Client error: ", e);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+        logger.info("Reading stream ...");
+        try {
+            for (String line; (line = reader.readLine()) != null; ) {
+                logger.info("Log line: " + line);
+                receivedLines.add(line);
             }
-            logger.info("Request processing ended.");
-        });
-        thread.start();
-
-        boolean acquired = semaphore.tryAcquire(15, TimeUnit.SECONDS);
-
-        Assertions.assertTrue(acquired);
-
-        logger.info("done.");
+        } catch (Exception e) {
+            logger.error("Client error: ", e);
+        }
+        Assertions.assertEquals(maxLines, receivedLines.size());
     }
-
 
 }
