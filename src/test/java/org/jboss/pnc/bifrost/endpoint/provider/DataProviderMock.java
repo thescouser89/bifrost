@@ -1,7 +1,5 @@
 package org.jboss.pnc.bifrost.endpoint.provider;
 
-import org.jboss.pnc.bifrost.common.scheduler.Subscription;
-import org.jboss.pnc.bifrost.common.scheduler.Subscriptions;
 import org.jboss.pnc.bifrost.mock.LineProducer;
 import org.jboss.pnc.bifrost.source.dto.Direction;
 import org.jboss.pnc.bifrost.source.dto.Line;
@@ -9,6 +7,7 @@ import org.jboss.pnc.bifrost.source.dto.Line;
 import javax.annotation.Priority;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Alternative;
+import java.io.IOException;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
@@ -32,6 +31,7 @@ public class DataProviderMock extends DataProvider {
         super();
     }
 
+    @Override
     public void get(
             String matchFilters,
             String prefixFilters,
@@ -44,33 +44,20 @@ public class DataProviderMock extends DataProvider {
         );
     }
 
-    public void subscribe(String matchFilters,
+    @Override
+    protected void readFromSource(
+            String matchFilters,
             String prefixFilters,
-            Optional<Line> afterLine,
-            Consumer<Line> onLine,
-            Subscription subscription) {
+            int fetchSize,
+            Optional<Line> lastResult,
+            Consumer<Line> onLine) throws IOException {
 
-        Consumer<Subscriptions.TaskParameters<Line>> searchTask =  (parameters) -> {
-                Optional<Line> lastResult = Optional.ofNullable(parameters.getLastResult());
-            for (int i = 0; i < 3; i++) {
-                Line line = lines.pop();
-                parameters.getResultConsumer().accept(line);
-            }
-//            try {
-//                TimeUnit.MILLISECONDS.sleep(200);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-        };
-
-        subscriptions.subscribe(
-                subscription,
-                searchTask,
-                afterLine,
-                onLine,
-                backOffRunnableConfig
-        );
+        for (int i = 0; i < fetchSize; i++) {
+            Line line = lines.pop();
+            onLine.accept(line);
+        }
     }
+
 
     public void addLine(Line line) {
         lines.add(line);

@@ -42,7 +42,7 @@ public class MethodSubscribe extends MethodBase implements Method<SubscribeDto> 
             responseConsumer.accept(line);
         };
 
-        dataProvider.subscribe(matchFilters, prefixFilters, Optional.empty(), onLine, subscription);
+        dataProvider.subscribe(matchFilters, prefixFilters, Optional.empty(), onLine, subscription, Optional.empty());
 
         return new SubscribeResult(Result.Status.OK, subscription.getTopic());
     }
