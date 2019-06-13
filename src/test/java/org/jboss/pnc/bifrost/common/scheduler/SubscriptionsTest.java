@@ -36,7 +36,7 @@ public class SubscriptionsTest {
             resultsQueue.add(line);
         };
 
-        Subscription subscription = new Subscription("1", "A");
+        Subscription subscription = new Subscription("1", "A", () -> {});
 
         Consumer<Subscriptions.TaskParameters<String>> task = (parameters) -> {
             for (int i = 0; i < 5; i++) {

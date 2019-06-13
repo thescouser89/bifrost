@@ -68,7 +68,7 @@ public class DataProvider {
             try {
                 readFromSource(matchFilters, prefixFilters, getFetchSize(fetchedLines[0], maxLines), lastResult, onLineInternal);
             } catch (IOException e) {
-                subscriptions.unsubscribe(subscription);
+                subscriptions.unsubscribe(subscription, Subscriptions.UnsubscribeReason.NO_DATA_FROM_SOURCE);
                 logger.error("Error getting data from Elasticsearch.", e);
             }
         };

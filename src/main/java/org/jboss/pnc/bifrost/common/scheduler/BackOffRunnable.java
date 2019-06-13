@@ -33,9 +33,9 @@ public class BackOffRunnable implements Runnable {
         if (lastResult == 0L) {
             lastResult = System.currentTimeMillis() - config.getDelayMillis();
         }
+        validateTimeout();
         if (backOffNextCycles > 0L) {
             backOffNextCycles--;
-            validateTimeout();
             logger.trace("Cycle skipped.");
             return;
         }

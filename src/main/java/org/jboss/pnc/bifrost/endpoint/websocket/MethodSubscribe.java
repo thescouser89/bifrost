@@ -1,13 +1,19 @@
 package org.jboss.pnc.bifrost.endpoint.websocket;
 
+import com.thetransactioncompany.jsonrpc2.JSONRPC2Notification;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.beanutils.BeanUtils;
+import org.jboss.logging.Logger;
 import org.jboss.pnc.bifrost.common.scheduler.Subscription;
 import org.jboss.pnc.bifrost.endpoint.provider.DataProvider;
 import org.jboss.pnc.bifrost.source.dto.Line;
 
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
+import javax.websocket.SendHandler;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -16,6 +22,15 @@ import java.util.function.Consumer;
  */
 @Dependent
 public class MethodSubscribe extends MethodBase implements Method<SubscribeDto> {
+
+    private Logger logger = Logger.getLogger(MethodSubscribe.class);
+
+    private SendHandler responseHandler = result -> {
+        if (!result.isOK()) {
+            logger.error("Error sending command response.", result.getException());
+        }
+    };
+
 
     @Inject
     DataProvider dataProvider;
@@ -31,11 +46,16 @@ public class MethodSubscribe extends MethodBase implements Method<SubscribeDto> 
     }
 
     @Override
-    public Result apply(SubscribeDto methodSubscribeIn, Consumer<Line> responseConsumer) {
-        String matchFilters = methodSubscribeIn.getMatchFilters();
-        String prefixFilters = methodSubscribeIn.getPrefixFilters();
+    public Result apply(SubscribeDto subscribeDto, Consumer<Line> responseConsumer) {
+        String matchFilters = subscribeDto.getMatchFilters();
+        String prefixFilters = subscribeDto.getPrefixFilters();
 
-        Subscription subscription = new Subscription(getSession().getId(), methodSubscribeIn.getMatchFilters() + methodSubscribeIn.getPrefixFilters());
+        String topic = subscribeDto.getMatchFilters() + subscribeDto.getPrefixFilters();
+        Subscription subscription = new Subscription(
+                getSession().getId(),
+                topic,
+                () -> sendUnsubscribedNotification(topic)
+        );
 
         Consumer<Line> onLine = line -> {
             line.setSubscriptionTopic(subscription.getTopic());
@@ -47,16 +67,27 @@ public class MethodSubscribe extends MethodBase implements Method<SubscribeDto> 
         return new SubscribeResult(Result.Status.OK, subscription.getTopic());
     }
 
+    private void sendUnsubscribedNotification(String topic) {
+        UnSubscribedDto unSubscribedDto = new UnSubscribedDto();
+        unSubscribedDto.setSubscriptionTopic(topic);
+
+        try {
+            Map<String, Object> parameterMap = (Map) BeanUtils.describe(unSubscribedDto);
+            JSONRPC2Notification notification = new JSONRPC2Notification("UNSUBSCRIBED", parameterMap);
+            String jsonString = notification.toJSONString();
+            getSession().getAsyncRemote().sendText(jsonString, responseHandler);
+        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            logger.error("Cannot prepare unsubscribed message.", e);
+        }
+    }
+
     @Getter
     @Setter
     public static class SubscribeResult extends Result {
         String subscriptionTopic;
-
         public SubscribeResult(Status status, String subscriptionTopic) {
             super(status);
             this.subscriptionTopic = subscriptionTopic;
         }
-
-
     }
 }

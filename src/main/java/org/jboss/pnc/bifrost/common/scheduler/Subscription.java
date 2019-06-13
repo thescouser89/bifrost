@@ -11,14 +11,21 @@ public class Subscription {
 
     private final String topic;
 
-    public Subscription() {
+    /**
+     * Run when subscription is canceled/unsubscribed internally. Eg. on {@link BackOffRunnable} timeout.
+     */
+    private Runnable onUnsubscribe;
+
+    public Subscription(Runnable onUnsubscribe) {
         clientId = UUID.randomUUID().toString();
         topic = "";
+        this.onUnsubscribe = onUnsubscribe;
     }
 
-    public Subscription(String clientId, String topic) {
+    public Subscription(String clientId, String topic, Runnable onUnsubscribe) {
         this.clientId = clientId;
         this.topic = topic;
+        this.onUnsubscribe = onUnsubscribe;
     }
 
     public String getClientId() {
@@ -48,5 +55,9 @@ public class Subscription {
         int result = clientId.hashCode();
         result = 31 * result + topic.hashCode();
         return result;
+    }
+
+    public void runOnUnsubscribe() {
+        onUnsubscribe.run();
     }
 }

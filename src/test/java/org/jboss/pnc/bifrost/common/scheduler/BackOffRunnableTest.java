@@ -1,17 +1,19 @@
 package org.jboss.pnc.bifrost.common.scheduler;
 
-import io.quarkus.test.junit.QuarkusTest;
+import org.jboss.logging.Logger;
 import org.jboss.pnc.bifrost.mock.BackOffRunnableConfigFactory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author <a href="mailto:matejonnet@gmail.com">Matej Lazar</a>
  */
-@QuarkusTest
 public class BackOffRunnableTest {
+
+    private Logger logger = Logger.getLogger(BackOffRunnableTest.class);
 
     BackOffRunnableConfig config = BackOffRunnableConfigFactory
             .get(100L, 5, 60000, 100L);
@@ -93,5 +95,34 @@ public class BackOffRunnableTest {
         skip.getAndIncrement();
 
         Assertions.assertEquals(3, run.get());
+    }
+
+    @Test
+    public void shouldCancelTheJobAfterTimeoutWhenNoresults() throws InterruptedException {
+        BackOffRunnableConfig config = BackOffRunnableConfigFactory
+                .get(100L, 0, 500, 100L);
+
+        AtomicInteger run = new AtomicInteger(0);
+        AtomicInteger cancel = new AtomicInteger(0);
+
+        BackOffRunnable backOffRunnable = new BackOffRunnable(config);
+        Runnable task = () -> {
+            if (run.get() == 0) {
+                backOffRunnable.receivedResult();
+            }
+            int loop = run.incrementAndGet();
+            logger.info("Running: " + loop);
+        };
+
+        backOffRunnable.setRunnable(task);
+        backOffRunnable.setCancelHook(() -> cancel.incrementAndGet());
+        backOffRunnable.run();
+        backOffRunnable.run();
+        TimeUnit.MILLISECONDS.sleep(700);
+        backOffRunnable.run();
+        Assertions.assertEquals(3, run.get());
+        Assertions.assertEquals(1, cancel.get());
+
+
     }
 }

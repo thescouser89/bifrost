@@ -80,17 +80,24 @@ public class Subscriptions {
         };
 
         backOffRunnable.setRunnable(internalTask);
-        backOffRunnable.setCancelHook(() -> unsubscribe(subscription));
+        backOffRunnable.setCancelHook(() -> unsubscribe(subscription, UnsubscribeReason.NO_DATA_FROM_SOURCE));
 
         ScheduledFuture<?> scheduledFuture = executor.scheduleAtFixedRate(backOffRunnable, 0, backOffRunnableConfig.getPollIntervalMillis(), TimeUnit.MILLISECONDS);
         subscriptions.put(subscription, scheduledFuture);
     }
 
-    public void unsubscribe(Subscription subscription) {
+    public void unsubscribe(Subscription subscription, UnsubscribeReason reason) {
         ScheduledFuture scheduledFuture = subscriptions.remove(subscription);
+        if (UnsubscribeReason.NO_DATA_FROM_SOURCE.equals(reason)) {
+            subscription.runOnUnsubscribe();
+        }
         if (scheduledFuture != null) {
             scheduledFuture.cancel(true);
         }
+    }
+
+    public void unsubscribe(Subscription subscription) {
+        unsubscribe(subscription, UnsubscribeReason.OTHER);
     }
 
     public void unsubscribeAll() {
@@ -100,6 +107,10 @@ public class Subscriptions {
 
     public Set<Subscription> getAll() {
         return Collections.unmodifiableSet(subscriptions.keySet());
+    }
+
+    public enum UnsubscribeReason {
+        NO_DATA_FROM_SOURCE, OTHER;
     }
 
     public static class TaskParameters<T> {
