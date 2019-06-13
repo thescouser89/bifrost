@@ -27,7 +27,10 @@ public class MethodUnSubscribe extends MethodBase implements Method<UnSubscribeD
 
     @Override
     public Result apply(UnSubscribeDto methodUnSubscribeIn, Consumer<Line> responseConsumer) {
-        Subscription subscription = new Subscription(getSession().getId(), methodUnSubscribeIn.getSubscriptionTopic());
+        Subscription subscription = new Subscription(
+                getSession().getId(),
+                methodUnSubscribeIn.getSubscriptionTopic(),
+                () -> {});
         dataProvider.unsubscribe(subscription);
         return new Result(Result.Status.OK);
     }

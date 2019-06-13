@@ -1,7 +1,9 @@
 package org.jboss.pnc.bifrost.endpoint;
 
 import org.jboss.logging.Logger;
+import org.jboss.pnc.bifrost.common.Reference;
 import org.jboss.pnc.bifrost.common.scheduler.Subscription;
+import org.jboss.pnc.bifrost.common.scheduler.TimeoutExecutor;
 import org.jboss.pnc.bifrost.endpoint.provider.DataProvider;
 import org.jboss.pnc.bifrost.source.dto.Direction;
 import org.jboss.pnc.bifrost.source.dto.Line;
@@ -19,6 +21,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
@@ -33,6 +39,8 @@ public class RestImpl implements Rest {
     @Inject
     DataProvider dataProvider;
 
+    ScheduledExecutorService executorService = Executors.newScheduledThreadPool(4);
+
     @Override
     public Response getAllLines(
             String matchFilters,
@@ -44,9 +52,36 @@ public class RestImpl implements Rest {
 
         ArrayBlockingQueue<Optional<Line>> queue = new ArrayBlockingQueue(1024); //TODO
 
-        Subscription subscription = new Subscription();
+        Runnable addEndOfDataMarker = () -> {
+            try {
+                queue.offer(Optional.empty(), 5, TimeUnit.SECONDS); //TODO
+            } catch (InterruptedException e) {
+                logger.error("Cannot add end of data marker.", e);
+            }
+        };
+
+        Subscription subscription = new Subscription(addEndOfDataMarker);
 
         StreamingOutput stream = outputStream -> {
+
+            Reference<TimeoutExecutor.Task> task = new Reference<>();
+            if (follow) {
+                TimeoutExecutor timeoutExecutor = new TimeoutExecutor(new ScheduledThreadPoolExecutor(4)); //TODO
+                Runnable sendProbe = () -> {
+                    Writer writer = new BufferedWriter(new OutputStreamWriter(outputStream));
+                    try {
+                        writer.write(".");
+                        writer.flush();
+                    } catch (IOException e) {
+                        task.get().cancel();
+                        logger.warn("Cannot send connection probe, client might closed the connection.", e);
+                        complete(subscription, outputStream);
+                    }
+
+                };
+                task.set(timeoutExecutor.submit(sendProbe, 15, TimeUnit.MILLISECONDS));
+            }
+
             while (true) {
                 try {
                     Optional<Line> maybeLine = queue.take();
@@ -57,20 +92,25 @@ public class RestImpl implements Rest {
                         writer.write(line.asString() + "\n");
                         writer.flush();
                         if (line.isLast() && follow == false) { //when follow is true, the connection must be terminated from the client side
+                            task.ifPresent(t -> t.cancel());
                             complete(subscription, outputStream);
                             break;
                         }
+                        task.ifPresent(t -> t.update());
                     } else { //empty line indicating end of results
                         logger.info("Closing connection, no results.");
+                        task.ifPresent(t -> t.cancel());
                         complete(subscription, outputStream);
                         break;
                     }
                 } catch (IOException e) {
                     logger.warn("Cannot write output. Client might closed the connection. Unsubscribing ... " + e.getMessage());
+                    task.ifPresent(t -> t.cancel());
                     complete(subscription, outputStream);
                     break;
                 } catch (InterruptedException e) {
                     logger.error("Cannot read from queue.", e);
+                    task.ifPresent(t -> t.cancel());
                     complete(subscription, outputStream);
                     break;
                 }
@@ -87,29 +127,23 @@ public class RestImpl implements Rest {
 
                     if (maxLines != null && receivedLines[0] >= maxLines) {
                         logger.debug("Received max lines, unsubscribing ...");
-                        queue.offer(Optional.empty(), 5, TimeUnit.SECONDS); //TODO
+                        addEndOfDataMarker.run();
                         dataProvider.unsubscribe(subscription);
                     }
+                } else {
+                    logger.debug("Received null line.");
                 }
 
                 if (follow == false && (line == null || line.isLast())) {
-                    logger.debug("Received no results, unsubscribing and closing ...");
+                    logger.debug("Received last line or no results, unsubscribing and closing ...");
                     //signal connection close
-                    queue.offer(Optional.empty(), 5, TimeUnit.SECONDS); //TODO
+                    addEndOfDataMarker.run();
                     dataProvider.unsubscribe(subscription);
-                }
-
-                if (follow == true) {
-                    //TODO unsubscribe on broken connection and no lines
                 }
             } catch (Exception e) {
                 logger.warn("Unsubscribing due to the exception.", e);
-                try {
-                    queue.offer(Optional.empty(), 5, TimeUnit.SECONDS); //TODO
-                    dataProvider.unsubscribe(subscription);
-                } catch (InterruptedException e1) {
-                    logger.error("Unable to signal end of content.", e);
-                }
+                addEndOfDataMarker.run();
+                dataProvider.unsubscribe(subscription);
             }
         };
         dataProvider.subscribe(
@@ -120,8 +154,18 @@ public class RestImpl implements Rest {
                 subscription,
                 Optional.ofNullable(maxLines)
         );
-
         return Response.ok(stream).build();
+    }
+
+    private ScheduledFuture resetConnectionAlive(ScheduledFuture<?> ca) {
+        if (ca != null) {
+            ca.cancel(false);
+        }
+        return executorService.schedule(verifyConnectionAlive(), 30, TimeUnit.SECONDS); //TODO
+    }
+
+    private Runnable verifyConnectionAlive() {
+        return null;
     }
 
     private void complete(Subscription subscription, OutputStream outputStream) {
