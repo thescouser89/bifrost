@@ -1,5 +1,6 @@
 package org.jboss.pnc.bifrost.endpoint.websocket;
 
+import com.thetransactioncompany.jsonrpc2.JSONRPC2Notification;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2ParseException;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Request;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
@@ -19,9 +20,8 @@ import javax.websocket.RemoteEndpoint;
 import javax.websocket.SendHandler;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
-import java.io.ByteArrayOutputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.ByteBuffer;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -99,7 +99,7 @@ public class Socket {
             String err = "Unsupported method " + request.getMethod();
             logger.warn(err);
             Result result = new Result(Result.Status.ERROR, err);
-            sendResult(remote, request, result);
+            sendResult(remote, request.getID(), result);
             return;
         }
         Method method = maybeMethod.get();
@@ -114,7 +114,7 @@ public class Socket {
             String err = "Cannot construct parameters for method: " + request.getMethod() + ".";
             logger.error(err, e);
             Result result = new Result(Result.Status.ERROR, err + e.getMessage());
-            sendResult(remote, request, result);
+            sendResult(remote, request.getID(), result);
             return;
         }
 
@@ -133,9 +133,9 @@ public class Socket {
     }
 
     private void sendLine(RemoteEndpoint.Async remote, Line line) {
-        logger.trace("Sending line as binary message: " + line.asString());
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        jsonb.toJson(line, byteArrayOutputStream); // JsonbConfig.ENCODING default is UTF-8
-        remote.sendBinary(ByteBuffer.wrap(byteArrayOutputStream.toByteArray()), lineResponseHandler);
+        logger.trace("Sending line as text message: " + line.asString());
+        JSONRPC2Notification jsonrpc2Message = new JSONRPC2Notification("NEW-LINES", Collections.singletonList(line));
+        remote.sendText(jsonrpc2Message.toJSONString(), lineResponseHandler);
     }
+
 }

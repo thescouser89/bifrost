@@ -1,10 +1,11 @@
 package org.jboss.pnc.bifrost.endpoint.websocket;
 
+import com.thetransactioncompany.jsonrpc2.JSONRPC2Message;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2ParseException;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Request;
-import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 import io.quarkus.test.common.http.TestHTTPResource;
 import io.quarkus.test.junit.QuarkusTest;
+import net.minidev.json.JSONObject;
 import org.apache.commons.beanutils.BeanUtils;
 import org.jboss.logging.Logger;
 import org.jboss.pnc.bifrost.endpoint.provider.DataProviderMock;
@@ -14,6 +15,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
+import javax.json.bind.Jsonb;
+import javax.json.bind.JsonbBuilder;
 import javax.websocket.ClientEndpoint;
 import javax.websocket.ContainerProvider;
 import javax.websocket.OnMessage;
@@ -22,6 +25,7 @@ import javax.websocket.Session;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -95,7 +99,7 @@ public class SubscriptionTest {
             JSONRPC2Request request = new JSONRPC2Request(methodSubscribe.getName(), parameterMap, Integer.valueOf(2));
             session.getAsyncRemote().sendText(request.toJSONString());
 
-            Result result = RESULTS.poll(10, TimeUnit.SECONDS);
+            Result result = RESULTS.poll(5, TimeUnit.SECONDS);
             Assertions.assertEquals(Result.Status.OK, result.getStatus());
 
             //should receive 5 lines
@@ -127,9 +131,16 @@ public class SubscriptionTest {
         void message(String message, Session session) {
             logger.debug("Client received: " + message);
             try {
-                Map<String,String> resultMap = (Map)JSONRPC2Response.parse(message).getResult();
-                Result result = new Result(Result.Status.valueOf(resultMap.get("status")), resultMap.get("message"));
-                RESULTS.add(result);
+                JSONObject object = JSONRPC2Message.parse(message).toJSONObject();
+                String method = object.getAsString("method");
+                Map<String,String> resultMap = (Map) object.get("result");
+                if ("NEW-LINES".equals(method)) {
+                    String jsonLines = object.getAsString("params");
+                    LINES.add(parseLines(jsonLines).get(0));
+                } else if (resultMap != null) {
+                    Result result = new Result(Result.Status.valueOf(resultMap.get("status")), resultMap.get("message"));
+                    RESULTS.add(result);
+                }
             } catch (JSONRPC2ParseException e) {
                 logger.error(e);
             }
@@ -145,4 +156,10 @@ public class SubscriptionTest {
         }
     }
 
+
+    private static List<Line> parseLines(String json) {
+        Jsonb jsonb = JsonbBuilder.create();
+        Line[] lines = jsonb.fromJson(json, Line[].class);
+        return Arrays.asList(lines);
+    }
 }
