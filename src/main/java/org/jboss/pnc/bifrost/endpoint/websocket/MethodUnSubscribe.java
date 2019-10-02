@@ -32,6 +32,6 @@ public class MethodUnSubscribe extends MethodBase implements Method<UnSubscribeD
                 methodUnSubscribeIn.getSubscriptionTopic(),
                 () -> {});
         dataProvider.unsubscribe(subscription);
-        return new Result(Result.Status.OK);
+        return new OkResult();
     }
 }

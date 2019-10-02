@@ -1,11 +1,8 @@
 package org.jboss.pnc.bifrost.endpoint.websocket;
 
-import com.thetransactioncompany.jsonrpc2.JSONRPC2Message;
-import com.thetransactioncompany.jsonrpc2.JSONRPC2ParseException;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Request;
 import io.quarkus.test.common.http.TestHTTPResource;
 import io.quarkus.test.junit.QuarkusTest;
-import net.minidev.json.JSONObject;
 import org.apache.commons.beanutils.BeanUtils;
 import org.jboss.logging.Logger;
 import org.jboss.pnc.bifrost.endpoint.provider.DataProviderMock;
@@ -13,6 +10,7 @@ import org.jboss.pnc.bifrost.mock.LineProducer;
 import org.jboss.pnc.bifrost.source.dto.Line;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.platform.commons.util.StringUtils;
 
 import javax.inject.Inject;
 import javax.json.bind.Jsonb;
@@ -65,7 +63,7 @@ public class SubscriptionTest {
 
             //should receive RCP response
             Result response = RESULTS.poll(10, TimeUnit.SECONDS);
-            Assertions.assertEquals(Result.Status.OK, response.getStatus());
+            Assertions.assertNotNull(response);
 
             //should receive 5 lines
             int received = 0;
@@ -100,16 +98,18 @@ public class SubscriptionTest {
             session.getAsyncRemote().sendText(request.toJSONString());
 
             Result result = RESULTS.poll(5, TimeUnit.SECONDS);
-            Assertions.assertEquals(Result.Status.OK, result.getStatus());
+            Assertions.assertTrue(result instanceof SubscribeResultDto);
 
             //should receive 5 lines
             int received = 0;
             while (received < 5) {
                 Line receivedLine = LINES.poll(10, TimeUnit.SECONDS);
-                logger.debug("Received line notification: " + receivedLine.getMessage());
                 if (receivedLine == null) {
                     break;
                 }
+                String message = receivedLine.getMessage();
+                logger.debug("Received line notification: " + message);
+                Assertions.assertTrue(StringUtils.isNotBlank(message));
                 received++;
             }
             session.close();
@@ -130,19 +130,29 @@ public class SubscriptionTest {
         @OnMessage
         void message(String message, Session session) {
             logger.debug("Client received: " + message);
-            try {
-                JSONObject object = JSONRPC2Message.parse(message).toJSONObject();
-                String method = object.getAsString("method");
-                Map<String,String> resultMap = (Map) object.get("result");
-                if ("NEW-LINES".equals(method)) {
-                    String jsonLines = object.getAsString("params");
-                    LINES.add(parseLines(jsonLines).get(0));
-                } else if (resultMap != null) {
-                    Result result = new Result(Result.Status.valueOf(resultMap.get("status")), resultMap.get("message"));
-                    RESULTS.add(result);
+            Jsonb jsonb = JsonbBuilder.create();
+
+            Map<String, Object> rpcResponse = jsonb.fromJson(
+                    message,
+                    Map.class);
+            Map<String, Object> resultMap = (Map<String, Object>) rpcResponse.get("result");
+
+            String type = (String) resultMap.get("type");
+            if (OkResult.class.getCanonicalName().equals(type)) {
+                OkResult result = new OkResult();
+                RESULTS.add(result);
+            } else if (SubscribeResultDto.class.getCanonicalName().equals(type)) {
+                SubscribeResultDto result = new SubscribeResultDto((String) resultMap.get("value"));
+                RESULTS.add(result);
+            } else if (LineResult.class.getCanonicalName().equals(type)) {
+                    Line line = new Line();
+                try {
+                    BeanUtils.populate(line, (Map<String, ? extends Object>) resultMap.get("value"));
+                } catch (Exception e) {
+                    logger.error("Unable to populate line bean.", e);
+                    e.printStackTrace();
                 }
-            } catch (JSONRPC2ParseException e) {
-                logger.error(e);
+                LINES.add(line);
             }
         }
 

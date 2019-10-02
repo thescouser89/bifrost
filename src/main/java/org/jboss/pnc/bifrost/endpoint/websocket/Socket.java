@@ -1,17 +1,14 @@
 package org.jboss.pnc.bifrost.endpoint.websocket;
 
-import com.thetransactioncompany.jsonrpc2.JSONRPC2Notification;
+import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2ParseException;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Request;
-import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 import org.apache.commons.beanutils.BeanUtils;
 import org.jboss.logging.Logger;
 import org.jboss.pnc.bifrost.common.scheduler.Subscriptions;
 import org.jboss.pnc.bifrost.source.dto.Line;
 
 import javax.inject.Inject;
-import javax.json.bind.Jsonb;
-import javax.json.bind.JsonbBuilder;
 import javax.websocket.OnClose;
 import javax.websocket.OnError;
 import javax.websocket.OnMessage;
@@ -21,7 +18,6 @@ import javax.websocket.SendHandler;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collections;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -38,8 +34,6 @@ public class Socket {
 
     @Inject
     MethodFactory methodFactory;
-
-    private final Jsonb jsonb = JsonbBuilder.create();
 
     private SendHandler commandResponseHandler = result -> {
         if (!result.isOK()) {
@@ -88,8 +82,7 @@ public class Socket {
         } catch (JSONRPC2ParseException e) {
             String err = "Cannot parse request.";
             logger.error(err, e);
-            Result result = new Result(Result.Status.ERROR, err + e.getMessage());
-            sendResult(remote, "undefined", result);
+            sendErrorResult(remote, "undefined", new JSONRPC2Error(-11, err + e.getMessage(), null));
             return;
         }
         Object requestId = request.getID();
@@ -98,8 +91,7 @@ public class Socket {
         if (!maybeMethod.isPresent()) {
             String err = "Unsupported method " + request.getMethod();
             logger.warn(err);
-            Result result = new Result(Result.Status.ERROR, err);
-            sendResult(remote, request.getID(), result);
+            sendErrorResult(remote, requestId, new JSONRPC2Error(-12, err, null));
             return;
         }
         Method method = maybeMethod.get();
@@ -113,29 +105,38 @@ public class Socket {
         } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
             String err = "Cannot construct parameters for method: " + request.getMethod() + ".";
             logger.error(err, e);
-            Result result = new Result(Result.Status.ERROR, err + e.getMessage());
-            sendResult(remote, request.getID(), result);
+            sendErrorResult(remote, requestId, new JSONRPC2Error(-13, err + e.getMessage(), null));
             return;
         }
 
-        Consumer<Line> lineConsumer = line -> sendLine(remote, line);
+        Consumer<Line> lineConsumer = line -> sendLine(remote, line, requestId);
 
         Result result = method.apply(methodParameter, lineConsumer);
         logger.debug("Method invoked, result: " + result);
         sendResult(remote, requestId, result);
     }
 
-    private void sendResult(RemoteEndpoint.Async remote, Object requestId, Result result) {
-        JSONRPC2Response jsonrpc2Response = new JSONRPC2Response(result, requestId);
-        String responseString = jsonrpc2Response.toJSONString();
-        remote.sendText(responseString, commandResponseHandler);
-        logger.debug("Text response sent: " + responseString );
+    private void sendErrorResult(RemoteEndpoint.Async remote, Object requestId, JSONRPC2Error error) {
+        JsonbJSONRPC2Response jsonrpc2Response = new JsonbJSONRPC2Response(error, requestId);
+
+        sendResponse(remote, jsonrpc2Response);
     }
 
-    private void sendLine(RemoteEndpoint.Async remote, Line line) {
+    private void sendResult(RemoteEndpoint.Async remote, Object requestId, Result result) {
+        JsonbJSONRPC2Response jsonrpc2Response = new JsonbJSONRPC2Response(result, requestId);
+        sendResponse(remote, jsonrpc2Response);
+    }
+
+    private void sendResponse(RemoteEndpoint.Async remote, JsonbJSONRPC2Response jsonrpc2Response) {
+        String responseString = jsonrpc2Response.toJSONString();
+        remote.sendText(responseString, commandResponseHandler);
+        logger.debug("Text response sent: " + responseString);
+    }
+
+    private void sendLine(RemoteEndpoint.Async remote, Line line, Object requestId) {
         logger.trace("Sending line as text message: " + line.asString());
-        JSONRPC2Notification jsonrpc2Message = new JSONRPC2Notification("NEW-LINES", Collections.singletonList(line));
-        remote.sendText(jsonrpc2Message.toJSONString(), lineResponseHandler);
+        JsonbJSONRPC2Response jsonrpc2Response = new JsonbJSONRPC2Response(new LineResult(line), requestId);
+        remote.sendText(jsonrpc2Response.toJSONString(), lineResponseHandler);
     }
 
 }

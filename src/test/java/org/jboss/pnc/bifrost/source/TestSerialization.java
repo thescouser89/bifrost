@@ -2,6 +2,8 @@ package org.jboss.pnc.bifrost.source;
 
 import io.quarkus.arc.ParameterizedTypeImpl;
 import org.jboss.logging.Logger;
+import org.jboss.pnc.bifrost.endpoint.websocket.Result;
+import org.jboss.pnc.bifrost.endpoint.websocket.SubscribeResultDto;
 import org.jboss.pnc.bifrost.mock.LineProducer;
 import org.jboss.pnc.bifrost.source.dto.Line;
 import org.junit.jupiter.api.Assertions;
@@ -47,6 +49,22 @@ public class TestSerialization {
         List<Line> deserializedLines = jsonb.fromJson(jsonLines, new ParameterizedTypeImpl(List.class, Line.class));
         Assertions.assertEquals(3, deserializedLines.size());
         Assertions.assertEquals("abc123", deserializedLines.get(0).getCtx());
+    }
+
+    @Test
+    public void shouldSerializeAndDeserializeSubscriptionResult() {
+        JsonbConfig config = new JsonbConfig().withFormatting(true);
+        Jsonb jsonb = JsonbBuilder.create(config);
+
+        String topic = "myTopic";
+        Result result = new SubscribeResultDto(topic);
+
+        String json = jsonb.toJson(result);
+        logger.info(json);
+        System.out.println(json);
+
+        SubscribeResultDto fromJson = jsonb.fromJson(json, SubscribeResultDto.class);
+        Assertions.assertEquals(topic, fromJson.getValue());
     }
 
 
