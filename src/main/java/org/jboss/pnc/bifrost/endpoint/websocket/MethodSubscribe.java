@@ -1,8 +1,6 @@
 package org.jboss.pnc.bifrost.endpoint.websocket;
 
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Notification;
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.beanutils.BeanUtils;
 import org.jboss.logging.Logger;
 import org.jboss.pnc.bifrost.common.scheduler.Subscription;
@@ -64,7 +62,7 @@ public class MethodSubscribe extends MethodBase implements Method<SubscribeDto> 
 
         dataProvider.subscribe(matchFilters, prefixFilters, Optional.empty(), onLine, subscription, Optional.empty());
 
-        return new SubscribeResult(Result.Status.OK, subscription.getTopic());
+        return new SubscribeResultDto(subscription.getTopic());
     }
 
     private void sendUnsubscribedNotification(String topic) {
@@ -81,13 +79,4 @@ public class MethodSubscribe extends MethodBase implements Method<SubscribeDto> 
         }
     }
 
-    @Getter
-    @Setter
-    public static class SubscribeResult extends Result {
-        String subscriptionTopic;
-        public SubscribeResult(Status status, String subscriptionTopic) {
-            super(status);
-            this.subscriptionTopic = subscriptionTopic;
-        }
-    }
 }

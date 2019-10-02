@@ -1,34 +1,27 @@
 package org.jboss.pnc.bifrost.endpoint.websocket;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
-
 /**
  * @author <a href="mailto:matejonnet@gmail.com">Matej Lazar</a>
  */
-@Getter
-@Setter
-@ToString
-public class Result {
+public abstract class Result<T> {
 
-    private Status status;
+    String type;
 
-    private String message;
+    T value;
 
-    public Result() {
+    public String getType() {
+        if (type != null) {
+            return type;
+        } else {
+            return this.getClass().getCanonicalName();
+        }
     }
 
-    public enum Status {
-        OK, ERROR;
+    public void setValue(T value) {
+        this.value = value;
     }
 
-    public Result(Status status, String message) {
-        this.status = status;
-        this.message = message;
-    }
-
-    public Result(Status status) {
-        this.status = status;
+    public T getValue() {
+        return value;
     }
 }

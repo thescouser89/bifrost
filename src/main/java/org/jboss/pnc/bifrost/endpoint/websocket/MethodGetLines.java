@@ -55,7 +55,7 @@ public class MethodGetLines extends MethodBase implements Method<GetLinesDto> {
                 logger.error("Unable to get data from Elasticsearch.", e);
             }
         });
-        return new Result(Result.Status.OK);
+        return new OkResult();
     }
 
 }
