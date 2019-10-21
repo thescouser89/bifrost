@@ -6,7 +6,7 @@
   <artifactId>bifrost-server</artifactId>
   <version>0.1-SNAPSHOT</version>
   <properties>
-    <surefire-plugin.version>2.22.0</surefire-plugin.version>
+    <surefire-plugin.version>2.22.2</surefire-plugin.version>
     <quarkus.version>0.23.1</quarkus.version>
     <maven.compiler.source>1.8</maven.compiler.source>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
