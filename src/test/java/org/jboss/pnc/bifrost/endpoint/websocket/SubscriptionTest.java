@@ -118,6 +118,54 @@ public class SubscriptionTest {
         TimeUnit.MILLISECONDS.sleep(250); //wait clean for shutdown
     }
 
+    @Test
+    public void testGetAllAndFollow() throws Exception {
+        List<Line> lines = LineProducer.getLines(5, "some-ctx");
+        mockDataProvider.addAllLines(lines);
+
+        try(Session session = ContainerProvider.getWebSocketContainer().connectToServer(Client.class, uri)) {
+            connected.get(10, TimeUnit.SECONDS);
+
+            MethodSubscribe methodSubscribe = new MethodSubscribe();
+            SubscribeDto parameters = new SubscribeDto();
+            parameters.setMatchFilters("");
+            parameters.setPrefixFilters("");
+            Map<String, Object> parameterMap = (Map)BeanUtils.describe(parameters);
+            JSONRPC2Request request = new JSONRPC2Request(methodSubscribe.getName(), parameterMap, Integer.valueOf(2));
+            session.getAsyncRemote().sendText(request.toJSONString());
+
+            Result result = RESULTS.poll(5, TimeUnit.SECONDS);
+            Assertions.assertTrue(result instanceof SubscribeResultDto);
+
+            //should receive 5 lines
+            int received = 0;
+            while (received < 5) {
+                Line receivedLine = LINES.poll(10, TimeUnit.SECONDS);
+                String message = receivedLine.getMessage();
+                logger.debug("Received line notification: " + message);
+                Assertions.assertTrue(StringUtils.isNotBlank(message));
+                received++;
+            }
+            Assertions.assertEquals(5, received);
+
+            //insert new lines
+            Thread.sleep(750);
+            List<Line> newLines = LineProducer.getLines(5, "some-ctx");
+            mockDataProvider.addAllLines(newLines);
+
+            //should receive 5 lines
+            while (received < 10) {
+                Line receivedLine = LINES.poll(10, TimeUnit.SECONDS);
+                String message = receivedLine.getMessage();
+                logger.debug("Received line notification: " + message);
+                Assertions.assertTrue(StringUtils.isNotBlank(message));
+                received++;
+            }
+            Assertions.assertEquals(10, received);
+        }
+        TimeUnit.MILLISECONDS.sleep(250); //wait clean for shutdown
+    }
+
     @ClientEndpoint
     public static class Client {
 

@@ -52,7 +52,7 @@ public class SubscriptionsTest {
         );
 
         List<String> results = new ArrayList<>();
-        while (results.size() < 5) {
+        while (results.size() < 15) {
             String result = resultsQueue.poll(5, TimeUnit.SECONDS);
             results.add(result);
         }

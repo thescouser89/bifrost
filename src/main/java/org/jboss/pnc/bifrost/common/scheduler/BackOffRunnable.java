@@ -30,20 +30,25 @@ public class BackOffRunnable implements Runnable {
 
     @Override
     public void run() {
-        if (lastResult == 0L) {
-            lastResult = System.currentTimeMillis() - config.getDelayMillis();
-        }
-        validateTimeout();
-        if (backOffNextCycles > 0L) {
-            backOffNextCycles--;
-            logger.trace("Cycle skipped.");
-            return;
-        }
-        Long backOff = (System.currentTimeMillis() - lastResult) / config.getDelayMillis();
+        try {
+            if (lastResult == 0L) {
+                lastResult = System.currentTimeMillis() - config.getDelayMillis();
+            }
+            validateTimeout();
+            if (backOffNextCycles > 0L) {
+                backOffNextCycles--;
+                logger.trace("Cycle skipped.");
+                return;
+            }
+            Long backOff = (System.currentTimeMillis() - lastResult) / config.getDelayMillis();
 
-        backOffNextCycles = Long.min(backOff - 1, config.getMaxBackOffCycles());
-        logger.trace("Running task ...");
-        runnable.run();
+            backOffNextCycles = Long.min(backOff - 1, config.getMaxBackOffCycles());
+            logger.trace("Running task ...");
+            runnable.run();
+        } catch (Exception e) {
+            logger.error("Error executing task.", e);
+            throw e;
+        }
     }
 
     private void validateTimeout() {
