@@ -18,7 +18,6 @@ public class CorsFeature implements Feature {
         corsFilter.getAllowedOrigins().add("*");
         corsFilter.setAllowedMethods("OPTIONS, GET, POST, DELETE, PUT, PATCH");
         context.register(corsFilter);
-        System.out.println(">>>>>>>>>>>> registered.");
         return true;
     }
 }

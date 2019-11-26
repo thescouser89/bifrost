@@ -53,11 +53,13 @@ public class DataProviderMock extends DataProvider {
             Consumer<Line> onLine) throws IOException {
 
         for (int i = 0; i < fetchSize; i++) {
+            if (lines.isEmpty()) {
+                break;
+            }
             Line line = lines.pop();
             onLine.accept(line);
         }
     }
-
 
     public void addLine(Line line) {
         lines.add(line);

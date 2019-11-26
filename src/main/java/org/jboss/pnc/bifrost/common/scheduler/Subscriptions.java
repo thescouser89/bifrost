@@ -1,5 +1,7 @@
 package org.jboss.pnc.bifrost.common.scheduler;
 
+import org.apache.lucene.util.NamedThreadFactory;
+import org.jboss.logging.Logger;
 import org.jboss.pnc.bifrost.Config;
 import org.jboss.pnc.bifrost.common.Reference;
 
@@ -22,6 +24,8 @@ import java.util.function.Consumer;
 @ApplicationScoped
 public class Subscriptions {
 
+    private Logger logger = Logger.getLogger(Subscriptions.class);
+
     private Map<Subscription, ScheduledFuture> subscriptions;
 
     private ScheduledExecutorService executor;
@@ -36,7 +40,7 @@ public class Subscriptions {
     @Inject
     public Subscriptions(Config config) {
         subscriptions = new ConcurrentHashMap<>();
-        executor = Executors.newScheduledThreadPool(config.getSourcePollThreads());
+        executor = Executors.newScheduledThreadPool(config.getSourcePollThreads(), new NamedThreadFactory("subscriptions"));
     }
 
     public void submit(Runnable task) {
@@ -87,6 +91,7 @@ public class Subscriptions {
     }
 
     public void unsubscribe(Subscription subscription, UnsubscribeReason reason) {
+        logger.debug("Unsubscribing: " + subscription);
         ScheduledFuture scheduledFuture = subscriptions.remove(subscription);
         if (UnsubscribeReason.NO_DATA_FROM_SOURCE.equals(reason)) {
             subscription.runOnUnsubscribe();
