@@ -114,7 +114,7 @@ public class ElasticSearch {
         }
 
         if (hitNum == 0) {
-            onLine.accept(null);
+            logger.debug("There are no results.");
         }
     }
 
