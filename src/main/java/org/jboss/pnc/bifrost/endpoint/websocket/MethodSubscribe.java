@@ -56,8 +56,10 @@ public class MethodSubscribe extends MethodBase implements Method<SubscribeDto> 
         );
 
         Consumer<Line> onLine = line -> {
-            line.setSubscriptionTopic(subscription.getTopic());
-            responseConsumer.accept(line);
+            if (line != null) {
+                line.setSubscriptionTopic(subscription.getTopic());
+                responseConsumer.accept(line);
+            }
         };
 
         dataProvider.subscribe(matchFilters, prefixFilters, Optional.empty(), onLine, subscription, Optional.empty());
