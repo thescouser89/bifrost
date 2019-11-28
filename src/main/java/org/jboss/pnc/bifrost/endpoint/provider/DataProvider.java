@@ -69,8 +69,8 @@ public class DataProvider {
                 readFromSource(matchFilters, prefixFilters, getFetchSize(fetchedLines[0], maxLines), lastResult, onLineInternal);
                 logger.debug("Read from source completed.");
             } catch (IOException e) {
-                subscriptions.unsubscribe(subscription, Subscriptions.UnsubscribeReason.NO_DATA_FROM_SOURCE);
                 logger.error("Error getting data from Elasticsearch.", e);
+                subscriptions.unsubscribe(subscription, Subscriptions.UnsubscribeReason.NO_DATA_FROM_SOURCE);
             }
         };
 
@@ -119,9 +119,11 @@ public class DataProvider {
 
         final int[] fetchedLines = {0};
         Consumer<Line> onLineInternal = line -> {
-            fetchedLines[0]++;
+            if (line != null) {
+                fetchedLines[0]++;
+                onLine.accept(line);
+            }
             lastLine.set(line);
-            onLine.accept(line);
         };
         do {
             int fetchSize = getFetchSize(fetchedLines[0], maxLines);

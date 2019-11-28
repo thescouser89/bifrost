@@ -70,7 +70,7 @@ public class ElasticSearch {
             Direction direction,
             int fetchSize,
             Consumer<Line> onLine) throws IOException {
-        logger.debug("Searching ...");
+        logger.debug("Searching matchFilters: {}, prefixFilters: {}, searchAfter: {}, direction: {}.", matchFilters, prefixFilters, searchAfter, direction);
         BoolQueryBuilder queryBuilder = getQueryBuilder(matchFilters, prefixFilters);
 
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
@@ -115,6 +115,7 @@ public class ElasticSearch {
 
         if (hitNum == 0) {
             logger.debug("There are no results.");
+            onLine.accept(null);
         }
     }
 

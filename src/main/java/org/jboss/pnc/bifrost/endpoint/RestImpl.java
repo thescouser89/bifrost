@@ -64,22 +64,22 @@ public class RestImpl implements Rest {
 
         StreamingOutput stream = outputStream -> {
 
-            Reference<TimeoutExecutor.Task> task = new Reference<>();
+            Reference<TimeoutExecutor.Task> timeoutProbeTask = new Reference<>();
             if (follow) {
                 TimeoutExecutor timeoutExecutor = new TimeoutExecutor(new ScheduledThreadPoolExecutor(4)); //TODO
                 Runnable sendProbe = () -> {
                     Writer writer = new BufferedWriter(new OutputStreamWriter(outputStream));
                     try {
-                        writer.write(".");
+                        writer.write("."); //TODO send invisible string
                         writer.flush();
                     } catch (IOException e) {
-                        task.get().cancel();
+                        timeoutProbeTask.get().cancel();
                         logger.warn("Cannot send connection probe, client might closed the connection.", e);
                         complete(subscription, outputStream);
                     }
 
                 };
-                task.set(timeoutExecutor.submit(sendProbe, 15, TimeUnit.MILLISECONDS));
+                timeoutProbeTask.set(timeoutExecutor.submit(sendProbe, 15000, TimeUnit.MICROSECONDS));
             }
 
             while (true) {
@@ -92,25 +92,25 @@ public class RestImpl implements Rest {
                         writer.write(line.asString() + "\n");
                         writer.flush();
                         if (line.isLast() && follow == false) { //when follow is true, the connection must be terminated from the client side
-                            task.ifPresent(t -> t.cancel());
+                            timeoutProbeTask.ifPresent(t -> t.cancel());
                             complete(subscription, outputStream);
                             break;
                         }
-                        task.ifPresent(t -> t.update());
+                        timeoutProbeTask.ifPresent(t -> t.update());
                     } else { //empty line indicating end of results
                         logger.info("Closing connection, no results.");
-                        task.ifPresent(t -> t.cancel());
+                        timeoutProbeTask.ifPresent(t -> t.cancel());
                         complete(subscription, outputStream);
                         break;
                     }
                 } catch (IOException e) {
                     logger.warn("Cannot write output. Client might closed the connection. Unsubscribing ... " + e.getMessage());
-                    task.ifPresent(t -> t.cancel());
+                    timeoutProbeTask.ifPresent(t -> t.cancel());
                     complete(subscription, outputStream);
                     break;
                 } catch (InterruptedException e) {
                     logger.error("Cannot read from queue.", e);
-                    task.ifPresent(t -> t.cancel());
+                    timeoutProbeTask.ifPresent(t -> t.cancel());
                     complete(subscription, outputStream);
                     break;
                 }
