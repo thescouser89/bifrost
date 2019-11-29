@@ -2,6 +2,7 @@ package org.jboss.pnc.bifrost.source.dto;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
@@ -11,6 +12,7 @@ import javax.json.bind.JsonbBuilder;
  */
 @Getter
 @Setter
+@ToString
 public class Line {
 
     private String id;

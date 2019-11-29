@@ -41,12 +41,6 @@ public class Socket {
         }
     };
 
-    private SendHandler lineResponseHandler = result -> {
-        if (!result.isOK()) {
-            logger.error("Error sending log line.", result.getException());
-        }
-    };
-
     private String LOGLINE_NOTIFICATION = "LOG";
 
     @OnOpen
@@ -109,7 +103,7 @@ public class Socket {
             return;
         }
 
-        Consumer<Line> lineConsumer = line -> sendLine(remote, line, requestId);
+        Consumer<Line> lineConsumer = line -> sendLine(remote, line, requestId, session);
 
         Result result = method.apply(methodParameter, lineConsumer);
         logger.debug("Method invoked, result: " + result);
@@ -133,10 +127,19 @@ public class Socket {
         logger.debug("Text response sent: " + responseString);
     }
 
-    private void sendLine(RemoteEndpoint.Async remote, Line line, Object requestId) {
+    private void sendLine(RemoteEndpoint.Async remote, Line line, Object requestId, Session session) {
         logger.trace("Sending line as text message: " + line.asString());
         JsonbJSONRPC2Response jsonrpc2Response = new JsonbJSONRPC2Response(new LineResult(line), requestId);
-        remote.sendText(jsonrpc2Response.toJSONString(), lineResponseHandler);
+        remote.sendText(jsonrpc2Response.toJSONString(), lineResponseHandler(session));
+    }
+
+    private SendHandler lineResponseHandler(Session session) {
+        return result -> {
+            if (!result.isOK()) {
+                logger.error("Error sending log line.", result.getException());
+                unsubscribeSession(session.getId());
+            }
+        };
     }
 
 }
