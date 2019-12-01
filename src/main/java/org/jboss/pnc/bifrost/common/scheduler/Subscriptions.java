@@ -74,8 +74,10 @@ public class Subscriptions {
         Reference<T> lastResult = new Reference<>(initialLastResult.orElse(null));
         Runnable internalTask = () -> {
             Consumer<T> onResultInternal = result -> {
-                lastResult.set(result);
-                backOffRunnable.receivedResult();
+                if (result != null) { //null indicates end of message stream
+                    lastResult.set(result);
+                    backOffRunnable.receivedResult();
+                }
                 onResult.accept(result);
             };
 
