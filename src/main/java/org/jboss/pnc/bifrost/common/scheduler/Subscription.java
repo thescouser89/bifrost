@@ -60,4 +60,9 @@ public class Subscription {
     public void runOnUnsubscribe() {
         onUnsubscribe.run();
     }
+
+    @Override
+    public String toString() {
+        return clientId + "::" + topic;
+    }
 }
