@@ -37,12 +37,14 @@ public class TimeoutExecutor {
             this.timeUnit = timeUnit;
         }
 
-        public void update() {
-            future.cancel(false);
-            future = schedule(task, runTimeout, timeUnit);
+        synchronized public void update() {
+            boolean canceled = future.cancel(true);
+            if (canceled) {
+                future = schedule(task, runTimeout, timeUnit);
+            }
         }
 
-        public void cancel() {
+        synchronized public void cancel() {
             future.cancel(false);
         }
     }

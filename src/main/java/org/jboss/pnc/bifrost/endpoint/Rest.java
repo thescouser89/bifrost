@@ -29,7 +29,8 @@ public interface Rest {
             @QueryParam("afterLine") Line afterLine,
             @QueryParam("direction") Direction direction,
             @QueryParam("maxLines") Integer maxLines,
-            @QueryParam("follow") boolean follow);
+            @QueryParam("follow") boolean follow,
+            @QueryParam("timeoutProbeString") String timeoutProbeString); //if string is defined the server is sending given string as a connection probe. The string is printed with the logs.
 
     @GET
     @Path("/")

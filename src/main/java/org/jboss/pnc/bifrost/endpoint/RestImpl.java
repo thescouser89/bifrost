@@ -19,11 +19,10 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -39,7 +38,7 @@ public class RestImpl implements Rest {
     @Inject
     DataProvider dataProvider;
 
-    ScheduledExecutorService executorService = Executors.newScheduledThreadPool(4);
+    private Map<String, ScheduledThreadPoolExecutor> probeExecutor = new ConcurrentHashMap<>();
 
     @Override
     public Response getAllLines(
@@ -48,7 +47,8 @@ public class RestImpl implements Rest {
             Line afterLine,
             Direction direction,
             Integer maxLines,
-            boolean follow) {
+            boolean follow,
+            String timeoutProbeString) {
 
         ArrayBlockingQueue<Optional<Line>> queue = new ArrayBlockingQueue(1024); //TODO
 
@@ -65,19 +65,18 @@ public class RestImpl implements Rest {
         StreamingOutput stream = outputStream -> {
 
             Reference<TimeoutExecutor.Task> timeoutProbeTask = new Reference<>();
-            if (follow) {
-                TimeoutExecutor timeoutExecutor = new TimeoutExecutor(new ScheduledThreadPoolExecutor(4)); //TODO
+            if (follow && timeoutProbeString != null && !timeoutProbeString.equals("")) {
+                TimeoutExecutor timeoutExecutor = new TimeoutExecutor(getExecutorService());
                 Runnable sendProbe = () -> {
                     Writer writer = new BufferedWriter(new OutputStreamWriter(outputStream));
                     try {
-                        writer.write("."); //TODO send invisible string
+                        writer.write(timeoutProbeString);
                         writer.flush();
                     } catch (IOException e) {
                         timeoutProbeTask.get().cancel();
                         logger.warn("Cannot send connection probe, client might closed the connection.", e);
                         complete(subscription, outputStream);
                     }
-
                 };
                 timeoutProbeTask.set(timeoutExecutor.submit(sendProbe, 15000, TimeUnit.MICROSECONDS));
             }
@@ -157,15 +156,8 @@ public class RestImpl implements Rest {
         return Response.ok(stream).build();
     }
 
-    private ScheduledFuture resetConnectionAlive(ScheduledFuture<?> ca) {
-        if (ca != null) {
-            ca.cancel(false);
-        }
-        return executorService.schedule(verifyConnectionAlive(), 30, TimeUnit.SECONDS); //TODO
-    }
-
-    private Runnable verifyConnectionAlive() {
-        return null;
+    private ScheduledThreadPoolExecutor getExecutorService() {
+        return probeExecutor.computeIfAbsent("INSTANCE", k -> new ScheduledThreadPoolExecutor(1));
     }
 
     private void complete(Subscription subscription, OutputStream outputStream) {
