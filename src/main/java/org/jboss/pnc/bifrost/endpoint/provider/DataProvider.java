@@ -62,7 +62,9 @@ public class DataProvider {
         Consumer<Subscriptions.TaskParameters<Line>> searchTask = (parameters) -> {
             Optional<Line> lastResult = Optional.ofNullable(parameters.getLastResult());
             Consumer<Line> onLineInternal = line ->  {
-                fetchedLines[0]++;
+                if (line != null) {
+                    fetchedLines[0]++;
+                }
                 parameters.getResultConsumer().accept(line);
             };
             try {
