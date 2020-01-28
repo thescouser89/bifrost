@@ -24,35 +24,36 @@ public interface Rest {
     @GET
     @Path("/text")
     @Produces(MediaType.TEXT_PLAIN)
-    Response getAllLines(
-            @QueryParam("matchFilters") String matchFilters,
-            @QueryParam("prefixFilters") String prefixFilters,
-            @QueryParam("afterLine") Line afterLine,
-            @QueryParam("direction") Direction direction,
-            @QueryParam("maxLines") Integer maxLines,
-            @QueryParam("follow") boolean follow,
-            @QueryParam("timeoutProbeString") String timeoutProbeString); //if string is defined the server is sending given string as a connection probe. The string is printed with the logs.
+    Response getAllLines(@QueryParam("matchFilters") String matchFilters,
+                         @QueryParam("prefixFilters") String prefixFilters,
+                         @QueryParam("afterLine") Line afterLine,
+                         @QueryParam("direction") Direction direction,
+                         @QueryParam("maxLines") Integer maxLines,
+                         @QueryParam("follow") boolean follow,
+                         @QueryParam("timeoutProbeString") String timeoutProbeString); // if string is defined the server is
+                                                                                       // sending given
+                                                                                       // string as a connection probe. The
+                                                                                       // string is printed
+                                                                                       // with the logs.
 
     @GET
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
-    List<Line> getLines(
-            @QueryParam("matchFilters") String matchFilters,
-            @QueryParam("prefixFilters") String prefixFilters,
-            @QueryParam("afterLine") Line afterLine,
-            @QueryParam("direction") Direction direction,
-            @QueryParam("maxLines") Integer maxLines)
+    List<Line> getLines(@QueryParam("matchFilters") String matchFilters,
+                        @QueryParam("prefixFilters") String prefixFilters,
+                        @QueryParam("afterLine") Line afterLine,
+                        @QueryParam("direction") Direction direction,
+                        @QueryParam("maxLines") Integer maxLines)
             throws IOException;
 
     @GET
     @Path("/metadata")
     @Produces(MediaType.APPLICATION_JSON)
-    MetaData getMetaData(
-            @QueryParam("matchFilters") String matchFilters,
-            @QueryParam("prefixFilters") String prefixFilters,
-            @QueryParam("afterLine") Line afterLine,
-            @QueryParam("direction") Direction direction,
-            @QueryParam("maxLines") Integer maxLines)
+    MetaData getMetaData(@QueryParam("matchFilters") String matchFilters,
+                         @QueryParam("prefixFilters") String prefixFilters,
+                         @QueryParam("afterLine") Line afterLine,
+                         @QueryParam("direction") Direction direction,
+                         @QueryParam("maxLines") Integer maxLines)
             throws IOException;
 
     @GET

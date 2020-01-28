@@ -24,33 +24,30 @@ public class DataProviderMock extends DataProvider {
 
     Deque<Line> lines = new LinkedList<>();
 
-//    @Inject
-//    Subscriptions subscriptions;
+    // @Inject
+    // Subscriptions subscriptions;
 
     public DataProviderMock() {
         super();
     }
 
     @Override
-    public void get(
-            String matchFilters,
-            String prefixFilters,
-            Optional<Line> afterLine,
-            Direction direction,
-            Optional<Integer> maxLines,
-            Consumer<Line> onLine) {
-        LineProducer.getLines(5, "abc123").forEach(
-                line -> onLine.accept(line)
-        );
+    public void get(String matchFilters,
+                    String prefixFilters,
+                    Optional<Line> afterLine,
+                    Direction direction,
+                    Optional<Integer> maxLines,
+                    Consumer<Line> onLine) {
+        LineProducer.getLines(5, "abc123").forEach(line -> onLine.accept(line));
     }
 
     @Override
-    protected void readFromSource(
-            String matchFilters,
-            String prefixFilters,
-            int fetchSize,
-            Optional<Line> lastResult,
-            Consumer<Line> onLine) throws IOException {
+    protected void readFromSource(String matchFilters,
+                                  String prefixFilters,
+                                  int fetchSize,
+                                  Optional<Line> lastResult,
+                                  Consumer<Line> onLine)
+            throws IOException {
 
         for (int i = 0; i < fetchSize; i++) {
             if (lines.isEmpty()) {

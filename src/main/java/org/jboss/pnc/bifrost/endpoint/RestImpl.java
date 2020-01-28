@@ -46,20 +46,19 @@ public class RestImpl implements Rest {
     private Map<String, ScheduledThreadPoolExecutor> probeExecutor = new ConcurrentHashMap<>();
 
     @Override
-    public Response getAllLines(
-            String matchFilters,
-            String prefixFilters,
-            Line afterLine,
-            Direction direction,
-            Integer maxLines,
-            boolean follow,
-            String timeoutProbeString) {
+    public Response getAllLines(String matchFilters,
+                                String prefixFilters,
+                                Line afterLine,
+                                Direction direction,
+                                Integer maxLines,
+                                boolean follow,
+                                String timeoutProbeString) {
 
-        ArrayBlockingQueue<Optional<Line>> queue = new ArrayBlockingQueue(1024); //TODO
+        ArrayBlockingQueue<Optional<Line>> queue = new ArrayBlockingQueue(1024); // TODO
 
         Runnable addEndOfDataMarker = () -> {
             try {
-                queue.offer(Optional.empty(), 5, TimeUnit.SECONDS); //TODO
+                queue.offer(Optional.empty(), 5, TimeUnit.SECONDS); // TODO
             } catch (InterruptedException e) {
                 logger.error("Cannot add end of data marker.", e);
             }
@@ -95,13 +94,14 @@ public class RestImpl implements Rest {
                         Writer writer = new BufferedWriter(new OutputStreamWriter(outputStream));
                         writer.write(line.asString() + "\n");
                         writer.flush();
-                        if (line.isLast() && follow == false) { //when follow is true, the connection must be terminated from the client side
+                        if (line.isLast() && follow == false) { // when follow is true, the connection must be terminated from
+                                                                // the client side
                             timeoutProbeTask.ifPresent(t -> t.cancel());
                             complete(subscription, outputStream);
                             break;
                         }
                         timeoutProbeTask.ifPresent(t -> t.update());
-                    } else { //empty line indicating end of results
+                    } else { // empty line indicating end of results
                         logger.info("Closing connection, no results.");
                         timeoutProbeTask.ifPresent(t -> t.cancel());
                         complete(subscription, outputStream);
@@ -121,12 +121,12 @@ public class RestImpl implements Rest {
             }
         };
 
-        int[] receivedLines = {0};
+        int[] receivedLines = { 0 };
         Consumer<Line> onLine = line -> {
             try {
                 if (line != null) {
                     logger.trace("Adding line to output queue: " + line.asString());
-                    queue.offer(Optional.of(line), 5, TimeUnit.SECONDS); //TODO
+                    queue.offer(Optional.of(line), 5, TimeUnit.SECONDS); // TODO
                     receivedLines[0]++;
 
                     if (maxLines != null && receivedLines[0] >= maxLines) {
@@ -140,7 +140,7 @@ public class RestImpl implements Rest {
 
                 if (follow == false && (line == null || line.isLast())) {
                     logger.debug("Received last line or no results, unsubscribing and closing ...");
-                    //signal connection close
+                    // signal connection close
                     addEndOfDataMarker.run();
                     dataProvider.unsubscribe(subscription);
                 }
@@ -150,14 +150,12 @@ public class RestImpl implements Rest {
                 dataProvider.unsubscribe(subscription);
             }
         };
-        dataProvider.subscribe(
-                matchFilters,
-                prefixFilters,
-                Optional.ofNullable(afterLine),
-                onLine,
-                subscription,
-                Optional.ofNullable(maxLines)
-        );
+        dataProvider.subscribe(matchFilters,
+                               prefixFilters,
+                               Optional.ofNullable(afterLine),
+                               onLine,
+                               subscription,
+                               Optional.ofNullable(maxLines));
         return Response.ok(stream).build();
     }
 
@@ -179,22 +177,22 @@ public class RestImpl implements Rest {
             throws IOException {
         List<Line> lines = new ArrayList<>();
         Consumer<Line> onLine = line -> lines.add(line);
-        dataProvider.get(
-                matchFilters,
-                prefixFilters,
-                Optional.ofNullable(afterLine),
-                direction,
-                Optional.ofNullable(maxLines),
-                onLine);
+        dataProvider.get(matchFilters,
+                         prefixFilters,
+                         Optional.ofNullable(afterLine),
+                         direction,
+                         Optional.ofNullable(maxLines),
+                         onLine);
         return lines;
     }
 
     @Override
     public MetaData getMetaData(String matchFilters,
-            String prefixFilters,
-            Line afterLine,
-            Direction direction,
-            Integer maxLines) throws IOException {
+                                String prefixFilters,
+                                Line afterLine,
+                                Direction direction,
+                                Integer maxLines)
+            throws IOException {
 
         try {
             Md5 md5 = new Md5();
@@ -205,13 +203,12 @@ public class RestImpl implements Rest {
                     logger.error(e);
                 }
             };
-            dataProvider.get(
-                    matchFilters,
-                    prefixFilters,
-                    Optional.ofNullable(afterLine),
-                    direction,
-                    Optional.ofNullable(maxLines),
-                    onLine);
+            dataProvider.get(matchFilters,
+                             prefixFilters,
+                             Optional.ofNullable(afterLine),
+                             direction,
+                             Optional.ofNullable(maxLines),
+                             onLine);
             return new MetaData(md5.digest());
         } catch (NoSuchAlgorithmException e) {
             logger.error(e);
@@ -227,7 +224,7 @@ public class RestImpl implements Rest {
 
     @Override
     public Response livenessProbe() {
-        return Response.ok().build(); //TODO test ES connection
+        return Response.ok().build(); // TODO test ES connection
     }
 
 }

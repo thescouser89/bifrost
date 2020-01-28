@@ -56,9 +56,9 @@ public class Line {
         return getTimestamp() + " " + getLoggerName() + " " + getMessage();
     }
 
-//    @JsonPOJOBuilder(withPrefix = "")
-//    public static final class LineBuilder {
-//    }
+    // @JsonPOJOBuilder(withPrefix = "")
+    // public static final class LineBuilder {
+    // }
 
     public Builder cloneBuilder() {
         return newBuilder(this);
@@ -106,7 +106,7 @@ public class Line {
             return this;
         }
 
-        public Builder mdc(Map<String,String> mdc) {
+        public Builder mdc(Map<String, String> mdc) {
             this.mdc = mdc;
             return this;
         }

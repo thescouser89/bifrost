@@ -40,15 +40,14 @@ public class RestTest {
     DataProviderMock dataProvider;
 
     /*
-    WORKAROUND: use static block instead of BeforeAll to avoid the exception below
-    The IllegalStateException happens when this test is run the first, if any other test run before it works
-
-    java.lang.ExceptionInInitializerError
-       at org.jboss.pnc.bifrost.endpoint.RestTest.init(RestTest.java:45)
-     Caused by: java.lang.IllegalStateException: No configuration is available for this class loader
-	   at org.jboss.pnc.bifrost.endpoint.RestTest.init(RestTest.java:45)
+     * WORKAROUND: use static block instead of BeforeAll to avoid the exception below The IllegalStateException happens when
+     * this test is run the first, if any other test run before it works
+     * 
+     * java.lang.ExceptionInInitializerError at org.jboss.pnc.bifrost.endpoint.RestTest.init(RestTest.java:45) Caused by:
+     * java.lang.IllegalStateException: No configuration is available for this class loader at
+     * org.jboss.pnc.bifrost.endpoint.RestTest.init(RestTest.java:45)
      */
-    //@BeforeAll
+    // @BeforeAll
     static {
         Client client = ClientBuilder.newClient();
         target = client.target("http://localhost:8081/");
@@ -56,7 +55,7 @@ public class RestTest {
 
     @Test
     public void shouldGetLines() throws IOException {
-        ResteasyWebTarget rtarget = (ResteasyWebTarget)target;
+        ResteasyWebTarget rtarget = (ResteasyWebTarget) target;
         Rest rest = rtarget.proxy(Rest.class);
 
         List<Line> mockLines = rest.getLines("", "", null, Direction.ASC, 10);
@@ -85,7 +84,7 @@ public class RestTest {
         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
         logger.info("Reading stream ...");
         try {
-            for (String line; (line = reader.readLine()) != null; ) {
+            for (String line; (line = reader.readLine()) != null;) {
                 logger.info("Log line: " + line);
                 receivedLines.add(line);
             }
@@ -117,7 +116,7 @@ public class RestTest {
         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
         logger.info("Reading stream ...");
         try {
-            for (String line; (line = reader.readLine()) != null; ) {
+            for (String line; (line = reader.readLine()) != null;) {
                 logger.info("Log line: " + line);
                 receivedLines.add(line);
             }

@@ -18,9 +18,9 @@ public class StringTest {
         Map<String, List<String>> map = Strings.toMap(query);
 
         Assertions.assertEquals(map.get("key1").size(), 2);
-        Assertions.assertLinesMatch(map.get("key1"), Arrays.asList(new String[]{"value1", "value2"}));
+        Assertions.assertLinesMatch(map.get("key1"), Arrays.asList(new String[] { "value1", "value2" }));
 
-        Assertions.assertLinesMatch(map.get("key2"), Arrays.asList(new String[]{"value22"}));
+        Assertions.assertLinesMatch(map.get("key2"), Arrays.asList(new String[] { "value22" }));
 
     }
 }

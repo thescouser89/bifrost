@@ -59,11 +59,11 @@ public class Socket {
     }
 
     private void unsubscribeSession(String sessionId) {
-        subscriptions.getAll().stream()
-        .filter(s -> s.getClientId().equals(sessionId))
-        .forEach(s -> subscriptions.unsubscribe(s));
+        subscriptions.getAll()
+                     .stream()
+                     .filter(s -> s.getClientId().equals(sessionId))
+                     .forEach(s -> subscriptions.unsubscribe(s));
     }
-
 
     @OnMessage
     public void handleMessage(String message, Session session) {

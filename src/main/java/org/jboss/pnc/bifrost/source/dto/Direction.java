@@ -7,8 +7,7 @@ import org.elasticsearch.search.sort.SortOrder;
  */
 public enum Direction {
 
-    ASC(SortOrder.ASC),
-    DESC(SortOrder.DESC);
+    ASC(SortOrder.ASC), DESC(SortOrder.DESC);
 
     private SortOrder sortOrder;
 

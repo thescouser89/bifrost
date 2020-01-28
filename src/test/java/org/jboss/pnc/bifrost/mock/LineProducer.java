@@ -21,13 +21,13 @@ public class LineProducer {
         mdc.put("processContext", ctx);
         mdc.put("tmp", "false");
         return Line.newBuilder()
-                .id(UUID.randomUUID().toString())
-                .timestamp(Long.toString(System.currentTimeMillis()))
-                .logger(loggerName)
-                .message("Message " + lineNumber)
-                .last(last)
-                .mdc(mdc)
-                .build();
+                   .id(UUID.randomUUID().toString())
+                   .timestamp(Long.toString(System.currentTimeMillis()))
+                   .logger(loggerName)
+                   .message("Message " + lineNumber)
+                   .last(last)
+                   .mdc(mdc)
+                   .build();
     }
 
     public static List<Line> getLines(Integer numberOfLines, String ctx) {

@@ -41,16 +41,15 @@ public class MethodGetLines extends MethodBase implements Method<GetLinesDto> {
             responseConsumer.accept(line);
         };
 
-        //async to complete the request
+        // async to complete the request
         subscriptions.submit(() -> {
             try {
-                dataProvider.get(
-                        in.getMatchFilters(),
-                        in.getPrefixFilters(),
-                        Optional.ofNullable(in.getAfterLine()),
-                        in.getDirection(),
-                        Optional.ofNullable(in.getMaxLines()),
-                        onLine);
+                dataProvider.get(in.getMatchFilters(),
+                                 in.getPrefixFilters(),
+                                 Optional.ofNullable(in.getAfterLine()),
+                                 in.getDirection(),
+                                 Optional.ofNullable(in.getMaxLines()),
+                                 onLine);
             } catch (IOException e) {
                 logger.error("Unable to get data from Elasticsearch.", e);
             }

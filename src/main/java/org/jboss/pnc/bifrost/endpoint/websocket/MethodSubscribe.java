@@ -29,7 +29,6 @@ public class MethodSubscribe extends MethodBase implements Method<SubscribeDto> 
         }
     };
 
-
     @Inject
     DataProvider dataProvider;
 
@@ -49,11 +48,7 @@ public class MethodSubscribe extends MethodBase implements Method<SubscribeDto> 
         String prefixFilters = subscribeDto.getPrefixFilters();
 
         String topic = subscribeDto.getMatchFilters() + subscribeDto.getPrefixFilters();
-        Subscription subscription = new Subscription(
-                getSession().getId(),
-                topic,
-                () -> sendUnsubscribedNotification(topic)
-        );
+        Subscription subscription = new Subscription(getSession().getId(), topic, () -> sendUnsubscribedNotification(topic));
 
         Consumer<Line> onLine = line -> {
             if (line != null) {

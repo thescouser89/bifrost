@@ -51,25 +51,30 @@ public class DataProvider {
     }
 
     public void subscribe(String matchFilters,
-            String prefixFilters,
-            Optional<Line> afterLine,
-            Consumer<Line> onLine,
-            Subscription subscription,
-            Optional<Integer> maxLines) {
+                          String prefixFilters,
+                          Optional<Line> afterLine,
+                          Consumer<Line> onLine,
+                          Subscription subscription,
+                          Optional<Integer> maxLines) {
 
-        final int[] fetchedLines = {0};
+        final int[] fetchedLines = { 0 };
 
         Consumer<Subscriptions.TaskParameters<Line>> searchTask = (parameters) -> {
             Optional<Line> lastResult = Optional.ofNullable(parameters.getLastResult());
-            Consumer<Line> onLineInternal = line ->  {
+            Consumer<Line> onLineInternal = line -> {
                 if (line != null) {
                     fetchedLines[0]++;
                 }
                 parameters.getResultConsumer().accept(line);
             };
             try {
-                logger.debug("Reading from source, subscription " + subscription + " already fetched " + fetchedLines[0] + " lines.");
-                readFromSource(matchFilters, prefixFilters, getFetchSize(fetchedLines[0], maxLines), lastResult, onLineInternal);
+                logger.debug("Reading from source, subscription " + subscription + " already fetched " + fetchedLines[0]
+                        + " lines.");
+                readFromSource(matchFilters,
+                               prefixFilters,
+                               getFetchSize(fetchedLines[0], maxLines),
+                               lastResult,
+                               onLineInternal);
                 logger.debug("Read from source completed, subscription " + subscription + " fetched lines: " + fetchedLines[0]);
             } catch (IOException e) {
                 logger.error("Error getting data from Elasticsearch.", e);
@@ -77,40 +82,33 @@ public class DataProvider {
             }
         };
 
-        subscriptions.subscribe(
-                subscription,
-                searchTask,
-                afterLine,
-                onLine,
-                backOffRunnableConfig
-        );
+        subscriptions.subscribe(subscription, searchTask, afterLine, onLine, backOffRunnableConfig);
     }
 
-    protected void readFromSource(
-            String matchFilters,
-            String prefixFilters,
-            int fetchSize,
-            Optional<Line> lastResult,
-            Consumer<Line> onLine) throws IOException {
-        elasticSearch.get(
-                Strings.toMap(matchFilters),
-                Strings.toMap(prefixFilters),
-                lastResult,
-                Direction.ASC,
-                fetchSize,
-                onLine);
+    protected void readFromSource(String matchFilters,
+                                  String prefixFilters,
+                                  int fetchSize,
+                                  Optional<Line> lastResult,
+                                  Consumer<Line> onLine)
+            throws IOException {
+        elasticSearch.get(Strings.toMap(matchFilters),
+                          Strings.toMap(prefixFilters),
+                          lastResult,
+                          Direction.ASC,
+                          fetchSize,
+                          onLine);
     }
 
     /**
      * Blocking call, <code>onLine<code/> is called in the calling thread.
      */
-    public void get(
-            String matchFilters,
-            String prefixFilters,
-            Optional<Line> afterLine,
-            Direction direction,
-            Optional<Integer> maxLines,
-            Consumer<Line> onLine) throws IOException {
+    public void get(String matchFilters,
+                    String prefixFilters,
+                    Optional<Line> afterLine,
+                    Direction direction,
+                    Optional<Integer> maxLines,
+                    Consumer<Line> onLine)
+            throws IOException {
 
         final Reference<Line> lastLine;
         if (afterLine.isPresent()) {
@@ -120,7 +118,7 @@ public class DataProvider {
             lastLine = new Reference<>();
         }
 
-        final int[] fetchedLines = {0};
+        final int[] fetchedLines = { 0 };
         Consumer<Line> onLineInternal = line -> {
             if (line != null) {
                 fetchedLines[0]++;
@@ -133,13 +131,12 @@ public class DataProvider {
             if (fetchSize < 1) {
                 break;
             }
-            elasticSearch.get(
-                    Strings.toMap(matchFilters),
-                    Strings.toMap(prefixFilters),
-                    Optional.ofNullable(lastLine.get()),
-                    Direction.ASC,
-                    fetchSize,
-                    onLineInternal);
+            elasticSearch.get(Strings.toMap(matchFilters),
+                              Strings.toMap(prefixFilters),
+                              Optional.ofNullable(lastLine.get()),
+                              Direction.ASC,
+                              fetchSize,
+                              onLineInternal);
         } while (lastLine.get() != null && !lastLine.get().isLast());
     }
 

@@ -23,5 +23,4 @@ public class Config {
     @ConfigProperty(name = "bifrost.sourcePollThreads", defaultValue = "4")
     int sourcePollThreads;
 
-
 }

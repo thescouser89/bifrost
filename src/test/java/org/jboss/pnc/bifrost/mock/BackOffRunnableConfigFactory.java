@@ -7,7 +7,10 @@ import org.jboss.pnc.bifrost.common.scheduler.BackOffRunnableConfig;
  */
 public class BackOffRunnableConfigFactory {
 
-    public static BackOffRunnableConfig get(long delayMilis, long maxBackOffCycles, long timeOutMillis, long poolIntervalMillis) {
+    public static BackOffRunnableConfig get(long delayMilis,
+                                            long maxBackOffCycles,
+                                            long timeOutMillis,
+                                            long poolIntervalMillis) {
         BackOffRunnableConfig config = new BackOffRunnableConfig();
         config.setDelayMillis(delayMilis);
         config.setMaxBackOffCycles(maxBackOffCycles);

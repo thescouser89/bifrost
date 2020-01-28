@@ -12,9 +12,7 @@ public class MethodFactory {
     Instance<Method<?>> availableMethods;
 
     public Optional<Method<?>> get(String methodName) {
-        return availableMethods.stream()
-                .filter(m -> m.getName().equals(methodName))
-                .findAny();
+        return availableMethods.stream().filter(m -> m.getName().equals(methodName)).findAny();
     }
 
 }

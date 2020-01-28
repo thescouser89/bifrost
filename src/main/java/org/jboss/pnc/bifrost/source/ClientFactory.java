@@ -41,8 +41,8 @@ public class ClientFactory {
     public RestClient getConnectedClient() throws Exception {
         try {
             List<HttpHost> httpHosts = Arrays.stream(config.getHosts().split(","))
-                    .map(h -> HttpHost.create(h))
-                    .collect(Collectors.toList());
+                                             .map(h -> HttpHost.create(h))
+                                             .collect(Collectors.toList());
 
             HttpHost[] hosts = httpHosts.toArray(new HttpHost[httpHosts.size()]);
 
@@ -55,8 +55,8 @@ public class ClientFactory {
                     truststore.load(is, config.getKeyStorePass().get().toCharArray());
                 }
                 SSLContextBuilder sslBuilder = SSLContexts.custom()
-                        .loadTrustMaterial(truststore, new TrustSelfSignedStrategy())
-                        .loadKeyMaterial(truststore, config.getKeyPass().get().toCharArray());
+                                                          .loadTrustMaterial(truststore, new TrustSelfSignedStrategy())
+                                                          .loadKeyMaterial(truststore, config.getKeyPass().get().toCharArray());
                 final SSLContext sslContext = sslBuilder.build();
 
                 builder.setHttpClientConfigCallback(httpClientBuilder -> {

@@ -36,7 +36,7 @@ import java.util.function.Consumer;
 /**
  * @author <a href="mailto:matejonnet@gmail.com">Matej Lazar</a>
  */
-@QuarkusTest //although no need to boot the applicaiton, the logging does not work without this annota
+@QuarkusTest // although no need to boot the applicaiton, the logging does not work without this annota
 public class ElasticSearchEmbeddedIT {
 
     private static Logger logger = Logger.getLogger(ElasticSearchEmbeddedIT.class);
@@ -46,12 +46,11 @@ public class ElasticSearchEmbeddedIT {
     private String defaultLogger = "org.jboss.pnc._userlog_";
 
     private static ElasticSearchConfig elasticSearchConfig = ElasticSearchConfig.newBuilder()
-        .hosts("http://localhost:9200")
-        .indexes(indexes)
-        .build();
+                                                                                .hosts("http://localhost:9200")
+                                                                                .indexes(indexes)
+                                                                                .build();
 
     private static ClientFactory clientFactory = new ClientFactory(elasticSearchConfig);
-
 
     @BeforeAll
     public static void init() throws Exception {
@@ -99,7 +98,7 @@ public class ElasticSearchEmbeddedIT {
         logger.info("Response status: " + response.status());
         Assertions.assertEquals(RestStatus.CREATED, response.status());
 
-        //wait to stabilize
+        // wait to stabilize
         Thread.sleep(1000);
 
         ElasticSearch elasticSearchSource = new ElasticSearch(elasticSearchConfig);
@@ -118,13 +117,12 @@ public class ElasticSearchEmbeddedIT {
     }
 
     @Test
-    public void shouldGetLinesMatchingCtxAndLoggerPrefix()
-            throws Exception {
+    public void shouldGetLinesMatchingCtxAndLoggerPrefix() throws Exception {
         insertLine(2, "build-1", "other." + defaultLogger);
         insertLine(2, "build-1", defaultLogger);
         insertLine(5, "build-2", defaultLogger);
         insertLine(5, "build-2", defaultLogger + ".build-log");
-        insertLine(4, "build 2", defaultLogger); //note the logger name
+        insertLine(4, "build 2", defaultLogger); // note the logger name
         Thread.sleep(1000);
 
         ElasticSearch elasticSearch = new ElasticSearch(elasticSearchConfig);
@@ -135,7 +133,8 @@ public class ElasticSearchEmbeddedIT {
             anyLines.add(line);
         });
 
-        Map<String, List<String>> defaultLogMatcher = Collections.singletonMap("loggerName.keyword", Arrays.asList(defaultLogger));
+        Map<String, List<String>> defaultLogMatcher = Collections.singletonMap("loggerName.keyword",
+                                                                               Arrays.asList(defaultLogger));
         elasticSearch.get(Collections.emptyMap(), defaultLogMatcher, Optional.empty(), Direction.ASC, 100, anyLine);
         Assertions.assertEquals(16, anyLines.size());
 
@@ -147,67 +146,67 @@ public class ElasticSearchEmbeddedIT {
             matchingLines.add(line);
         });
         elasticSearch.get(matchFilters, defaultLogMatcher, Optional.empty(), Direction.ASC, 100, onLine);
-        Assertions.assertEquals(10  , matchingLines.size());
+        Assertions.assertEquals(10, matchingLines.size());
         elasticSearch.close();
     }
 
-//    @Test
-//    public void shouldGetLinesAfter() throws Exception {
-//        insertLine(5, "should");
-//        Thread.sleep(100);
-//        insertLine(5, "should");
-//        Thread.sleep(1000);
-//
-//        ElasticSearch elasticSearch = new ElasticSearch(elasticSearchConfig);
-//        ResultProcessor source = new ResultProcessor(elasticSearch);
-//
-//        List<Line> lines = source.get("ctx:should", "logger:" + defaultLogger, Optional.empty(), Direction.ASC, 5);
-//
-//        Assertions.assertEquals(5, lines.size());
-//        lines.forEach(System.out::println);
-//
-//
-//        Line afterLine = lines.get(4);
-//        List<Line> newLines = source.get("ctx:should", "logger:" + defaultLogger, Optional.of(afterLine), Direction.ASC, 5);
-//
-//        Assertions.assertEquals(5, newLines.size());
-//        Assertions.assertTrue(
-//                Long.parseLong(lines.get(4).getTimestamp()) < Long.parseLong(newLines.get(0).getTimestamp())
-//                );
-//        newLines.forEach(System.out::println);
-//        elasticSearch.close();
-//    }
+    // @Test
+    // public void shouldGetLinesAfter() throws Exception {
+    // insertLine(5, "should");
+    // Thread.sleep(100);
+    // insertLine(5, "should");
+    // Thread.sleep(1000);
+    //
+    // ElasticSearch elasticSearch = new ElasticSearch(elasticSearchConfig);
+    // ResultProcessor source = new ResultProcessor(elasticSearch);
+    //
+    // List<Line> lines = source.get("ctx:should", "logger:" + defaultLogger, Optional.empty(), Direction.ASC, 5);
+    //
+    // Assertions.assertEquals(5, lines.size());
+    // lines.forEach(System.out::println);
+    //
+    //
+    // Line afterLine = lines.get(4);
+    // List<Line> newLines = source.get("ctx:should", "logger:" + defaultLogger, Optional.of(afterLine), Direction.ASC, 5);
+    //
+    // Assertions.assertEquals(5, newLines.size());
+    // Assertions.assertTrue(
+    // Long.parseLong(lines.get(4).getTimestamp()) < Long.parseLong(newLines.get(0).getTimestamp())
+    // );
+    // newLines.forEach(System.out::println);
+    // elasticSearch.close();
+    // }
 
-//    @Test
-//    public void shouldGetAllLines() throws Exception {
-//        insertLine(20, "all");
-//        Thread.sleep(1000);
-//
-//        ElasticSearch elasticSearch = new ElasticSearch(elasticSearchConfig);
-//        ResultProcessor source = new ResultProcessor(elasticSearch);
-//
-////        List<Line> lines = new ArrayList<>();
-////        Consumer<Line> onLine = line -> {
-////            lines.add(line);
-////        };
-//        List<Line> lines = source.get(
-//                "ctx=all",
-//                "logger=" + defaultLogger,
-//                Optional.empty(),
-//                Direction.ASC,
-//                4);
-//
-////        Wait.forCondition(()->lines.size() == 20, 3, ChronoUnit.SECONDS);
-//
-//        Assertions.assertEquals(20, lines.size());
-//        lines.forEach(System.out::println);
-//        elasticSearch.close();
-//    }
+    // @Test
+    // public void shouldGetAllLines() throws Exception {
+    // insertLine(20, "all");
+    // Thread.sleep(1000);
+    //
+    // ElasticSearch elasticSearch = new ElasticSearch(elasticSearchConfig);
+    // ResultProcessor source = new ResultProcessor(elasticSearch);
+    //
+    //// List<Line> lines = new ArrayList<>();
+    //// Consumer<Line> onLine = line -> {
+    //// lines.add(line);
+    //// };
+    // List<Line> lines = source.get(
+    // "ctx=all",
+    // "logger=" + defaultLogger,
+    // Optional.empty(),
+    // Direction.ASC,
+    // 4);
+    //
+    //// Wait.forCondition(()->lines.size() == 20, 3, ChronoUnit.SECONDS);
+    //
+    // Assertions.assertEquals(20, lines.size());
+    // lines.forEach(System.out::println);
+    // elasticSearch.close();
+    // }
 
-//    @Test
-//    public void shouldSubscribeToNewLines() throws JsonProcessingException, InterruptedException, TimeoutException {
-//        //TODO test shouldSubscribeToNewLines
-//    }
+    // @Test
+    // public void shouldSubscribeToNewLines() throws JsonProcessingException, InterruptedException, TimeoutException {
+    // //TODO test shouldSubscribeToNewLines
+    // }
 
     private void insertLine(Integer numberOfLines, String ctx, String loggerName) throws Exception {
         JsonbConfig config = new JsonbConfig().withFormatting(true);
