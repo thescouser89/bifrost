@@ -50,40 +50,44 @@ public class DataProvider {
         subscriptions.unsubscribe(subscription);
     }
 
-    public void subscribe(String matchFilters,
+    public void subscribe(
+            String matchFilters,
             String prefixFilters,
             Optional<Line> afterLine,
             Consumer<Line> onLine,
             Subscription subscription,
             Optional<Integer> maxLines) {
 
-        final int[] fetchedLines = {0};
+        final int[] fetchedLines = { 0 };
 
         Consumer<Subscriptions.TaskParameters<Line>> searchTask = (parameters) -> {
             Optional<Line> lastResult = Optional.ofNullable(parameters.getLastResult());
-            Consumer<Line> onLineInternal = line ->  {
+            Consumer<Line> onLineInternal = line -> {
                 if (line != null) {
                     fetchedLines[0]++;
                 }
                 parameters.getResultConsumer().accept(line);
             };
             try {
-                logger.debug("Reading from source, subscription " + subscription + " already fetched " + fetchedLines[0] + " lines.");
-                readFromSource(matchFilters, prefixFilters, getFetchSize(fetchedLines[0], maxLines), lastResult, onLineInternal);
-                logger.debug("Read from source completed, subscription " + subscription + " fetched lines: " + fetchedLines[0]);
+                logger.debug(
+                        "Reading from source, subscription " + subscription + " already fetched " + fetchedLines[0]
+                                + " lines.");
+                readFromSource(
+                        matchFilters,
+                        prefixFilters,
+                        getFetchSize(fetchedLines[0], maxLines),
+                        lastResult,
+                        onLineInternal);
+                logger.debug(
+                        "Read from source completed, subscription " + subscription + " fetched lines: "
+                                + fetchedLines[0]);
             } catch (IOException e) {
                 logger.error("Error getting data from Elasticsearch.", e);
                 subscriptions.unsubscribe(subscription, Subscriptions.UnsubscribeReason.NO_DATA_FROM_SOURCE);
             }
         };
 
-        subscriptions.subscribe(
-                subscription,
-                searchTask,
-                afterLine,
-                onLine,
-                backOffRunnableConfig
-        );
+        subscriptions.subscribe(subscription, searchTask, afterLine, onLine, backOffRunnableConfig);
     }
 
     protected void readFromSource(
@@ -120,7 +124,7 @@ public class DataProvider {
             lastLine = new Reference<>();
         }
 
-        final int[] fetchedLines = {0};
+        final int[] fetchedLines = { 0 };
         Consumer<Line> onLineInternal = line -> {
             if (line != null) {
                 fetchedLines[0]++;

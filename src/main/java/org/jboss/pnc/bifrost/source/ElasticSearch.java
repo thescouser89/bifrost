@@ -63,8 +63,8 @@ public class ElasticSearch {
     }
 
     /**
-     * Queries the source and call onLine in the same thread when a new line is received.
-     * Method returns when all the lines are fetched.
+     * Queries the source and call onLine in the same thread when a new line is received. Method returns when all the lines are
+     * fetched.
      */
     public void get(
             Map<String, List<String>> matchFilters,
@@ -73,26 +73,30 @@ public class ElasticSearch {
             Direction direction,
             int fetchSize,
             Consumer<Line> onLine) throws IOException {
-        logger.debug("Searching matchFilters: {}, prefixFilters: {}, searchAfter: {}, direction: {}.", matchFilters, prefixFilters, searchAfter, direction);
+        logger.debug(
+                "Searching matchFilters: {}, prefixFilters: {}, searchAfter: {}, direction: {}.",
+                matchFilters,
+                prefixFilters,
+                searchAfter,
+                direction);
         QueryBuilder queryBuilder = getQueryBuilder(matchFilters, prefixFilters);
 
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
-        sourceBuilder
-                .query(queryBuilder)
+        sourceBuilder.query(queryBuilder)
                 .size(fetchSize + 1)
                 .from(0)
                 .sort(new FieldSortBuilder("@timestamp").order(getSortOrder(direction)))
-                .sort(new FieldSortBuilder("_uid").order(getSortOrder(direction)))
-        ;
+                .sort(new FieldSortBuilder("_uid").order(getSortOrder(direction)));
         if (searchAfter.isPresent()) {
             String timestamp = searchAfter.get().getTimestamp();
-            Object[] searchAfterTimeStampId = new Object[]{ Instant.parse(timestamp).toEpochMilli(), searchAfter.get().getId()};
+            Object[] searchAfterTimeStampId = new Object[] { Instant.parse(timestamp).toEpochMilli(),
+                    searchAfter.get().getId() };
             sourceBuilder.searchAfter(searchAfterTimeStampId);
         } else {
-            //TODO tailFromNow vs tailFromBeginning
-            //RangeQueryBuilder timestampRange = QueryBuilders.rangeQuery("@timestamp");
-            //timestampRange.from(System.currentTimeMillis() - 5000); //TODO parametrize how long back
-            //queryBuilder.must(timestampRange);
+            // TODO tailFromNow vs tailFromBeginning
+            // RangeQueryBuilder timestampRange = QueryBuilders.rangeQuery("@timestamp");
+            // timestampRange.from(System.currentTimeMillis() - 5000); //TODO parametrize how long back
+            // queryBuilder.must(timestampRange);
         }
 
         logger.debug("Search query: " + queryBuilder);
@@ -106,8 +110,8 @@ public class ElasticSearch {
         int hitNum = 0;
 
         /**
-         * loop until fetchSize or all the elements are read
-         * note that (fetchSize + 1) is used as a limit in the query to check if there are more results
+         * loop until fetchSize or all the elements are read note that (fetchSize + 1) is used as a limit in the query to check if there
+         * are more results
          */
         Iterator<SearchHit> responseHitIterator = responseHits.iterator();
         while (responseHitIterator.hasNext() && hitNum < fetchSize) {
@@ -139,8 +143,8 @@ public class ElasticSearch {
         Map<String, Object> source = hit.getSource();
         logger.trace("Received line {}", source);
 
-//        String id = source.get("_type").toString() + "#" + source.get("_id").toString();
-        String id =hit.getType() + "#" + hit.getId();
+        // String id = source.get("_type").toString() + "#" + source.get("_id").toString();
+        String id = hit.getType() + "#" + hit.getId();
         String timestamp = getString(source, "@timestamp");
         String logger = getString(source, "loggerName");
         String message = getString(source, "message");
@@ -166,7 +170,9 @@ public class ElasticSearch {
         }
     }
 
-    private QueryBuilder getQueryBuilder(Map<String, List<String>> matchFilters, Map<String, List<String>> prefixFilters) {
+    private QueryBuilder getQueryBuilder(
+            Map<String, List<String>> matchFilters,
+            Map<String, List<String>> prefixFilters) {
         BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery();
 
         matchFilters.forEach((field, values) -> {

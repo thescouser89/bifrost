@@ -69,7 +69,8 @@ public class ClientFactory {
 
             RestClient lowLevelRestClient = builder.build();
             return lowLevelRestClient;
-        } catch (IOException | KeyStoreException | NoSuchAlgorithmException | KeyManagementException | CertificateException e) {
+        } catch (IOException | KeyStoreException | NoSuchAlgorithmException | KeyManagementException
+                | CertificateException e) {
             throw new ClientConnectionException("Cannot connect to remote Elasticsearch server.", e);
         }
     }

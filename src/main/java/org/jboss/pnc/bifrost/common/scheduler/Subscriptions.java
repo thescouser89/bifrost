@@ -40,24 +40,19 @@ public class Subscriptions {
     @Inject
     public Subscriptions(Config config) {
         subscriptions = new ConcurrentHashMap<>();
-        executor = Executors.newScheduledThreadPool(config.getSourcePollThreads(), new NamedThreadFactory("subscriptions"));
+        executor = Executors
+                .newScheduledThreadPool(config.getSourcePollThreads(), new NamedThreadFactory("subscriptions"));
     }
 
     public void submit(Runnable task) {
         executor.submit(task);
     }
 
-    public <T> void run(
-            Consumer<TaskParameters<T>> task,
-            Optional<T> initialLastResult,
-            Consumer<T> onResult) {
+    public <T> void run(Consumer<TaskParameters<T>> task, Optional<T> initialLastResult, Consumer<T> onResult) {
         task.accept(new TaskParameters(initialLastResult.get(), onResult));
     }
 
-    public <T> void submit(
-            Consumer<TaskParameters<T>> task,
-            Optional<T> initialLastResult,
-            Consumer<T> onResult) {
+    public <T> void submit(Consumer<TaskParameters<T>> task, Optional<T> initialLastResult, Consumer<T> onResult) {
         executor.submit(() -> task.accept(new TaskParameters(initialLastResult.get(), onResult)));
     }
 
@@ -66,15 +61,14 @@ public class Subscriptions {
             Consumer<TaskParameters<T>> task,
             Optional<T> initialLastResult,
             Consumer<T> onResult,
-            BackOffRunnableConfig backOffRunnableConfig
-            ) {
+            BackOffRunnableConfig backOffRunnableConfig) {
 
         BackOffRunnable backOffRunnable = new BackOffRunnable(backOffRunnableConfig);
 
         Reference<T> lastResult = new Reference<>(initialLastResult.orElse(null));
         Runnable internalTask = () -> {
             Consumer<T> onResultInternal = result -> {
-                if (result != null) { //null indicates end of message stream
+                if (result != null) { // null indicates end of message stream
                     lastResult.set(result);
                     backOffRunnable.receivedResult();
                 }
@@ -88,7 +82,11 @@ public class Subscriptions {
         backOffRunnable.setRunnable(internalTask);
         backOffRunnable.setCancelHook(() -> unsubscribe(subscription, UnsubscribeReason.NO_DATA_FROM_SOURCE));
 
-        ScheduledFuture<?> scheduledFuture = executor.scheduleAtFixedRate(backOffRunnable, 0, backOffRunnableConfig.getPollIntervalMillis(), TimeUnit.MILLISECONDS);
+        ScheduledFuture<?> scheduledFuture = executor.scheduleAtFixedRate(
+                backOffRunnable,
+                0,
+                backOffRunnableConfig.getPollIntervalMillis(),
+                TimeUnit.MILLISECONDS);
         subscriptions.put(subscription, scheduledFuture);
     }
 
@@ -109,8 +107,7 @@ public class Subscriptions {
     }
 
     public void unsubscribeAll() {
-        subscriptions.keySet().stream()
-                .forEach(s -> unsubscribe(s));
+        subscriptions.keySet().stream().forEach(s -> unsubscribe(s));
     }
 
     public Set<Subscription> getAll() {

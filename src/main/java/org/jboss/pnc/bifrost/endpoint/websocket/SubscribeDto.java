@@ -14,5 +14,4 @@ public class SubscribeDto {
 
     private String prefixFilters;
 
-
 }
