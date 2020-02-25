@@ -12,7 +12,8 @@ import java.util.Map;
 public class Strings {
 
     /**
-     * Converts string with key:value1|value2,key2:value22 to a map where key is an entry key and values are a list of items.
+     * Converts string with key:value1|value2,key2:value22 to a map where key is an entry key and values are a list of
+     * items.
      */
     public static Map<String, List<String>> toMap(String string) {
         if (string == null || string.equals("")) {

@@ -168,7 +168,8 @@ public class ElasticSearchEmbeddedIT {
     //
     //
     // Line afterLine = lines.get(4);
-    // List<Line> newLines = source.get("ctx:should", "logger:" + defaultLogger, Optional.of(afterLine), Direction.ASC, 5);
+    // List<Line> newLines = source.get("ctx:should", "logger:" + defaultLogger, Optional.of(afterLine), Direction.ASC,
+    // 5);
     //
     // Assertions.assertEquals(5, newLines.size());
     // Assertions.assertTrue(
