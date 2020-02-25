@@ -95,7 +95,8 @@ public class RestImpl implements Bifrost {
                         Writer writer = new BufferedWriter(new OutputStreamWriter(outputStream));
                         writer.write(line.asString() + "\n");
                         writer.flush();
-                        if (line.isLast() && follow == false) { // when follow is true, the connection must be terminated from
+                        if (line.isLast() && follow == false) { // when follow is true, the connection must be
+                                                                // terminated from
                                                                 // the client side
                             timeoutProbeTask.ifPresent(t -> t.cancel());
                             complete(subscription, outputStream);

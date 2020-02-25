@@ -63,8 +63,8 @@ public class ElasticSearch {
     }
 
     /**
-     * Queries the source and call onLine in the same thread when a new line is received. Method returns when all the lines are
-     * fetched.
+     * Queries the source and call onLine in the same thread when a new line is received. Method returns when all the
+     * lines are fetched.
      */
     public void get(
             Map<String, List<String>> matchFilters,
@@ -110,8 +110,8 @@ public class ElasticSearch {
         int hitNum = 0;
 
         /**
-         * loop until fetchSize or all the elements are read note that (fetchSize + 1) is used as a limit in the query to check if there
-         * are more results
+         * loop until fetchSize or all the elements are read note that (fetchSize + 1) is used as a limit in the query
+         * to check if there are more results
          */
         Iterator<SearchHit> responseHitIterator = responseHits.iterator();
         while (responseHitIterator.hasNext() && hitNum < fetchSize) {
