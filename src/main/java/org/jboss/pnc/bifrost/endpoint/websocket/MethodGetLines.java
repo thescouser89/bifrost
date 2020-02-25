@@ -41,7 +41,7 @@ public class MethodGetLines extends MethodBase implements Method<GetLinesDto> {
             responseConsumer.accept(line);
         };
 
-        //async to complete the request
+        // async to complete the request
         subscriptions.submit(() -> {
             try {
                 dataProvider.get(
@@ -57,5 +57,4 @@ public class MethodGetLines extends MethodBase implements Method<GetLinesDto> {
         });
         return new OkResult();
     }
-
 }

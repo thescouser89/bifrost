@@ -15,8 +15,7 @@ public class BackOffRunnableTest {
 
     private Logger logger = Logger.getLogger(BackOffRunnableTest.class);
 
-    BackOffRunnableConfig config = BackOffRunnableConfigFactory
-            .get(100L, 5, 60000, 100L);
+    BackOffRunnableConfig config = BackOffRunnableConfigFactory.get(100L, 5, 60000, 100L);
 
     @Test
     public void shouldRun() throws InterruptedException {
@@ -46,7 +45,7 @@ public class BackOffRunnableTest {
         BackOffRunnable backOffRunnable = new BackOffRunnable(config);
         Runnable task = () -> {
             run.incrementAndGet();
-            //no result
+            // no result
         };
 
         backOffRunnable.setRunnable(task);
@@ -99,8 +98,7 @@ public class BackOffRunnableTest {
 
     @Test
     public void shouldCancelTheJobAfterTimeoutWhenNoresults() throws InterruptedException {
-        BackOffRunnableConfig config = BackOffRunnableConfigFactory
-                .get(100L, 0, 500, 100L);
+        BackOffRunnableConfig config = BackOffRunnableConfigFactory.get(100L, 0, 500, 100L);
 
         AtomicInteger run = new AtomicInteger(0);
         AtomicInteger cancel = new AtomicInteger(0);
@@ -122,7 +120,6 @@ public class BackOffRunnableTest {
         backOffRunnable.run();
         Assertions.assertEquals(3, run.get());
         Assertions.assertEquals(1, cancel.get());
-
 
     }
 }

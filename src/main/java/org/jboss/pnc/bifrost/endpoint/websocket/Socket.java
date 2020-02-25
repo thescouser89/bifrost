@@ -59,11 +59,11 @@ public class Socket {
     }
 
     private void unsubscribeSession(String sessionId) {
-        subscriptions.getAll().stream()
-        .filter(s -> s.getClientId().equals(sessionId))
-        .forEach(s -> subscriptions.unsubscribe(s));
+        subscriptions.getAll()
+                .stream()
+                .filter(s -> s.getClientId().equals(sessionId))
+                .forEach(s -> subscriptions.unsubscribe(s));
     }
-
 
     @OnMessage
     public void handleMessage(String message, Session session) {
@@ -96,7 +96,8 @@ public class Socket {
         try {
             methodParameter = method.getParameterType().getConstructor(new Class[] {}).newInstance(new Object[] {});
             BeanUtils.populate(methodParameter, request.getNamedParams());
-        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException
+                | InvocationTargetException e) {
             String err = "Cannot construct parameters for method: " + request.getMethod() + ".";
             logger.error(err, e);
             sendErrorResult(remote, requestId, new JSONRPC2Error(-13, err + e.getMessage(), null));

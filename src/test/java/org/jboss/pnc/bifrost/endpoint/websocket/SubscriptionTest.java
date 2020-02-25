@@ -50,22 +50,22 @@ public class SubscriptionTest {
 
     @Test
     public void testWebsocketGetLines() throws Exception {
-        try(Session session = ContainerProvider.getWebSocketContainer().connectToServer(Client.class, uri)) {
+        try (Session session = ContainerProvider.getWebSocketContainer().connectToServer(Client.class, uri)) {
             connected.get(10, TimeUnit.SECONDS);
 
             MethodGetLines methodGetLines = new MethodGetLines();
             GetLinesDto parameters = new GetLinesDto();
             parameters.setMatchFilters("");
             parameters.setPrefixFilters("");
-            Map<String, Object> parameterMap = (Map)BeanUtils.describe(parameters);
+            Map<String, Object> parameterMap = (Map) BeanUtils.describe(parameters);
             JSONRPC2Request request = new JSONRPC2Request(methodGetLines.getName(), parameterMap, Integer.valueOf(1));
             session.getAsyncRemote().sendText(request.toJSONString());
 
-            //should receive RCP response
+            // should receive RCP response
             Result response = RESULTS.poll(10, TimeUnit.SECONDS);
             Assertions.assertNotNull(response);
 
-            //should receive 5 lines
+            // should receive 5 lines
             int received = 0;
             while (received < 5) {
                 Line receivedLine = LINES.poll(10, TimeUnit.SECONDS);
@@ -78,7 +78,7 @@ public class SubscriptionTest {
             session.close();
             Assertions.assertEquals(5, received);
         }
-        TimeUnit.MILLISECONDS.sleep(250); //wait clean for shutdown
+        TimeUnit.MILLISECONDS.sleep(250); // wait clean for shutdown
     }
 
     @Test
@@ -86,21 +86,21 @@ public class SubscriptionTest {
         List<Line> lines = LineProducer.getLines(5, "some-ctx");
         mockDataProvider.addAllLines(lines);
 
-        try(Session session = ContainerProvider.getWebSocketContainer().connectToServer(Client.class, uri)) {
+        try (Session session = ContainerProvider.getWebSocketContainer().connectToServer(Client.class, uri)) {
             connected.get(10, TimeUnit.SECONDS);
 
             MethodSubscribe methodSubscribe = new MethodSubscribe();
             SubscribeDto parameters = new SubscribeDto();
             parameters.setMatchFilters("");
             parameters.setPrefixFilters("");
-            Map<String, Object> parameterMap = (Map)BeanUtils.describe(parameters);
+            Map<String, Object> parameterMap = (Map) BeanUtils.describe(parameters);
             JSONRPC2Request request = new JSONRPC2Request(methodSubscribe.getName(), parameterMap, Integer.valueOf(2));
             session.getAsyncRemote().sendText(request.toJSONString());
 
             Result result = RESULTS.poll(5, TimeUnit.SECONDS);
             Assertions.assertTrue(result instanceof SubscribeResultDto);
 
-            //should receive 5 lines
+            // should receive 5 lines
             int received = 0;
             while (received < 5) {
                 Line receivedLine = LINES.poll(10, TimeUnit.SECONDS);
@@ -115,7 +115,7 @@ public class SubscriptionTest {
             session.close();
             Assertions.assertEquals(5, received);
         }
-        TimeUnit.MILLISECONDS.sleep(250); //wait clean for shutdown
+        TimeUnit.MILLISECONDS.sleep(250); // wait clean for shutdown
     }
 
     @Test
@@ -123,21 +123,21 @@ public class SubscriptionTest {
         List<Line> lines = LineProducer.getLines(5, "some-ctx");
         mockDataProvider.addAllLines(lines);
 
-        try(Session session = ContainerProvider.getWebSocketContainer().connectToServer(Client.class, uri)) {
+        try (Session session = ContainerProvider.getWebSocketContainer().connectToServer(Client.class, uri)) {
             connected.get(10, TimeUnit.SECONDS);
 
             MethodSubscribe methodSubscribe = new MethodSubscribe();
             SubscribeDto parameters = new SubscribeDto();
             parameters.setMatchFilters("");
             parameters.setPrefixFilters("");
-            Map<String, Object> parameterMap = (Map)BeanUtils.describe(parameters);
+            Map<String, Object> parameterMap = (Map) BeanUtils.describe(parameters);
             JSONRPC2Request request = new JSONRPC2Request(methodSubscribe.getName(), parameterMap, Integer.valueOf(2));
             session.getAsyncRemote().sendText(request.toJSONString());
 
             Result result = RESULTS.poll(5, TimeUnit.SECONDS);
             Assertions.assertTrue(result instanceof SubscribeResultDto);
 
-            //should receive 5 lines
+            // should receive 5 lines
             int received = 0;
             while (received < 5) {
                 Line receivedLine = LINES.poll(10, TimeUnit.SECONDS);
@@ -148,12 +148,12 @@ public class SubscriptionTest {
             }
             Assertions.assertEquals(5, received);
 
-            //insert new lines
+            // insert new lines
             Thread.sleep(750);
             List<Line> newLines = LineProducer.getLines(5, "some-ctx");
             mockDataProvider.addAllLines(newLines);
 
-            //should receive 5 lines
+            // should receive 5 lines
             while (received < 10) {
                 Line receivedLine = LINES.poll(10, TimeUnit.SECONDS);
                 String message = receivedLine.getMessage();
@@ -163,7 +163,7 @@ public class SubscriptionTest {
             }
             Assertions.assertEquals(10, received);
         }
-        TimeUnit.MILLISECONDS.sleep(250); //wait clean for shutdown
+        TimeUnit.MILLISECONDS.sleep(250); // wait clean for shutdown
     }
 
     @ClientEndpoint
@@ -180,9 +180,7 @@ public class SubscriptionTest {
             logger.debug("Client received: " + message);
             Jsonb jsonb = JsonbBuilder.create();
 
-            Map<String, Object> rpcResponse = jsonb.fromJson(
-                    message,
-                    Map.class);
+            Map<String, Object> rpcResponse = jsonb.fromJson(message, Map.class);
             Map<String, Object> resultMap = (Map<String, Object>) rpcResponse.get("result");
 
             String type = (String) resultMap.get("type");
@@ -193,7 +191,7 @@ public class SubscriptionTest {
                 SubscribeResultDto result = new SubscribeResultDto((String) resultMap.get("value"));
                 RESULTS.add(result);
             } else if (LineResult.class.getCanonicalName().equals(type)) {
-                    Line line = new Line();
+                Line line = new Line();
                 try {
                     BeanUtils.populate(line, (Map<String, ? extends Object>) resultMap.get("value"));
                 } catch (Exception e) {
@@ -213,7 +211,6 @@ public class SubscriptionTest {
             LINES.add(line);
         }
     }
-
 
     private static List<Line> parseLines(String json) {
         Jsonb jsonb = JsonbBuilder.create();

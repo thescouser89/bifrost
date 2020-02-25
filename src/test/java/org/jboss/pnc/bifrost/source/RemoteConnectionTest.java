@@ -38,7 +38,8 @@ public class RemoteConnectionTest {
     ElasticSearchConfig elasticSearchConfig;
 
     @Inject
-    @Default //do not use the alternative
+    @Default
+    // do not use the alternative
     DataProvider dataProvider;
 
     @Test
@@ -48,7 +49,8 @@ public class RemoteConnectionTest {
 
         String index = elasticSearchConfig.getIndexes().split(",")[0];
         HttpEntity entity = new BasicHttpEntity();
-        Response response = lowLevelRestClient.performRequest("GET", "/" + index + "/_search/", Collections.emptyMap(), entity);
+        Response response = lowLevelRestClient
+                .performRequest("GET", "/" + index + "/_search/", Collections.emptyMap(), entity);
         assert 200 == response.getStatusLine().getStatusCode();
         lowLevelRestClient.close();
     }
@@ -61,7 +63,7 @@ public class RemoteConnectionTest {
             boolean inserted = lines.offer(line);
             assert inserted;
         };
-//        dataProvider.get("", "", Optional.empty(), Direction.DESC, Optional.of(10), onLine);
+        // dataProvider.get("", "", Optional.empty(), Direction.DESC, Optional.of(10), onLine);
         dataProvider.get("", "", Optional.empty(), Direction.DESC, Optional.of(15), onLine);
 
         List<Line> received = new ArrayList<>();
@@ -74,5 +76,4 @@ public class RemoteConnectionTest {
         }
         Assertions.assertEquals(15, received.size());
     }
-
 }

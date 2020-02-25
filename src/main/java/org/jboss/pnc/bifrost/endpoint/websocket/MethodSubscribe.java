@@ -29,7 +29,6 @@ public class MethodSubscribe extends MethodBase implements Method<SubscribeDto> 
         }
     };
 
-
     @Inject
     DataProvider dataProvider;
 
@@ -52,8 +51,7 @@ public class MethodSubscribe extends MethodBase implements Method<SubscribeDto> 
         Subscription subscription = new Subscription(
                 getSession().getId(),
                 topic,
-                () -> sendUnsubscribedNotification(topic)
-        );
+                () -> sendUnsubscribedNotification(topic));
 
         Consumer<Line> onLine = line -> {
             if (line != null) {

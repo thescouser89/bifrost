@@ -24,8 +24,8 @@ public class DataProviderMock extends DataProvider {
 
     Deque<Line> lines = new LinkedList<>();
 
-//    @Inject
-//    Subscriptions subscriptions;
+    // @Inject
+    // Subscriptions subscriptions;
 
     public DataProviderMock() {
         super();
@@ -39,9 +39,7 @@ public class DataProviderMock extends DataProvider {
             Direction direction,
             Optional<Integer> maxLines,
             Consumer<Line> onLine) {
-        LineProducer.getLines(5, "abc123").forEach(
-                line -> onLine.accept(line)
-        );
+        LineProducer.getLines(5, "abc123").forEach(line -> onLine.accept(line));
     }
 
     @Override
