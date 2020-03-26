@@ -91,7 +91,7 @@ public class ElasticSearch {
         if (searchAfter.isPresent()) {
             String timestamp = searchAfter.get().getTimestamp();
             Object[] searchAfterTimeStampId = new Object[] { Instant.parse(timestamp).toEpochMilli(),
-                    searchAfter.get().getId() };
+                    searchAfter.get().getSequence(), searchAfter.get().getId() };
             sourceBuilder.searchAfter(searchAfterTimeStampId);
         } else {
             // TODO tailFromNow vs tailFromBeginning
