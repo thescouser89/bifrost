@@ -95,8 +95,10 @@ public class ElasticSearch {
             String timestamp = searchAfter.get().getTimestamp();
             TemporalAccessor accessor = DateTimeFormatter.ISO_ZONED_DATE_TIME.parse(timestamp);
             // search after must contain the same fields as sort
-            Object[] searchAfterTimeStampId = new Object[] { Instant.from(accessor).toEpochMilli(),
-                    getSequence(searchAfter.get().getSequence(), direction), searchAfter.get().getId() };
+            Object[] searchAfterTimeStampId = new Object[] {
+                    Instant.from(accessor).toEpochMilli(),
+                    getSequence(searchAfter.get().getSequence(), direction),
+                    searchAfter.get().getId() };
             sourceBuilder.searchAfter(searchAfterTimeStampId);
         } else {
             // TODO tailFromNow vs tailFromBeginning
