@@ -18,9 +18,9 @@
   </properties>
 
   <scm>
-    <connection>scm:git:http://github.com/project-ncl/bitfrost.git</connection>
-    <developerConnection>scm:git:git@github.com:project-ncl/bitfrost.git</developerConnection>
-    <url>http://github.com/project-ncl/bitfrost</url>
+    <connection>scm:git:http://github.com/project-ncl/bifrost.git</connection>
+    <developerConnection>scm:git:git@github.com:project-ncl/bifrost.git</developerConnection>
+    <url>http://github.com/project-ncl/bifrost</url>
     <tag>HEAD</tag>
   </scm>
 
