@@ -4,6 +4,19 @@
   <groupId>org.jboss.pnc.bifrost</groupId>
   <artifactId>bifrost-server</artifactId>
   <version>1.0.1-SNAPSHOT</version>
+
+  <name>bifrost</name>
+  <description>Elasticsearch subscriptions service</description>
+  <url>https://github.com/bifrost</url>
+  <inceptionYear>2019</inceptionYear>
+
+  <licenses>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <distribution>repo</distribution>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
+    </license>
+  </licenses>
   <properties>
     <surefire-plugin.version>2.22.2</surefire-plugin.version>
     <quarkus.version>1.2.1.Final</quarkus.version>
@@ -22,6 +35,13 @@
     <url>http://github.com/project-ncl/bifrost</url>
     <tag>HEAD</tag>
   </scm>
+
+  <developers>
+    <developer>
+      <organization>RedHat</organization>
+      <organizationUrl>http://www.redhat.com</organizationUrl>
+    </developer>
+  </developers>
 
   <dependencyManagement>
     <dependencies>
