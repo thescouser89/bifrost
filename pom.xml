@@ -245,6 +245,24 @@
                   <autoReleaseAfterClose>false</autoReleaseAfterClose>
               </configuration>
            </plugin>
+           <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-javadoc-plugin</artifactId>
+               <executions>
+                   <execution>
+                       <id>attach-javadocs</id>
+                       <goals>
+                           <goal>jar</goal>
+                       </goals>
+                       <configuration>
+                           <failOnError>false</failOnError>
+                           <detectOfflineLinks>false</detectOfflineLinks>
+                           <quiet>true</quiet>
+                           <doclint>none</doclint>
+                       </configuration>
+                   </execution>
+               </executions>
+           </plugin>
     </plugins>
   </build>
   <profiles>
