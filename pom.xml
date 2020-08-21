@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.jboss.pnc.bifrost</groupId>
   <artifactId>bifrost-server</artifactId>
-  <version>1.0.1-SNAPSHOT</version>
+  <version>1.0.0-SNAPSHOT</version>
   <properties>
     <surefire-plugin.version>2.22.2</surefire-plugin.version>
     <quarkus.version>1.2.1.Final</quarkus.version>
@@ -232,6 +232,8 @@
               <configuration>
                   <tagNameFormat>@{project.version}${tagSuffix}</tagNameFormat>
                   <autoVersionSubmodules>true</autoVersionSubmodules>
+                  <releaseProfiles>release</releaseProfiles>
+                  <goals>deploy</goals>
               </configuration>
            </plugin>
            <plugin>
@@ -244,24 +246,6 @@
                   <nexusUrl>https://oss.sonatype.org/</nexusUrl>
                   <autoReleaseAfterClose>false</autoReleaseAfterClose>
               </configuration>
-           </plugin>
-           <plugin>
-               <groupId>org.apache.maven.plugins</groupId>
-               <artifactId>maven-javadoc-plugin</artifactId>
-               <executions>
-                   <execution>
-                       <id>attach-javadocs</id>
-                       <goals>
-                           <goal>jar</goal>
-                       </goals>
-                       <configuration>
-                           <failOnError>false</failOnError>
-                           <detectOfflineLinks>false</detectOfflineLinks>
-                           <quiet>true</quiet>
-                           <doclint>none</doclint>
-                       </configuration>
-                   </execution>
-               </executions>
            </plugin>
     </plugins>
   </build>
@@ -312,6 +296,58 @@
           </plugin>
         </plugins>
       </build>
+    </profile>
+    <profile>
+        <id>release</id>
+        <build>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>3.2.1</version>
+                    <executions>
+                        <execution>
+                            <id>attach-sources</id>
+                            <goals>
+                                <goal>jar-no-fork</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-gpg-plugin</artifactId>
+                    <version>1.6</version>
+                    <executions>
+                        <execution>
+                            <id>sign-artifacts</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>sign</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                 <plugin>
+                     <groupId>org.apache.maven.plugins</groupId>
+                     <artifactId>maven-javadoc-plugin</artifactId>
+                     <executions>
+                         <execution>
+                             <id>attach-javadocs</id>
+                             <goals>
+                                 <goal>jar</goal>
+                             </goals>
+                             <configuration>
+                                 <failOnError>false</failOnError>
+                                 <detectOfflineLinks>false</detectOfflineLinks>
+                                 <quiet>true</quiet>
+                                 <doclint>none</doclint>
+                             </configuration>
+                         </execution>
+                     </executions>
+                 </plugin>
+            </plugins>
+        </build>
     </profile>
   </profiles>
   <repositories>
