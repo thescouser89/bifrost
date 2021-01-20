@@ -1,5 +1,6 @@
 package org.jboss.pnc.bifrost.common.scheduler;
 
+import io.micrometer.core.annotation.Timed;
 import org.apache.lucene.util.NamedThreadFactory;
 import org.jboss.logging.Logger;
 import org.jboss.pnc.bifrost.Config;
@@ -56,6 +57,7 @@ public class Subscriptions {
         executor.submit(() -> task.accept(new TaskParameters(initialLastResult.get(), onResult)));
     }
 
+    @Timed
     public <T> void subscribe(
             Subscription subscription,
             Consumer<TaskParameters<T>> task,

@@ -1,5 +1,8 @@
 package org.jboss.pnc.bifrost.source;
 
+import io.micrometer.core.annotation.Timed;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RestClient;
@@ -18,6 +21,8 @@ import org.jboss.pnc.bifrost.common.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
@@ -33,6 +38,8 @@ import java.util.function.Consumer;
  */
 public class ElasticSearch {
 
+    private static final String className = ElasticSearch.class.getName();
+
     private final Logger logger = LoggerFactory.getLogger(ElasticSearch.class);
 
     private RestClient lowLevelRestClient;
@@ -41,6 +48,16 @@ public class ElasticSearch {
     private String[] indexes;
 
     private ElasticSearchConfig elasticSearchConfig;
+
+    @Inject
+    MeterRegistry registry;
+
+    private Counter errCounter;
+
+    @PostConstruct
+    void initMetrics() {
+        errCounter = registry.counter(className + ".error.count");
+    }
 
     public ElasticSearch(ElasticSearchConfig elasticSearchConfig) {
         this.elasticSearchConfig = elasticSearchConfig;
@@ -61,6 +78,7 @@ public class ElasticSearch {
         try {
             lowLevelRestClient.close();
         } catch (IOException e) {
+            errCounter.increment();
             logger.error("Cannot close Elastisearch client.", e);
         }
     }
@@ -69,6 +87,7 @@ public class ElasticSearch {
      * Queries the source and call onLine in the same thread when a new line is received. Method returns when all the
      * lines are fetched.
      */
+    @Timed
     public void get(
             Map<String, List<String>> matchFilters,
             Map<String, List<String>> prefixFilters,
@@ -148,6 +167,7 @@ public class ElasticSearch {
             case DESC:
                 return SortOrder.DESC;
             default:
+                errCounter.increment();
                 throw new RuntimeException("Unsupported direction: " + direction.toString());
         }
     }
@@ -187,6 +207,7 @@ public class ElasticSearch {
         }
     }
 
+    @Timed
     private QueryBuilder getQueryBuilder(
             Map<String, List<String>> matchFilters,
             Map<String, List<String>> prefixFilters) {

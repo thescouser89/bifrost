@@ -1,5 +1,8 @@
 package org.jboss.pnc.bifrost.endpoint;
 
+import io.micrometer.core.annotation.Timed;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.jboss.logging.Logger;
 import org.jboss.pnc.api.bifrost.dto.Line;
 import org.jboss.pnc.api.bifrost.dto.MetaData;
@@ -11,6 +14,7 @@ import org.jboss.pnc.bifrost.common.scheduler.TimeoutExecutor;
 import org.jboss.pnc.bifrost.endpoint.provider.DataProvider;
 import org.jboss.pnc.common.security.Md5;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.ws.rs.Path;
 import javax.ws.rs.ServerErrorException;
@@ -39,6 +43,8 @@ import java.util.function.Consumer;
 @Path("/")
 public class RestImpl implements Bifrost {
 
+    private static final String className = RestImpl.class.getName();
+
     private static Logger logger = Logger.getLogger(RestImpl.class);
 
     @Inject
@@ -46,6 +52,19 @@ public class RestImpl implements Bifrost {
 
     private Map<String, ScheduledThreadPoolExecutor> probeExecutor = new ConcurrentHashMap<>();
 
+    @Inject
+    MeterRegistry registry;
+
+    private Counter errCounter;
+    private Counter warnCounter;
+
+    @PostConstruct
+    void initMetrics() {
+        errCounter = registry.counter(className + ".error.count");
+        warnCounter = registry.counter(className + ".warning.count");
+    }
+
+    @Timed
     @Override
     public Response getAllLines(
             String matchFilters,
@@ -62,6 +81,7 @@ public class RestImpl implements Bifrost {
             try {
                 queue.offer(Optional.empty(), 5, TimeUnit.SECONDS); // TODO
             } catch (InterruptedException e) {
+                errCounter.increment();
                 logger.error("Cannot add end of data marker.", e);
             }
         };
@@ -80,6 +100,7 @@ public class RestImpl implements Bifrost {
                         writer.flush();
                     } catch (IOException e) {
                         timeoutProbeTask.get().cancel();
+                        warnCounter.increment();
                         logger.warn("Cannot send connection probe, client might closed the connection.", e);
                         complete(subscription, outputStream);
                     }
@@ -111,6 +132,7 @@ public class RestImpl implements Bifrost {
                         break;
                     }
                 } catch (IOException e) {
+                    warnCounter.increment();
                     logger.warn(
                             "Cannot write output. Client might closed the connection. Unsubscribing ... "
                                     + e.getMessage());
@@ -118,6 +140,7 @@ public class RestImpl implements Bifrost {
                     complete(subscription, outputStream);
                     break;
                 } catch (InterruptedException e) {
+                    errCounter.increment();
                     logger.error("Cannot read from queue.", e);
                     timeoutProbeTask.ifPresent(t -> t.cancel());
                     complete(subscription, outputStream);
@@ -138,6 +161,7 @@ public class RestImpl implements Bifrost {
         return Response.ok(stream).build();
     }
 
+    @Timed
     protected void fillQueueWithLines(
             String matchFilters,
             String prefixFilters,
@@ -171,6 +195,7 @@ public class RestImpl implements Bifrost {
                     dataProvider.unsubscribe(subscription);
                 }
             } catch (Exception e) {
+                warnCounter.increment();
                 logger.warn("Unsubscribing due to the exception.", e);
                 addEndOfDataMarker.run();
                 dataProvider.unsubscribe(subscription);
@@ -194,6 +219,7 @@ public class RestImpl implements Bifrost {
         try {
             outputStream.close();
         } catch (IOException e) {
+            warnCounter.increment();
             logger.warn("Cannot close output stream.", e);
         }
     }
@@ -229,6 +255,7 @@ public class RestImpl implements Bifrost {
         try {
             md5 = new Md5();
         } catch (NoSuchAlgorithmException e) {
+            errCounter.increment();
             throw new ServerErrorException(e.getMessage(), Response.Status.INTERNAL_SERVER_ERROR);
         }
 
@@ -236,6 +263,7 @@ public class RestImpl implements Bifrost {
             try {
                 md5.add(line.getMessage());
             } catch (UnsupportedEncodingException e) {
+                errCounter.increment();
                 throw new ServerErrorException(e.getMessage(), Response.Status.INTERNAL_SERVER_ERROR);
             }
         };

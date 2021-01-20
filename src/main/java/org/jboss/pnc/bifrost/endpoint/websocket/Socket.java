@@ -3,11 +3,15 @@ package org.jboss.pnc.bifrost.endpoint.websocket;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2ParseException;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Request;
+import io.micrometer.core.annotation.Timed;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.apache.commons.beanutils.BeanUtils;
 import org.jboss.logging.Logger;
 import org.jboss.pnc.api.bifrost.dto.Line;
 import org.jboss.pnc.bifrost.common.scheduler.Subscriptions;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.websocket.OnClose;
 import javax.websocket.OnError;
@@ -27,6 +31,8 @@ import java.util.function.Consumer;
 @ServerEndpoint("/socket")
 public class Socket {
 
+    private static final String className = Socket.class.getName();
+
     private Logger logger = Logger.getLogger(Socket.class);
 
     @Inject
@@ -35,8 +41,21 @@ public class Socket {
     @Inject
     MethodFactory methodFactory;
 
+    @Inject
+    MeterRegistry registry;
+
+    private Counter errCounter;
+    private Counter warnCounter;
+
+    @PostConstruct
+    void initMetrics() {
+        errCounter = registry.counter(className + ".error.count");
+        warnCounter = registry.counter(className + ".warning.count");
+    }
+
     private SendHandler commandResponseHandler = result -> {
         if (!result.isOK()) {
+            errCounter.increment();
             logger.error("Error sending command response.", result.getException());
         }
     };
@@ -54,6 +73,7 @@ public class Socket {
 
     @OnError
     public void onError(Session session, Throwable error) {
+        errCounter.increment();
         logger.error("Socket communication error.", error);
         unsubscribeSession(session.getId());
     }
@@ -65,6 +85,7 @@ public class Socket {
                 .forEach(s -> subscriptions.unsubscribe(s));
     }
 
+    @Timed
     @OnMessage
     public void handleMessage(String message, Session session) {
         logger.debug("Received message: " + message);
@@ -74,6 +95,7 @@ public class Socket {
         try {
             request = JSONRPC2Request.parse(message);
         } catch (JSONRPC2ParseException e) {
+            errCounter.increment();
             String err = "Cannot parse request.";
             logger.error(err, e);
             sendErrorResult(remote, "undefined", new JSONRPC2Error(-11, err + e.getMessage(), null));
@@ -83,6 +105,7 @@ public class Socket {
 
         Optional<Method<?>> maybeMethod = methodFactory.get(request.getMethod());
         if (!maybeMethod.isPresent()) {
+            warnCounter.increment();
             String err = "Unsupported method " + request.getMethod();
             logger.warn(err);
             sendErrorResult(remote, requestId, new JSONRPC2Error(-12, err, null));
@@ -98,6 +121,7 @@ public class Socket {
             BeanUtils.populate(methodParameter, request.getNamedParams());
         } catch (NoSuchMethodException | InstantiationException | IllegalAccessException
                 | InvocationTargetException e) {
+            errCounter.increment();
             String err = "Cannot construct parameters for method: " + request.getMethod() + ".";
             logger.error(err, e);
             sendErrorResult(remote, requestId, new JSONRPC2Error(-13, err + e.getMessage(), null));
