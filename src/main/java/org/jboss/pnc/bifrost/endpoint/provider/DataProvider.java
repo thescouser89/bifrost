@@ -54,7 +54,6 @@ public class DataProvider {
 
     private Counter errCounter;
 
-    @PostConstruct
     void initMetrics() {
         errCounter = registry.counter(className + ".error.count");
     }
@@ -62,6 +61,7 @@ public class DataProvider {
     @PostConstruct
     public void init() {
         elasticSearch = new ElasticSearch(elasticSearchConfig);
+        initMetrics();
     }
 
     public void unsubscribe(Subscription subscription) {
