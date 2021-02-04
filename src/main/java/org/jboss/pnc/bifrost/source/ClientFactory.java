@@ -1,5 +1,8 @@
 package org.jboss.pnc.bifrost.source;
 
+import io.micrometer.core.annotation.Timed;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.apache.http.HttpHost;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
@@ -10,6 +13,8 @@ import org.elasticsearch.client.RestClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,14 +35,27 @@ import java.util.stream.Collectors;
  */
 public class ClientFactory {
 
+    private static final String className = ClientFactory.class.getName();
+
     private final Logger logger = LoggerFactory.getLogger(ClientFactory.class);
 
     private ElasticSearchConfig config;
+
+    @Inject
+    MeterRegistry registry;
+
+    private Counter errCounter;
+
+    @PostConstruct
+    void initMetrics() {
+        errCounter = registry.counter(className + ".error.count");
+    }
 
     public ClientFactory(ElasticSearchConfig config) {
         this.config = config;
     }
 
+    @Timed
     public RestClient getConnectedClient() throws Exception {
         try {
             List<HttpHost> httpHosts = Arrays.stream(config.getHosts().split(","))
@@ -71,6 +89,7 @@ public class ClientFactory {
             return lowLevelRestClient;
         } catch (IOException | KeyStoreException | NoSuchAlgorithmException | KeyManagementException
                 | CertificateException e) {
+            errCounter.increment();
             throw new ClientConnectionException("Cannot connect to remote Elasticsearch server.", e);
         }
     }

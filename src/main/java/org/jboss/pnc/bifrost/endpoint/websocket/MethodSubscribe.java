@@ -1,12 +1,16 @@
 package org.jboss.pnc.bifrost.endpoint.websocket;
 
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Notification;
+import io.micrometer.core.annotation.Timed;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.apache.commons.beanutils.BeanUtils;
 import org.jboss.logging.Logger;
 import org.jboss.pnc.api.bifrost.dto.Line;
 import org.jboss.pnc.bifrost.common.scheduler.Subscription;
 import org.jboss.pnc.bifrost.endpoint.provider.DataProvider;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 import javax.websocket.SendHandler;
@@ -21,6 +25,8 @@ import java.util.function.Consumer;
 @Dependent
 public class MethodSubscribe extends MethodBase implements Method<SubscribeDto> {
 
+    private static final String className = MethodSubscribe.class.getName();
+
     private Logger logger = Logger.getLogger(MethodSubscribe.class);
 
     private SendHandler responseHandler = result -> {
@@ -32,6 +38,16 @@ public class MethodSubscribe extends MethodBase implements Method<SubscribeDto> 
     @Inject
     DataProvider dataProvider;
 
+    @Inject
+    MeterRegistry registry;
+
+    private Counter errCounter;
+
+    @PostConstruct
+    void initMetrics() {
+        errCounter = registry.counter(className + ".error.count");
+    }
+
     @Override
     public String getName() {
         return "SUBSCRIBE";
@@ -42,6 +58,7 @@ public class MethodSubscribe extends MethodBase implements Method<SubscribeDto> 
         return SubscribeDto.class;
     }
 
+    @Timed
     @Override
     public Result apply(SubscribeDto subscribeDto, Consumer<Line> responseConsumer) {
         String matchFilters = subscribeDto.getMatchFilters();
@@ -75,6 +92,7 @@ public class MethodSubscribe extends MethodBase implements Method<SubscribeDto> 
             String jsonString = notification.toJSONString();
             getSession().getAsyncRemote().sendText(jsonString, responseHandler);
         } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            errCounter.increment();
             logger.error("Cannot prepare unsubscribed message.", e);
         }
     }
