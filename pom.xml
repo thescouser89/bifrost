@@ -19,7 +19,7 @@
   </licenses>
   <properties>
     <surefire-plugin.version>2.22.2</surefire-plugin.version>
-    <quarkus.version>1.10.3.Final</quarkus.version>
+    <quarkus.version>2.0.0.Final</quarkus.version>
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -156,7 +156,6 @@
         <artifactId>quarkus-maven-plugin</artifactId>
         <version>${quarkus.version}</version>
         <configuration>
-          <uberJar>true</uberJar>
           <ignoredEntries>
             <ignoredEntry>META-INF/ECLIPSE_.RSA</ignoredEntry>
             <ignoredEntry>META-INF/ECLIPSE_.SF</ignoredEntry>
