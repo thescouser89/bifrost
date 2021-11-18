@@ -251,6 +251,7 @@
               <configuration>
                   <tagNameFormat>@{project.version}${tagSuffix}</tagNameFormat>
                   <autoVersionSubmodules>true</autoVersionSubmodules>
+                  <stagingRepository>https://oss.sonatype.org/service/local/staging/deploy/maven2/</stagingRepository>
                   <releaseProfiles>release</releaseProfiles>
                   <goals>deploy</goals>
               </configuration>
