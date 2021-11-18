@@ -1,10 +1,14 @@
 package org.jboss.pnc.bifrost.common.scheduler;
 
+import io.micrometer.core.annotation.Timed;
+import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.apache.lucene.util.NamedThreadFactory;
 import org.jboss.logging.Logger;
 import org.jboss.pnc.bifrost.Config;
 import org.jboss.pnc.bifrost.common.Reference;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.util.Collections;
@@ -24,11 +28,30 @@ import java.util.function.Consumer;
 @ApplicationScoped
 public class Subscriptions {
 
+    private static final String className = Subscriptions.class.getName();
+
     private Logger logger = Logger.getLogger(Subscriptions.class);
 
     private Map<Subscription, ScheduledFuture> subscriptions;
 
     private ScheduledExecutorService executor;
+
+    @Inject
+    MeterRegistry registry;
+
+    private Gauge subscriptionsMapSize;
+
+    @PostConstruct
+    void initMetrics() {
+        subscriptionsMapSize = Gauge
+                .builder(className + ".subscriptions.map.size", this, Subscriptions::getSubscriptionsMapSize)
+                .description("current subscriptions map size")
+                .register(registry);
+    }
+
+    private int getSubscriptionsMapSize() {
+        return subscriptions.size();
+    }
 
     /**
      * CDI workaround
@@ -56,6 +79,7 @@ public class Subscriptions {
         executor.submit(() -> task.accept(new TaskParameters(initialLastResult.get(), onResult)));
     }
 
+    @Timed
     public <T> void subscribe(
             Subscription subscription,
             Consumer<TaskParameters<T>> task,

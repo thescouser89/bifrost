@@ -1,16 +1,21 @@
 package org.jboss.pnc.bifrost.endpoint;
 
+import io.micrometer.core.annotation.Timed;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.jboss.logging.Logger;
 import org.jboss.pnc.api.bifrost.dto.Line;
 import org.jboss.pnc.api.bifrost.dto.MetaData;
 import org.jboss.pnc.api.bifrost.enums.Direction;
 import org.jboss.pnc.api.bifrost.rest.Bifrost;
+import org.jboss.pnc.bifrost.common.DateUtil;
 import org.jboss.pnc.bifrost.common.Reference;
 import org.jboss.pnc.bifrost.common.scheduler.Subscription;
 import org.jboss.pnc.bifrost.common.scheduler.TimeoutExecutor;
 import org.jboss.pnc.bifrost.endpoint.provider.DataProvider;
 import org.jboss.pnc.common.security.Md5;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.ws.rs.Path;
 import javax.ws.rs.ServerErrorException;
@@ -20,6 +25,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -38,6 +44,8 @@ import java.util.function.Consumer;
 @Path("/")
 public class RestImpl implements Bifrost {
 
+    private static final String className = RestImpl.class.getName();
+
     private static Logger logger = Logger.getLogger(RestImpl.class);
 
     @Inject
@@ -45,6 +53,19 @@ public class RestImpl implements Bifrost {
 
     private Map<String, ScheduledThreadPoolExecutor> probeExecutor = new ConcurrentHashMap<>();
 
+    @Inject
+    MeterRegistry registry;
+
+    private Counter errCounter;
+    private Counter warnCounter;
+
+    @PostConstruct
+    void initMetrics() {
+        errCounter = registry.counter(className + ".error.count");
+        warnCounter = registry.counter(className + ".warning.count");
+    }
+
+    @Timed
     @Override
     public Response getAllLines(
             String matchFilters,
@@ -55,12 +76,15 @@ public class RestImpl implements Bifrost {
             boolean follow,
             String timeoutProbeString) {
 
+        validateAndFixInputDate(afterLine);
+
         ArrayBlockingQueue<Optional<Line>> queue = new ArrayBlockingQueue(1024); // TODO
 
         Runnable addEndOfDataMarker = () -> {
             try {
                 queue.offer(Optional.empty(), 5, TimeUnit.SECONDS); // TODO
             } catch (InterruptedException e) {
+                errCounter.increment();
                 logger.error("Cannot add end of data marker.", e);
             }
         };
@@ -79,16 +103,17 @@ public class RestImpl implements Bifrost {
                         writer.flush();
                     } catch (IOException e) {
                         timeoutProbeTask.get().cancel();
+                        warnCounter.increment();
                         logger.warn("Cannot send connection probe, client might closed the connection.", e);
                         complete(subscription, outputStream);
                     }
                 };
-                timeoutProbeTask.set(timeoutExecutor.submit(sendProbe, 15000, TimeUnit.MICROSECONDS));
+                timeoutProbeTask.set(timeoutExecutor.submit(sendProbe, 15000, TimeUnit.MILLISECONDS));
             }
 
             while (true) {
                 try {
-                    Optional<Line> maybeLine = queue.take();
+                    Optional<Line> maybeLine = queue.poll(30, TimeUnit.MINUTES);
                     if (maybeLine.isPresent()) {
                         Line line = maybeLine.get();
                         logger.trace("Sending line: " + line.asString());
@@ -110,6 +135,7 @@ public class RestImpl implements Bifrost {
                         break;
                     }
                 } catch (IOException e) {
+                    warnCounter.increment();
                     logger.warn(
                             "Cannot write output. Client might closed the connection. Unsubscribing ... "
                                     + e.getMessage());
@@ -117,6 +143,7 @@ public class RestImpl implements Bifrost {
                     complete(subscription, outputStream);
                     break;
                 } catch (InterruptedException e) {
+                    errCounter.increment();
                     logger.error("Cannot read from queue.", e);
                     timeoutProbeTask.ifPresent(t -> t.cancel());
                     complete(subscription, outputStream);
@@ -137,6 +164,7 @@ public class RestImpl implements Bifrost {
         return Response.ok(stream).build();
     }
 
+    @Timed
     protected void fillQueueWithLines(
             String matchFilters,
             String prefixFilters,
@@ -170,6 +198,7 @@ public class RestImpl implements Bifrost {
                     dataProvider.unsubscribe(subscription);
                 }
             } catch (Exception e) {
+                warnCounter.increment();
                 logger.warn("Unsubscribing due to the exception.", e);
                 addEndOfDataMarker.run();
                 dataProvider.unsubscribe(subscription);
@@ -193,6 +222,7 @@ public class RestImpl implements Bifrost {
         try {
             outputStream.close();
         } catch (IOException e) {
+            warnCounter.increment();
             logger.warn("Cannot close output stream.", e);
         }
     }
@@ -204,6 +234,8 @@ public class RestImpl implements Bifrost {
             Line afterLine,
             Direction direction,
             Integer maxLines) throws IOException {
+        validateAndFixInputDate(afterLine);
+
         List<Line> lines = new ArrayList<>();
         Consumer<Line> onLine = line -> lines.add(line);
         dataProvider.get(
@@ -224,61 +256,39 @@ public class RestImpl implements Bifrost {
             Direction direction,
             Integer maxLines) throws IOException {
 
+        validateAndFixInputDate(afterLine);
+
         Md5 md5;
         try {
             md5 = new Md5();
         } catch (NoSuchAlgorithmException e) {
+            errCounter.increment();
             throw new ServerErrorException(e.getMessage(), Response.Status.INTERNAL_SERVER_ERROR);
         }
 
-        ArrayBlockingQueue<Optional<Line>> queue = new ArrayBlockingQueue(1024); // TODO
-
-        Runnable addEndOfDataMarker = () -> {
+        Consumer<Line> onLine = line -> {
             try {
-                queue.offer(Optional.empty(), 5, TimeUnit.SECONDS); // TODO
-            } catch (InterruptedException e) {
-                logger.error("Cannot add end of data marker.", e);
+                md5.add(line.getMessage());
+            } catch (UnsupportedEncodingException e) {
+                errCounter.increment();
+                throw new ServerErrorException(e.getMessage(), Response.Status.INTERNAL_SERVER_ERROR);
             }
         };
-
-        Subscription subscription = new Subscription(addEndOfDataMarker);
-
-        fillQueueWithLines(
+        dataProvider.get(
                 matchFilters,
                 prefixFilters,
-                afterLine,
-                maxLines,
-                false,
-                queue,
-                addEndOfDataMarker,
-                subscription);
+                Optional.ofNullable(afterLine),
+                direction,
+                Optional.ofNullable(maxLines),
+                onLine);
 
-        while (true) {
-            try {
-                Optional<Line> maybeLine = queue.take();
-                if (maybeLine.isPresent()) {
-                    Line line = maybeLine.get();
-                    logger.trace("Checksumming line: " + line.asString());
-                    md5.add(line.getMessage());
-                    if (line.isLast()) {
-                        dataProvider.unsubscribe(subscription);
-                        break;
-                    }
-                } else { // empty line indicating end of results
-                    logger.info("Ending checksum, no results.");
-                    dataProvider.unsubscribe(subscription);
-                    break;
-                }
-            } catch (IOException e) {
-                logger.warn("Cannot checksum line. Unsubscribing ... " + e.getMessage());
-                dataProvider.unsubscribe(subscription);
-                break;
-            } catch (InterruptedException e) {
-                logger.error("Cannot read from queue.", e);
-                dataProvider.unsubscribe(subscription);
-                break;
-            }
-        }
         return new MetaData(md5.digest());
     }
+
+    public static void validateAndFixInputDate(Line afterLine) {
+        if (afterLine != null) {
+            afterLine.setTimestamp(DateUtil.validateAndFixInputDate(afterLine.getTimestamp()));
+        }
+    }
+
 }

@@ -1,12 +1,11 @@
 package org.jboss.pnc.bifrost.endpoint.provider;
 
+import io.quarkus.test.Mock;
 import org.jboss.pnc.api.bifrost.dto.Line;
 import org.jboss.pnc.api.bifrost.enums.Direction;
 import org.jboss.pnc.bifrost.mock.LineProducer;
 
-import javax.annotation.Priority;
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Alternative;
 import java.io.IOException;
 import java.util.Deque;
 import java.util.LinkedList;
@@ -17,12 +16,12 @@ import java.util.function.Consumer;
 /**
  * @author <a href="mailto:matejonnet@gmail.com">Matej Lazar</a>
  */
-@Alternative()
-@Priority(1)
+@Mock
 @ApplicationScoped
 public class DataProviderMock extends DataProvider {
 
     Deque<Line> lines = new LinkedList<>();
+    Optional<IOException> throwOnCall = Optional.empty();
 
     // @Inject
     // Subscriptions subscriptions;
@@ -38,8 +37,12 @@ public class DataProviderMock extends DataProvider {
             Optional<Line> afterLine,
             Direction direction,
             Optional<Integer> maxLines,
-            Consumer<Line> onLine) {
-        LineProducer.getLines(5, "abc123").forEach(line -> onLine.accept(line));
+            Consumer<Line> onLine) throws IOException {
+        if (throwOnCall.isPresent()) {
+            throw throwOnCall.get();
+        } else {
+            LineProducer.getLines(5, "abc123").forEach(line -> onLine.accept(line));
+        }
     }
 
     @Override
@@ -67,5 +70,13 @@ public class DataProviderMock extends DataProvider {
         for (Line line : lines) {
             addLine(line);
         }
+    }
+
+    public void setThrowOnCall(IOException e) {
+        this.throwOnCall = Optional.of(e);
+    }
+
+    public void removeThrowOnCall() {
+        this.throwOnCall = Optional.empty();
     }
 }

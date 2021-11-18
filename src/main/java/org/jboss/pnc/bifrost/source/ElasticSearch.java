@@ -1,5 +1,8 @@
 package org.jboss.pnc.bifrost.source;
 
+import io.micrometer.core.annotation.Timed;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RestClient;
@@ -14,21 +17,30 @@ import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.jboss.pnc.api.bifrost.dto.Line;
 import org.jboss.pnc.api.bifrost.enums.Direction;
+import org.jboss.pnc.bifrost.common.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 import java.io.IOException;
 import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAccessor;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import static org.jboss.pnc.bifrost.common.DateUtil.validateAndFixInputDate;
+
 /**
  * @author <a href="mailto:matejonnet@gmail.com">Matej Lazar</a>
  */
 public class ElasticSearch {
+
+    private static final String className = ElasticSearch.class.getName();
 
     private final Logger logger = LoggerFactory.getLogger(ElasticSearch.class);
 
@@ -38,6 +50,16 @@ public class ElasticSearch {
     private String[] indexes;
 
     private ElasticSearchConfig elasticSearchConfig;
+
+    @Inject
+    MeterRegistry registry;
+
+    private Counter errCounter;
+
+    @PostConstruct
+    void initMetrics() {
+        errCounter = registry.counter(className + ".error.count");
+    }
 
     public ElasticSearch(ElasticSearchConfig elasticSearchConfig) {
         this.elasticSearchConfig = elasticSearchConfig;
@@ -58,6 +80,7 @@ public class ElasticSearch {
         try {
             lowLevelRestClient.close();
         } catch (IOException e) {
+            errCounter.increment();
             logger.error("Cannot close Elastisearch client.", e);
         }
     }
@@ -66,6 +89,7 @@ public class ElasticSearch {
      * Queries the source and call onLine in the same thread when a new line is received. Method returns when all the
      * lines are fetched.
      */
+    @Timed
     public void get(
             Map<String, List<String>> matchFilters,
             Map<String, List<String>> prefixFilters,
@@ -90,8 +114,12 @@ public class ElasticSearch {
                 .sort(new FieldSortBuilder("_uid").order(getSortOrder(direction)));
         if (searchAfter.isPresent()) {
             String timestamp = searchAfter.get().getTimestamp();
-            Object[] searchAfterTimeStampId = new Object[] { Instant.parse(timestamp).toEpochMilli(),
-                    searchAfter.get().getSequence(), searchAfter.get().getId() };
+            TemporalAccessor accessor = DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(timestamp);
+            // search after must contain the same fields as sort
+            Object[] searchAfterTimeStampId = new Object[] {
+                    Instant.from(accessor).toEpochMilli(),
+                    getSequence(searchAfter.get().getSequence(), direction),
+                    searchAfter.get().getId() };
             sourceBuilder.searchAfter(searchAfterTimeStampId);
         } else {
             // TODO tailFromNow vs tailFromBeginning
@@ -100,7 +128,7 @@ public class ElasticSearch {
             // queryBuilder.must(timestampRange);
         }
 
-        logger.debug("Search query: " + queryBuilder);
+        logger.debug("Search query: " + sourceBuilder);
 
         SearchRequest searchRequest = new SearchRequest(indexes);
         searchRequest.source(sourceBuilder);
@@ -129,6 +157,11 @@ public class ElasticSearch {
         }
     }
 
+    protected String getSequence(String sequence, Direction direction) {
+        Long defaultSequenceValue = direction == Direction.ASC ? Long.MAX_VALUE : Long.MIN_VALUE;
+        return Strings.valueOrDefault(sequence, Long.toString(defaultSequenceValue));
+    }
+
     private SortOrder getSortOrder(Direction direction) {
         switch (direction) {
             case ASC:
@@ -136,6 +169,7 @@ public class ElasticSearch {
             case DESC:
                 return SortOrder.DESC;
             default:
+                errCounter.increment();
                 throw new RuntimeException("Unsupported direction: " + direction.toString());
         }
     }
@@ -146,10 +180,11 @@ public class ElasticSearch {
 
         // String id = source.get("_type").toString() + "#" + source.get("_id").toString();
         String id = hit.getType() + "#" + hit.getId();
-        String timestamp = getString(source, "@timestamp");
+        String timestamp = validateAndFixInputDate(getString(source, "@timestamp"));
         String sequence = getString(source, "sequence");
         String logger = getString(source, "loggerName");
         String message = getString(source, "message");
+        String stackTrace = getString(source, "stackTrace");
 
         Map<String, String> mdc = (Map<String, String>) source.get("mdc");
 
@@ -161,6 +196,7 @@ public class ElasticSearch {
                 .message(message)
                 .last(last)
                 .mdc(mdc)
+                .stackTrace(stackTrace)
                 .build();
     }
 
@@ -173,6 +209,7 @@ public class ElasticSearch {
         }
     }
 
+    @Timed
     private QueryBuilder getQueryBuilder(
             Map<String, List<String>> matchFilters,
             Map<String, List<String>> prefixFilters) {
