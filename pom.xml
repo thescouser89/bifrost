@@ -5,6 +5,7 @@
   <artifactId>bifrost-server</artifactId>
   <version>1.0.5-SNAPSHOT</version>
 
+<!-- test -->
   <name>bifrost</name>
   <description>Elasticsearch subscriptions service</description>
   <url>https://github.com/bifrost</url>
