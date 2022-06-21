@@ -221,7 +221,7 @@
         <version>${quarkus.platform.version}</version>
         <extensions>true</extensions>
         <configuration>
-          <finalName>bifrost-server</finalName>
+          <finalName>bifrost</finalName>
         </configuration>
         <executions>
           <execution>
