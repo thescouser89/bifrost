@@ -77,6 +77,9 @@ public class MessageConsumer {
     @Incoming("logs")
     @Transactional
     public void consume(String json) {
+        if (log.isTraceEnabled()) {
+            log.trace("Received json line: " + json);
+        }
         try {
             LogLine logLine = mapper.readValue(json, LogLine.class);
             if (log.isTraceEnabled()) {

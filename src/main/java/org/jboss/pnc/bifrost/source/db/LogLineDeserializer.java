@@ -100,7 +100,7 @@ public class LogLineDeserializer extends StdDeserializer<LogLine> {
                 logEntry,
                 OffsetDateTime.ofInstant(timestamp, ZoneOffset.UTC),
                 sequence,
-                LogLevel.valueOf(level.toUpperCase()),
+                LogLevel.parse(level),
                 loggerName,
                 logLine);
     }

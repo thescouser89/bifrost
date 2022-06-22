@@ -27,6 +27,14 @@ public enum LogLevel {
         this.intLevel = intLevel;
     }
 
+    public static LogLevel parse(String level) {
+        if (level != null) {
+            return LogLevel.valueOf(level.toUpperCase());
+        } else {
+            return null;
+        }
+    }
+
     public int intLevel() {
         return intLevel;
     }
