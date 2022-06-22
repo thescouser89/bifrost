@@ -48,7 +48,9 @@ public class Filter {
     }
 
     private boolean isLevelEnabled(LogLevel filterLevel, LogLevel recordLevel) {
+        if (recordLevel == null) {
+            return false;
+        }
         return recordLevel.intLevel() >= filterLevel.intLevel();
     }
-
 }
