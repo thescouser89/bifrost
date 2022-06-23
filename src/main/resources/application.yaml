@@ -26,10 +26,10 @@ quarkus:
       org.apache.http:
         level: INFO
     console:
-      level: TRACE
+      level: INFO
       format: '%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%e%n'
       enable: 'true'
-    level: INFO
+    level: TRACE
   hibernate-orm:
     database:
       generation: validate

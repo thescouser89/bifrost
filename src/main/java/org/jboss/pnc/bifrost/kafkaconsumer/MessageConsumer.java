@@ -32,6 +32,7 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
+import javax.validation.ConstraintViolationException;
 
 /**
  * Consume from a Kafka topic, parse the data and store it in the database
@@ -86,9 +87,13 @@ public class MessageConsumer {
                 log.trace("Received line: " + logLine.toString());
             }
             if (acceptFilter.match(logLine)) {
-                logLine.setLogEntry(logEntryRepository.get(logLine.getLogEntry()));
-                logLine.persistAndFlush();
-                storedCounter.increment();
+                try {
+                    logLine.setLogEntry(logEntryRepository.get(logLine.getLogEntry()));
+                    logLine.persistAndFlush();
+                    storedCounter.increment();
+                } catch (ConstraintViolationException e) {
+                    logger.warn("Skipping log line due to: " + e.getMessage() + ". Line: " + logLine);
+                }
             }
         } catch (Exception e) {
             errCounter.increment();
