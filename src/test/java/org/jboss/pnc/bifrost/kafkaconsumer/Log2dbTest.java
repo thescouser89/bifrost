@@ -21,7 +21,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.h2.H2DatabaseTestResource;
 import io.quarkus.test.junit.QuarkusTest;
-import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.hibernate.Session;
@@ -35,6 +34,8 @@ import org.jboss.pnc.common.pnc.LongBase32IdConverter;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
@@ -48,10 +49,11 @@ import java.util.concurrent.Semaphore;
 /**
  * @author <a href="mailto:matejonnet@gmail.com">Matej Lazar</a>
  */
-@Slf4j
 @QuarkusTest
 @QuarkusTestResource(H2DatabaseTestResource.class)
 public class Log2dbTest {
+
+    private final Logger logger = LoggerFactory.getLogger(Log2dbTest.class);
 
     @Inject
     ObjectMapper mapper;
@@ -92,11 +94,11 @@ public class Log2dbTest {
         SessionFactory sessionFactory = ((Session) entityManager.getDelegate()).getSessionFactory();
         SortedMap<String, Map<String, HibernateMetric>> cacheEntitiesStats = HibernateStatsUtils
                 .getSecondLevelCacheEntitiesStats(sessionFactory.getStatistics());
-        log.info("Cache stat: ", cacheEntitiesStats);
+        logger.info("Cache stat: ", cacheEntitiesStats);
         cacheEntitiesStats.forEach((k, v) -> {
-            log.info("  " + k);
+            logger.info("  " + k);
             v.forEach((k1, v1) -> {
-                log.info("    " + k1 + ": " + v1);
+                logger.info("    " + k1 + ": " + v1);
             });
         });
 
@@ -116,7 +118,7 @@ public class Log2dbTest {
 
             try {
                 String data = mapper.writeValueAsString(record);
-                log.debug("Sending: {}", data);
+                logger.debug("Sending: {}", data);
                 emitter.send(data);
             } catch (Exception e) {
                 e.printStackTrace();

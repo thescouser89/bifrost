@@ -22,7 +22,6 @@ import io.micrometer.core.annotation.Timed;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.smallrye.common.annotation.Blocking;
-import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.jboss.pnc.bifrost.source.db.LogEntryRepository;
 import org.jboss.pnc.bifrost.source.db.LogLine;
@@ -39,7 +38,6 @@ import javax.validation.ConstraintViolationException;
  * Consume from a Kafka topic, parse the data and store it in the database
  */
 @ApplicationScoped
-@Slf4j
 public class MessageConsumer {
 
     private static final String className = MessageConsumer.class.getName();
@@ -79,10 +77,10 @@ public class MessageConsumer {
     @Incoming("logs")
     @Transactional
     public void consume(String json) {
-        log.trace("Received json line: " + json);
+        logger.trace("Received json line: " + json);
         try {
             LogLine logLine = mapper.readValue(json, LogLine.class);
-            log.trace("Received line: " + logLine.toString());
+            logger.trace("Received line: " + logLine.toString());
             if (acceptFilter.match(logLine)) {
                 try {
                     logLine.setLogEntry(logEntryRepository.get(logLine.getLogEntry()));
@@ -94,7 +92,7 @@ public class MessageConsumer {
             }
         } catch (Exception e) {
             errCounter.increment();
-            log.error("Error while reading and saving the data", e);
+            logger.error("Error while reading and saving the data", e);
             throw new RuntimeException(e);
         }
     }
