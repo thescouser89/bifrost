@@ -19,7 +19,6 @@ package org.jboss.pnc.bifrost.source;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import org.jboss.logging.Logger;
 import org.jboss.pnc.api.bifrost.dto.Line;
 import org.jboss.pnc.bifrost.common.Json;
 import org.jboss.pnc.bifrost.endpoint.websocket.Result;
@@ -27,6 +26,8 @@ import org.jboss.pnc.bifrost.endpoint.websocket.SubscribeResultDto;
 import org.jboss.pnc.bifrost.mock.LineProducer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -35,7 +36,7 @@ import java.util.List;
  */
 public class TestSerialization {
 
-    private final Logger logger = Logger.getLogger(TestSerialization.class);
+    private final Logger logger = LoggerFactory.getLogger(TestSerialization.class);
 
     @Test
     public void shouldSerializeAndDeserializeLine() throws JsonProcessingException {

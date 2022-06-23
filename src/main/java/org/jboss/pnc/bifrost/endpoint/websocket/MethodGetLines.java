@@ -20,15 +20,15 @@ package org.jboss.pnc.bifrost.endpoint.websocket;
 import io.micrometer.core.annotation.Timed;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
-import org.jboss.logging.Logger;
 import org.jboss.pnc.api.bifrost.dto.Line;
 import org.jboss.pnc.bifrost.common.scheduler.Subscriptions;
 import org.jboss.pnc.bifrost.endpoint.provider.DataProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
-import java.io.IOException;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -40,7 +40,7 @@ public class MethodGetLines extends MethodBase implements Method<GetLinesDto> {
 
     private static final String className = MethodGetLines.class.getName();
 
-    private Logger logger = Logger.getLogger(MethodGetLines.class);
+    private Logger logger = LoggerFactory.getLogger(MethodGetLines.class);
 
     @Inject
     DataProvider dataProvider;

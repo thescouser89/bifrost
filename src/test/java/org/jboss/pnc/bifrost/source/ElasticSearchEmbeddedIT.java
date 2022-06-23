@@ -27,7 +27,6 @@ import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.rest.RestStatus;
-import org.jboss.logging.Logger;
 import org.jboss.pnc.api.bifrost.dto.Line;
 import org.jboss.pnc.api.bifrost.enums.Direction;
 import org.jboss.pnc.bifrost.common.Json;
@@ -39,6 +38,8 @@ import org.jboss.pnc.bifrost.test.Wait;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -58,7 +59,7 @@ import java.util.function.Consumer;
 // although no need to boot the application, the logging does not work without this annotation
 public class ElasticSearchEmbeddedIT {
 
-    private static Logger logger = Logger.getLogger(ElasticSearchEmbeddedIT.class);
+    private static Logger logger = LoggerFactory.getLogger(ElasticSearchEmbeddedIT.class);
 
     private static String indexes = "test";
 

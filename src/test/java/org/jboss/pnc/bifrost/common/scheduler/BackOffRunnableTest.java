@@ -17,10 +17,11 @@
  */
 package org.jboss.pnc.bifrost.common.scheduler;
 
-import org.jboss.logging.Logger;
 import org.jboss.pnc.bifrost.mock.BackOffRunnableConfigFactory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -30,7 +31,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class BackOffRunnableTest {
 
-    private Logger logger = Logger.getLogger(BackOffRunnableTest.class);
+    private Logger logger = LoggerFactory.getLogger(BackOffRunnableTest.class);
 
     BackOffRunnableConfig config = BackOffRunnableConfigFactory.get(100L, 5, 60000, 100L);
 

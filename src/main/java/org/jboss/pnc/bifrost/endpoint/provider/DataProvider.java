@@ -20,7 +20,6 @@ package org.jboss.pnc.bifrost.endpoint.provider;
 import io.micrometer.core.annotation.Timed;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
-import org.jboss.logging.Logger;
 import org.jboss.pnc.api.bifrost.dto.Line;
 import org.jboss.pnc.api.bifrost.enums.Direction;
 import org.jboss.pnc.bifrost.Config;
@@ -31,6 +30,8 @@ import org.jboss.pnc.bifrost.common.scheduler.Subscription;
 import org.jboss.pnc.bifrost.common.scheduler.Subscriptions;
 import org.jboss.pnc.bifrost.source.Source;
 import org.jboss.pnc.common.Strings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
@@ -48,7 +49,7 @@ public class DataProvider {
 
     private static final String className = DataProvider.class.getName();
 
-    private Logger logger = Logger.getLogger(DataProvider.class);
+    private Logger logger = LoggerFactory.getLogger(DataProvider.class);
 
     @Inject
     BackOffRunnableConfig backOffRunnableConfig;

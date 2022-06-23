@@ -17,9 +17,10 @@
  */
 package org.jboss.pnc.bifrost.common.scheduler;
 
-import org.jboss.logging.Logger;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -30,7 +31,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 class TimeoutExecutorTest {
 
-    private Logger logger = Logger.getLogger(TimeoutExecutorTest.class);
+    private Logger logger = LoggerFactory.getLogger(TimeoutExecutorTest.class);
 
     @Test
     void shouldRunTaskAfterTimeout() throws InterruptedException {

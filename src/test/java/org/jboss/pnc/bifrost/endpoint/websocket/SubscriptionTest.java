@@ -22,7 +22,6 @@ import com.thetransactioncompany.jsonrpc2.JSONRPC2Request;
 import io.quarkus.test.common.http.TestHTTPResource;
 import io.quarkus.test.junit.QuarkusTest;
 import org.apache.commons.beanutils.BeanUtils;
-import org.jboss.logging.Logger;
 import org.jboss.pnc.api.bifrost.dto.Line;
 import org.jboss.pnc.bifrost.common.Json;
 import org.jboss.pnc.bifrost.endpoint.provider.DataProviderMock;
@@ -30,6 +29,8 @@ import org.jboss.pnc.bifrost.mock.LineProducer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.websocket.ClientEndpoint;
@@ -53,7 +54,7 @@ import java.util.concurrent.TimeUnit;
 @QuarkusTest
 public class SubscriptionTest {
 
-    private static Logger logger = Logger.getLogger(SubscriptionTest.class);
+    private static Logger logger = LoggerFactory.getLogger(SubscriptionTest.class);
 
     private static final CompletableFuture<Boolean> connected = new CompletableFuture<>();
     private static final LinkedBlockingDeque<Result> RESULTS = new LinkedBlockingDeque<>();

@@ -17,7 +17,8 @@
  */
 package org.jboss.pnc.bifrost.common.scheduler;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 
@@ -26,7 +27,7 @@ import java.util.Optional;
  */
 public class BackOffRunnable implements Runnable {
 
-    private final static Logger logger = Logger.getLogger(BackOffRunnable.class);
+    private final static Logger logger = LoggerFactory.getLogger(BackOffRunnable.class);
 
     private final BackOffRunnableConfig config;
 

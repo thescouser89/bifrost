@@ -17,7 +17,8 @@
  */
 package org.jboss.pnc.bifrost.common;
 
-import org.jboss.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.validation.ValidationException;
 import java.time.format.DateTimeFormatter;
@@ -29,7 +30,7 @@ import java.time.temporal.TemporalAccessor;
  */
 public class DateUtil {
 
-    private static Logger logger = Logger.getLogger(DateUtil.class);
+    private static Logger logger = LoggerFactory.getLogger(DateUtil.class);
 
     // accepts 2020-06-04T18:16:02.027+0000
     private static final DateTimeFormatter fallbackDateTimeFormatter = DateTimeFormatter

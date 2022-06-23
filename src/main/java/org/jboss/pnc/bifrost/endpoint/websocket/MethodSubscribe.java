@@ -22,10 +22,11 @@ import io.micrometer.core.annotation.Timed;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.apache.commons.beanutils.BeanUtils;
-import org.jboss.logging.Logger;
 import org.jboss.pnc.api.bifrost.dto.Line;
 import org.jboss.pnc.bifrost.common.scheduler.Subscription;
 import org.jboss.pnc.bifrost.endpoint.provider.DataProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.Dependent;
@@ -44,7 +45,7 @@ public class MethodSubscribe extends MethodBase implements Method<SubscribeDto> 
 
     private static final String className = MethodSubscribe.class.getName();
 
-    private Logger logger = Logger.getLogger(MethodSubscribe.class);
+    private Logger logger = LoggerFactory.getLogger(MethodSubscribe.class);
 
     private SendHandler responseHandler = result -> {
         if (!result.isOK()) {

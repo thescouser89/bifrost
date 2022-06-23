@@ -18,9 +18,10 @@
 package org.jboss.pnc.bifrost.common.scheduler;
 
 import io.quarkus.test.junit.QuarkusTest;
-import org.jboss.logging.Logger;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -38,7 +39,7 @@ import java.util.function.Consumer;
 @QuarkusTest
 public class SubscriptionsTest {
 
-    private final Logger logger = Logger.getLogger(SubscriptionsTest.class);
+    private final Logger logger = LoggerFactory.getLogger(SubscriptionsTest.class);
 
     @Inject
     BackOffRunnableConfig backOffRunnableConfig;

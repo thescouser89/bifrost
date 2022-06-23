@@ -21,9 +21,10 @@ import io.micrometer.core.annotation.Timed;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.apache.lucene.util.NamedThreadFactory;
-import org.jboss.logging.Logger;
 import org.jboss.pnc.bifrost.Config;
 import org.jboss.pnc.bifrost.common.Reference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
@@ -47,7 +48,7 @@ public class Subscriptions {
 
     private static final String className = Subscriptions.class.getName();
 
-    private Logger logger = Logger.getLogger(Subscriptions.class);
+    private Logger logger = LoggerFactory.getLogger(Subscriptions.class);
 
     private Map<Subscription, ScheduledFuture> subscriptions;
 

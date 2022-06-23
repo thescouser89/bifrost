@@ -24,9 +24,10 @@ import io.micrometer.core.annotation.Timed;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.apache.commons.beanutils.BeanUtils;
-import org.jboss.logging.Logger;
 import org.jboss.pnc.api.bifrost.dto.Line;
 import org.jboss.pnc.bifrost.common.scheduler.Subscriptions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -50,7 +51,7 @@ public class Socket {
 
     private static final String className = Socket.class.getName();
 
-    private Logger logger = Logger.getLogger(Socket.class);
+    private Logger logger = LoggerFactory.getLogger(Socket.class);
 
     @Inject
     Subscriptions subscriptions;

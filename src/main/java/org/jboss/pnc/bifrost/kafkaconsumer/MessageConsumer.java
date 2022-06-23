@@ -24,9 +24,10 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.smallrye.common.annotation.Blocking;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
-import org.jboss.logging.Logger;
 import org.jboss.pnc.bifrost.source.db.LogEntryRepository;
 import org.jboss.pnc.bifrost.source.db.LogLine;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
@@ -43,7 +44,7 @@ public class MessageConsumer {
 
     private static final String className = MessageConsumer.class.getName();
 
-    private final Logger logger = Logger.getLogger(MessageConsumer.class);
+    private final Logger logger = LoggerFactory.getLogger(MessageConsumer.class);
 
     @Inject
     ObjectMapper mapper;
@@ -78,14 +79,10 @@ public class MessageConsumer {
     @Incoming("logs")
     @Transactional
     public void consume(String json) {
-        if (log.isTraceEnabled()) {
-            log.trace("Received json line: " + json);
-        }
+        log.trace("Received json line: " + json);
         try {
             LogLine logLine = mapper.readValue(json, LogLine.class);
-            if (log.isTraceEnabled()) {
-                log.trace("Received line: " + logLine.toString());
-            }
+            log.trace("Received line: " + logLine.toString());
             if (acceptFilter.match(logLine)) {
                 try {
                     logLine.setLogEntry(logEntryRepository.get(logLine.getLogEntry()));

@@ -20,7 +20,6 @@ package org.jboss.pnc.bifrost.source;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.h2.H2DatabaseTestResource;
 import io.quarkus.test.junit.QuarkusTest;
-import org.jboss.logging.Logger;
 import org.jboss.pnc.api.bifrost.dto.Line;
 import org.jboss.pnc.api.bifrost.enums.Direction;
 import org.jboss.pnc.bifrost.source.db.DatabaseSource;
@@ -30,6 +29,8 @@ import org.jboss.pnc.bifrost.test.Wait;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
@@ -53,7 +54,7 @@ import java.util.stream.Collectors;
 @QuarkusTestResource(H2DatabaseTestResource.class)
 public class DatabaseSourceTest {
 
-    private static Logger logger = Logger.getLogger(DatabaseSourceTest.class);
+    private static Logger logger = LoggerFactory.getLogger(DatabaseSourceTest.class);
 
     private static final String DEFAULT_LOGGER = "org.jboss.pnc._userlog_";
 

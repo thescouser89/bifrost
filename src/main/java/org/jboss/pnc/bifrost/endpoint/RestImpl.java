@@ -20,7 +20,6 @@ package org.jboss.pnc.bifrost.endpoint;
 import io.micrometer.core.annotation.Timed;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
-import org.jboss.logging.Logger;
 import org.jboss.pnc.api.bifrost.dto.Line;
 import org.jboss.pnc.api.bifrost.dto.MetaData;
 import org.jboss.pnc.api.bifrost.enums.Direction;
@@ -31,6 +30,8 @@ import org.jboss.pnc.bifrost.common.scheduler.Subscription;
 import org.jboss.pnc.bifrost.common.scheduler.TimeoutExecutor;
 import org.jboss.pnc.bifrost.endpoint.provider.DataProvider;
 import org.jboss.pnc.common.security.Md5;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -63,7 +64,7 @@ public class RestImpl implements Bifrost {
 
     private static final String className = RestImpl.class.getName();
 
-    private static Logger logger = Logger.getLogger(RestImpl.class);
+    private static Logger logger = LoggerFactory.getLogger(RestImpl.class);
 
     @Inject
     DataProvider dataProvider;
