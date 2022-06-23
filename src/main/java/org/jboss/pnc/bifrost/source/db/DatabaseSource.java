@@ -36,6 +36,7 @@ import javax.enterprise.context.Dependent;
 import javax.enterprise.context.control.ActivateRequestContext;
 import javax.inject.Inject;
 import java.io.IOException;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -207,9 +208,9 @@ public class DatabaseSource implements Source {
                         "(logLine.eventTimestamp, logLine.sequence, logLine.id) > (:afterTimestamp, :afterSequence ,:afterId)");
             }
 
-            parameters.and("afterTimestamp", afterLine.getTimestamp());
-            parameters.and("afterSequence", afterLine.getSequence());
-            parameters.and("afterId", afterLine.getId());
+            parameters.and("afterTimestamp", OffsetDateTime.parse(afterLine.getTimestamp()));
+            parameters.and("afterSequence", Integer.parseInt(afterLine.getSequence()));
+            parameters.and("afterId", Long.parseLong(afterLine.getId()));
         });
 
         String query = queryParts.stream().collect(Collectors.joining(" and "));
