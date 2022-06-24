@@ -43,4 +43,14 @@ public class LogLineDeserializeTest {
         Assertions.assertEquals("org.jboss.pnc.kafka2db", logLine.getLoggerName());
         Assertions.assertEquals(12345L, logLine.getLogEntry().getProcessContext());
     }
+
+    @Test
+    public void shouldDeserializeLogRecord2() throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+
+        String json = "{\"@timestamp\":\"2022-06-23T12:19:54.687Z\",\"sequence\":102382,\"loggerClassName\":\"org.slf4j.impl.Slf4jLogger\",\"loggerName\":\"org.jboss.pnc._userlog_.brewpush\",\"level\":\"INFO\",\"message\":\"Push started.\",\"threadName\":\"default task-58\",\"threadId\":16212,\"mdc\":{\"requestContext\":\"a6472f74-a50\",\"processContext\":\"327784835315888128\",\"userId\":\"103\",\"buildId\":\"327032778354724864\"},\"ndc\":\"\",\"hostName\":\"orch-master-342-cvv96\",\"processName\":\"jboss-modules.jar\",\"processId\":1021,\"@version\":\"1\"}";
+        LogLine logLine = mapper.readValue(json, LogLine.class);
+        Assertions.assertEquals(327032778354724864L, logLine.getLogEntry().getBuildId());
+        Assertions.assertEquals(327784835315888128L, logLine.getLogEntry().getProcessContext());
+    }
 }
