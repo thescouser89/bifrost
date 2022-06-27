@@ -53,22 +53,24 @@ public class FieldMapping {
 
         // .keyword is used for backward compatibility
         this.mappings = Map.ofEntries(
-                Map.entry("id", Field.from(LogLine.class, "id", longConverter)),
-                Map.entry("timestamp", Field.from(LogLine.class, "eventTimestamp", offsetDateTimeConverter)),
-                Map.entry("sequence", Field.from(LogLine.class, "sequence", integerConverter)),
-                Map.entry("loggerName", Field.from(LogLine.class, "loggerName", stringConverter)),
-                Map.entry("loggerName.keyword", Field.from(LogLine.class, "loggerName", stringConverter)),
-                Map.entry("level", Field.from(LogLine.class, "level", logLevelConverter)),
-                Map.entry("level.keyword", Field.from(LogLine.class, "level", logLevelConverter)),
-                Map.entry("mdc.processContext", Field.from(LogEntry.class, "processContext", idConverter)),
-                Map.entry("mdc.processContext.keyword", Field.from(LogEntry.class, "processContext", idConverter)),
+                Map.entry("id", Field.from(LogLine.class, "id", longConverter, true)),
+                Map.entry("timestamp", Field.from(LogLine.class, "eventTimestamp", offsetDateTimeConverter, true)),
+                Map.entry("sequence", Field.from(LogLine.class, "sequence", integerConverter, true)),
+                Map.entry("loggerName", Field.from(LogLine.class, "loggerName", stringConverter, false)),
+                Map.entry("loggerName.keyword", Field.from(LogLine.class, "loggerName", stringConverter, false)),
+                Map.entry("level", Field.from(LogLine.class, "level", logLevelConverter, true)),
+                Map.entry("level.keyword", Field.from(LogLine.class, "level", logLevelConverter, true)),
+                Map.entry("mdc.processContext", Field.from(LogEntry.class, "processContext", idConverter, true)),
+                Map.entry(
+                        "mdc.processContext.keyword",
+                        Field.from(LogEntry.class, "processContext", idConverter, true)),
                 Map.entry(
                         "mdc.processContextVariant",
-                        Field.from(LogEntry.class, "processContextVariant", stringConverter)),
-                Map.entry("mdc.requestContext", Field.from(LogEntry.class, "requestContext", stringConverter)),
-                Map.entry("mdc.buildId", Field.from(LogEntry.class, "buildId", idConverter)),
-                Map.entry("mdc.buildId.keyword", Field.from(LogEntry.class, "buildId", idConverter)),
-                Map.entry("mdc.tmp", Field.from(LogEntry.class, "temporary", booleanConverter)));
+                        Field.from(LogEntry.class, "processContextVariant", stringConverter, true)),
+                Map.entry("mdc.requestContext", Field.from(LogEntry.class, "requestContext", stringConverter, true)),
+                Map.entry("mdc.buildId", Field.from(LogEntry.class, "buildId", idConverter, true)),
+                Map.entry("mdc.buildId.keyword", Field.from(LogEntry.class, "buildId", idConverter, true)),
+                Map.entry("mdc.tmp", Field.from(LogEntry.class, "temporary", booleanConverter, true)));
     }
 
     public Optional<Field> getField(String dtoField) {
@@ -79,15 +81,21 @@ public class FieldMapping {
         final Class clazz;
         final String name;
         final ValueConverter<T> valueConverter;
+        private boolean allowExactMatchOnly;
 
-        public Field(Class clazz, String name, ValueConverter valueConverter) {
+        public Field(Class clazz, String name, ValueConverter valueConverter, boolean allowExactMatchOnly) {
             this.clazz = clazz;
             this.name = name;
             this.valueConverter = valueConverter;
+            this.allowExactMatchOnly = allowExactMatchOnly;
         }
 
-        public static <T> Field<T> from(Class clazz, String fieldName, ValueConverter<T> valueConverter) {
-            return new Field(clazz, fieldName, valueConverter);
+        public static <T> Field<T> from(
+                Class clazz,
+                String fieldName,
+                ValueConverter<T> valueConverter,
+                boolean allowExactMatchOnly) {
+            return new Field(clazz, fieldName, valueConverter, allowExactMatchOnly);
         }
 
         public ValueConverter valueConverter() {
@@ -96,6 +104,10 @@ public class FieldMapping {
 
         public String hqlField() {
             return Strings.fistCharToLower(clazz.getSimpleName()) + "." + name;
+        }
+
+        public boolean allowExactMatchOnly() {
+            return allowExactMatchOnly;
         }
     }
 }

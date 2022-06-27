@@ -88,9 +88,13 @@ public class DatabaseSource implements Source {
                 searchAfter,
                 direction);
 
+        Map<String, List<String>> sanitizedMatchFilters = new HashMap<>(matchFilters);
+        Map<String, List<String>> sanitizedPrefixFilters = new HashMap<>(prefixFilters);
+        sanitizeFilters(sanitizedMatchFilters, sanitizedPrefixFilters);
+
         QueryWithParameters queryWithParameters = getQueryWithParameters(
-                matchFilters,
-                prefixFilters,
+                sanitizedMatchFilters,
+                sanitizedPrefixFilters,
                 searchAfter,
                 direction);
         Sort sort = Sort.by("logLine.eventTimestamp", "logLine.sequence", "logLine.id")
@@ -131,6 +135,23 @@ public class DatabaseSource implements Source {
             logger.debug("There are no results.");
             onLine.accept(null);
         }
+    }
+
+    private void sanitizeFilters(Map<String, List<String>> matchFilters, Map<String, List<String>> prefixFilters) {
+        Map<String, List<String>> invalidPrefixFilters = new HashMap<>();
+
+        prefixFilters.forEach((dtoField, values) -> {
+            FieldMapping.Field field = fieldMapping.getField(dtoField)
+                    .orElseThrow(() -> new InvalidFieldException("The field [" + dtoField + "] is not mapped."));
+            if (field.allowExactMatchOnly()) {
+                invalidPrefixFilters.put(dtoField, values);
+            }
+        });
+        logger.warn("Found invalid prefix filters, moving them to exact match: {}.", invalidPrefixFilters);
+        invalidPrefixFilters.forEach((dtoField, values) -> {
+            matchFilters.put(dtoField, values);
+            prefixFilters.remove(dtoField);
+        });
     }
 
     private Line getLine(LogLine row, boolean last) {

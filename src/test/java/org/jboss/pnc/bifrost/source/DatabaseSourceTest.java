@@ -99,11 +99,11 @@ public class DatabaseSourceTest {
             anyLines.add(line);
         });
 
-        Map<String, List<String>> defaultLogMatcher = Collections
-                .singletonMap("loggerName", Arrays.asList(DEFAULT_LOGGER));
-        Map<String, List<String>> levelFilter = Collections
-                .singletonMap("level", Arrays.asList("INFO"));
-        databaseSource.get(levelFilter, defaultLogMatcher, Optional.empty(), Direction.ASC, 100, anyLine);
+        // level:INFO is intentionally put as invalid prefixFilter
+        Map<String, List<String>> prefixFilters = Map
+                .of("loggerName", Arrays.asList(DEFAULT_LOGGER), "level", Arrays.asList("INFO"));
+
+        databaseSource.get(Collections.emptyMap(), prefixFilters, Optional.empty(), Direction.ASC, 100, anyLine);
         Assertions.assertEquals(12, anyLines.size());
 
         Map<String, List<String>> matchFilters = new HashMap<>();
@@ -113,7 +113,7 @@ public class DatabaseSourceTest {
             logger.info("Found line: " + line);
             matchingLines.add(line);
         });
-        databaseSource.get(matchFilters, defaultLogMatcher, Optional.empty(), Direction.ASC, 100, onLine);
+        databaseSource.get(matchFilters, prefixFilters, Optional.empty(), Direction.ASC, 100, onLine);
         Assertions.assertEquals(10, matchingLines.size());
     }
 
