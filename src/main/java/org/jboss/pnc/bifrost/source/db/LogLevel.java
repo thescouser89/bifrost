@@ -29,7 +29,18 @@ public enum LogLevel {
 
     public static LogLevel parse(String level) {
         if (level != null) {
-            return LogLevel.valueOf(level.toUpperCase());
+            String levelUpper = level.toUpperCase();
+            if (levelUpper.equals("FINE")) {
+                return LogLevel.TRACE;
+            } else if (levelUpper.equals("FINER")) {
+                return LogLevel.TRACE;
+            } else if (levelUpper.equals("FINEST")) {
+                return LogLevel.TRACE;
+            } else if (levelUpper.equals("SEVERE")) {
+                return LogLevel.FATAL;
+            } else {
+                return LogLevel.valueOf(levelUpper);
+            }
         } else {
             return null;
         }
