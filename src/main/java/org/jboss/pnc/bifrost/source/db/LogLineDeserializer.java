@@ -45,7 +45,7 @@ public class LogLineDeserializer extends StdDeserializer<LogLine> {
 
     private final Logger logger = LoggerFactory.getLogger(LogLineDeserializer.class);
 
-    private final ValueConverter<Long> processContextConverter = new idConverter();
+    private final ValueConverter<Long> idConverter = new idConverter();
 
     public LogLineDeserializer() {
         super(LogLine.class);
@@ -74,7 +74,7 @@ public class LogLineDeserializer extends StdDeserializer<LogLine> {
         String processContextVariant = Json.getText(node, "/mdc/processContextVariant").orElse(null);
         String requestContext = Json.getText(node, "/mdc/requestContext").orElse(null);
         Boolean temp = Boolean.parseBoolean(Json.getText(node, "/mdc/tmp").orElse("false"));
-        Long buildId = Json.<Long> getNumber(node, "/mdc/buildId").orElse(null);
+        String buildId = Json.getText(node, "/mdc/buildId").orElse(null);
 
         String message = Json.getText(node, "/message").orElse(null);
         String logLine;
@@ -91,11 +91,11 @@ public class LogLineDeserializer extends StdDeserializer<LogLine> {
 
         LogEntry logEntry = new LogEntry(
                 Sequence.nextId(),
-                processContextConverter.convert(processContext),
+                idConverter.convert(processContext),
                 processContextVariant,
                 requestContext,
                 temp,
-                buildId);
+                idConverter.convert(buildId));
         return new LogLine(
                 Sequence.nextId(),
                 logEntry,

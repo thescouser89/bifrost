@@ -53,4 +53,14 @@ public class LogLineDeserializeTest {
         Assertions.assertEquals(327032778354724864L, logLine.getLogEntry().getBuildId());
         Assertions.assertEquals(327784835315888128L, logLine.getLogEntry().getProcessContext());
     }
+
+    @Test
+    public void shouldDeserializeLogRecord3() throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+
+        String json = "{\"@timestamp\":\"2022-06-23T12:19:57.238Z\",\"sequence\":140,\"loggerClassName\":\"org.slf4j.impl.Slf4jLogger\",\"loggerName\":\"org.jboss.pnc.causeway.ctl.ImportControllerImpl\",\"level\":\"INFO\",\"message\":\"Importing external build ASE5VFCHXYIAA to tag fb-1.0-pnc.\",\"threadName\":\"EJB default - 1\",\"threadId\":17102,\"mdc\":{\"requestContext\":\"a6472f74-a50\",\"processContext\":\"327784835315888128\",\"userId\":\"103\",\"buildId\":\"ASE5VFCHXYIAA\"},\"ndc\":\"\",\"hostName\":\"causeway-master-477-c69z4\",\"processName\":\"jboss-modules.jar\",\"processId\":1001,\"@version\":\"1\"}";
+        LogLine logLine = mapper.readValue(json, LogLine.class);
+        Assertions.assertEquals(327032778354724864L, logLine.getLogEntry().getBuildId());
+        Assertions.assertEquals(327784835315888128L, logLine.getLogEntry().getProcessContext());
+    }
 }
