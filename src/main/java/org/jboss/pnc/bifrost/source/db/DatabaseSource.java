@@ -187,7 +187,7 @@ public class DatabaseSource implements Source {
             Direction direction) {
 
         Parameters parameters = new Parameters();
-        List<String> queryParts = new ArrayList<>();
+        List<String> andQueryParts = new ArrayList<>();
 
         matchFilters.forEach((dtoField, values) -> {
             List<String> valueParts = new ArrayList<>();
@@ -201,7 +201,10 @@ public class DatabaseSource implements Source {
                 String value = values.get(valueIndex);
                 parameters.and(paramName, field.valueConverter().convert(value));
             }
-            queryParts.add(valueParts.stream().collect(Collectors.joining(" or ")));
+            String orParts = valueParts.stream().collect(Collectors.joining(" or "));
+            if (!Strings.isEmpty(orParts)) {
+                andQueryParts.add("(" + orParts + ")");
+            }
         });
 
         // 'like' queries are string only, no need to convert the value
@@ -217,15 +220,18 @@ public class DatabaseSource implements Source {
                 String value = values.get(valueIndex);
                 parameters.and(paramName, field.valueConverter().convert(value) + "%");
             }
-            queryParts.add(valueParts.stream().collect(Collectors.joining(" or ")));
+            String orParts = valueParts.stream().collect(Collectors.joining(" or "));
+            if (!Strings.isEmpty(orParts)) {
+                andQueryParts.add("(" + orParts + ")");
+            }
         });
 
         searchAfter.ifPresent(afterLine -> {
             if (Direction.DESC.equals(direction)) {
-                queryParts.add(
+                andQueryParts.add(
                         "(logLine.eventTimestamp, logLine.sequence, logLine.id) < (:afterTimestamp, :afterSequence ,:afterId)");
             } else {
-                queryParts.add(
+                andQueryParts.add(
                         "(logLine.eventTimestamp, logLine.sequence, logLine.id) > (:afterTimestamp, :afterSequence ,:afterId)");
             }
 
@@ -234,7 +240,7 @@ public class DatabaseSource implements Source {
             parameters.and("afterId", Long.parseLong(afterLine.getId()));
         });
 
-        String query = queryParts.stream().collect(Collectors.joining(" and "));
+        String query = andQueryParts.stream().collect(Collectors.joining(" and "));
         return new QueryWithParameters(query, parameters);
     }
 
