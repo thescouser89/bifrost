@@ -101,7 +101,9 @@ public class DatabaseSourceTest {
 
         Map<String, List<String>> defaultLogMatcher = Collections
                 .singletonMap("loggerName", Arrays.asList(DEFAULT_LOGGER));
-        databaseSource.get(Collections.emptyMap(), defaultLogMatcher, Optional.empty(), Direction.ASC, 100, anyLine);
+        Map<String, List<String>> levelFilter = Collections
+                .singletonMap("level", Arrays.asList("INFO"));
+        databaseSource.get(levelFilter, defaultLogMatcher, Optional.empty(), Direction.ASC, 100, anyLine);
         Assertions.assertEquals(12, anyLines.size());
 
         Map<String, List<String>> matchFilters = new HashMap<>();

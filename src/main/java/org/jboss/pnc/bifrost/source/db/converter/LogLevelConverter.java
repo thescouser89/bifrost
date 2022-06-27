@@ -26,7 +26,7 @@ public class LogLevelConverter implements ValueConverter<LogLevel> {
 
     @Override
     public LogLevel convert(String value) {
-        return LogLevel.valueOf(value);
+        return LogLevel.parse(value);
     }
 
 }

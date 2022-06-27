@@ -25,6 +25,7 @@ import org.jboss.pnc.bifrost.source.db.converter.OffsetDateTimeConverter;
 import org.jboss.pnc.bifrost.source.db.converter.idConverter;
 import org.jboss.pnc.bifrost.source.db.converter.StringConverter;
 import org.jboss.pnc.bifrost.source.db.converter.ValueConverter;
+import org.jboss.pnc.common.Strings;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.util.Map;
@@ -91,6 +92,10 @@ public class FieldMapping {
 
         public ValueConverter valueConverter() {
             return valueConverter;
+        }
+
+        public String hqlField() {
+            return Strings.fistCharToLower(clazz.getSimpleName()) + "." + name;
         }
     }
 }

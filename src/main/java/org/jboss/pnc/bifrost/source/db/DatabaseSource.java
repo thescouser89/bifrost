@@ -175,7 +175,7 @@ public class DatabaseSource implements Source {
                         .orElseThrow(() -> new InvalidFieldException("The field [" + dtoField + "] is not mapped."));
 
                 String paramName = "m" + field.name + valueIndex;
-                valueParts.add(field.name + " = :" + paramName);
+                valueParts.add(field.hqlField() + " = :" + paramName);
 
                 String value = values.get(valueIndex);
                 parameters.and(paramName, field.valueConverter().convert(value));
@@ -191,7 +191,7 @@ public class DatabaseSource implements Source {
                         .orElseThrow(() -> new InvalidFieldException("The field [" + dtoField + "] is not mapped."));
 
                 String paramName = "p" + field.name + valueIndex;
-                valueParts.add(field.name + " like :" + paramName);
+                valueParts.add(field.hqlField() + " like :" + paramName);
 
                 String value = values.get(valueIndex);
                 parameters.and(paramName, field.valueConverter().convert(value) + "%");
