@@ -67,6 +67,8 @@ bifrost:
   quarkus:
     log:
       min-level: TRACE
+      console:
+        json: false
     datasource:
       jdbc:
         url: jdbc:h2:tcp://localhost/mem:test
@@ -85,3 +87,9 @@ bifrost:
       - logger-name-prefix: org.jboss.pnc
         level: INFO
     hostname: localhost-0
+
+"%dev":
+  quarkus:
+    log:
+      console:
+        json: false
