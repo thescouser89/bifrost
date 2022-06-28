@@ -110,8 +110,7 @@ public class ElasticSearch {
                 .size(fetchSize + 1)
                 .from(0)
                 .sort(new FieldSortBuilder("@timestamp").order(getSortOrder(direction)))
-                .sort(new FieldSortBuilder("sequence").order(getSortOrder(direction)))
-                .sort(new FieldSortBuilder("_uid").order(getSortOrder(direction)));
+                .sort(new FieldSortBuilder("sequence").order(getSortOrder(direction)));
         if (searchAfter.isPresent()) {
             String timestamp = searchAfter.get().getTimestamp();
             TemporalAccessor accessor = DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(timestamp);
