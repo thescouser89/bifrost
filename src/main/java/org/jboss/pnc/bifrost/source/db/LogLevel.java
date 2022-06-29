@@ -38,6 +38,8 @@ public enum LogLevel {
                 return LogLevel.TRACE;
             } else if (levelUpper.equals("SEVERE")) {
                 return LogLevel.FATAL;
+            } else if (levelUpper.equals("WARNING")) {
+                return LogLevel.WARN;
             } else {
                 return LogLevel.valueOf(levelUpper);
             }
