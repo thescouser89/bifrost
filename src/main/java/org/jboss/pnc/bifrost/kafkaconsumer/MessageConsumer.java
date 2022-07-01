@@ -81,6 +81,11 @@ public class MessageConsumer {
         try {
             LogLine logLine = mapper.readValue(json, LogLine.class);
             logger.trace("Received line: " + logLine.toString());
+
+            if (logLine.getLogEntry() != null && logLine.getLogEntry().getProcessContext() == null) {
+                logger.warn("Skipping log line due to null processContext. Line: " + logLine);
+                return;
+            }
             if (acceptFilter.match(logLine)) {
                 try {
                     logLine.setLogEntry(logEntryRepository.get(logLine.getLogEntry()));
