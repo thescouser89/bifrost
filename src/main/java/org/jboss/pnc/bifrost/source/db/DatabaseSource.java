@@ -147,7 +147,10 @@ public class DatabaseSource implements Source {
                 invalidPrefixFilters.put(dtoField, values);
             }
         });
-        logger.warn("Found invalid prefix filters, moving them to exact match: {}.", invalidPrefixFilters);
+        if (!invalidPrefixFilters.isEmpty()) {
+            logger.warn("Found invalid prefix filters, moving them to exact match: {}.", invalidPrefixFilters);
+        }
+
         invalidPrefixFilters.forEach((dtoField, values) -> {
             matchFilters.put(dtoField, values);
             prefixFilters.remove(dtoField);
