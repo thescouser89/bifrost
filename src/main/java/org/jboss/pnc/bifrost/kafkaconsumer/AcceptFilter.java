@@ -25,11 +25,11 @@ import java.util.List;
 /**
  * @author <a href="mailto:matejonnet@gmail.com">Matej Lazar</a>
  */
-public class Filter {
+public class AcceptFilter {
 
     private List<Configuration.LogFilter> logFilters;
 
-    public Filter(List<Configuration.LogFilter> logFilters) {
+    public AcceptFilter(List<Configuration.LogFilter> logFilters) {
         this.logFilters = logFilters;
     }
 
@@ -38,7 +38,7 @@ public class Filter {
             return true;
         }
         for (Configuration.LogFilter logFilter : logFilters) {
-            if (record.getLoggerName().toLowerCase().startsWith(logFilter.loggerNamePrefix())) {
+            if (record.getLoggerName().toLowerCase().startsWith(logFilter.loggerNamePrefix().toLowerCase())) {
                 if (isLevelEnabled(logFilter.level(), record.getLevel())) {
                     return true;
                 }

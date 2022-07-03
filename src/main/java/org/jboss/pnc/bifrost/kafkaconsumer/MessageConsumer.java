@@ -59,14 +59,17 @@ public class MessageConsumer {
     @Inject
     private LogEntryRepository logEntryRepository;
 
-    Filter acceptFilter;
+    AcceptFilter acceptFilter;
+
+    DenyFilter denyFilter;
 
     private Counter errCounter;
 
     @PostConstruct
     void initMetrics() {
         errCounter = registry.counter(className + ".error.count");
-        acceptFilter = new Filter(configuration.acceptFilters());
+        acceptFilter = new AcceptFilter(configuration.acceptFilters());
+        denyFilter = new DenyFilter(configuration.denyFilters());
     }
 
     /**
@@ -81,6 +84,12 @@ public class MessageConsumer {
         try {
             LogLine logLine = mapper.readValue(json, LogLine.class);
             logger.trace("Received line: " + logLine.toString());
+
+            // If logLine matches a deny filter, discard silently with no processing
+            if (denyFilter.match(logLine)) {
+                logger.trace("Log line matches deny filter: " + logLine.toString());
+                return;
+            }
 
             if (logLine.getLogEntry() != null && logLine.getLogEntry().getProcessContext() == null) {
                 logger.warn("Skipping log line due to null processContext. Line: " + logLine);
