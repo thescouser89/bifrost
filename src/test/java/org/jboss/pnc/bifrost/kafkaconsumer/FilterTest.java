@@ -35,7 +35,7 @@ public class FilterTest {
         List<Configuration.LogFilter> anyMatch = new ArrayList<>();
         anyMatch.add(logFilter("org.jboss", LogLevel.valueOf("DEBUG")));
         anyMatch.add(logFilter("org.apache", LogLevel.valueOf("INFO")));
-        Filter filter = new Filter(anyMatch);
+        AcceptFilter filter = new AcceptFilter(anyMatch);
 
         Assertions.assertTrue(filter.match(simpleLogRecord("org.jboss", LogLevel.ERROR)));
         Assertions.assertTrue(filter.match(simpleLogRecord("org.jboss", LogLevel.WARN)));
@@ -48,6 +48,25 @@ public class FilterTest {
         Assertions.assertFalse(filter.match(simpleLogRecord("org.apache", LogLevel.DEBUG)));
 
         Assertions.assertFalse(filter.match(simpleLogRecord("io.quarkus", LogLevel.ERROR)));
+    }
+
+    @Test
+    public void shouldDenyLogs() {
+        List<String> anyMatch = new ArrayList<>();
+        anyMatch.add("org.jboss.pnc.bpm.eventlogger.ProcessProgressLogger");
+        DenyFilter filter = new DenyFilter(anyMatch);
+
+        Assertions.assertTrue(
+                filter.match(simpleLogRecord("org.jboss.pnc.bpm.eventlogger.ProcessProgressLogger", LogLevel.ERROR)));
+        Assertions.assertTrue(
+                filter.match(simpleLogRecord("org.jboss.pnc.bpm.eventlogger.ProcessProgressLogger", LogLevel.INFO)));
+        Assertions.assertTrue(
+                filter.match(simpleLogRecord("org.jboss.pnc.bpm.eventlogger.ProcessProgressLogger", LogLevel.DEBUG)));
+        Assertions.assertTrue(
+                filter.match(simpleLogRecord("org.jboss.pnc.bpm.eventlogger.ProcessProgressLogger", LogLevel.WARN)));
+        Assertions.assertTrue(
+                filter.match(simpleLogRecord("org.jboss.pnc.bpm.eventlogger.ProcessProgressLogger", LogLevel.TRACE)));
+        Assertions.assertFalse(filter.match(simpleLogRecord("org.jboss.pnc.bpm.", LogLevel.ERROR)));
     }
 
     private LogLine simpleLogRecord(String loggerName, LogLevel level) {

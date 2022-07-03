@@ -86,6 +86,8 @@ bifrost:
     accept-filters:
       - logger-name-prefix: org.jboss.pnc
         level: INFO
+    deny-filters:
+      - logger-name-prefix: org.jboss.pnc.bpm.eventlogger.ProcessProgressLogger
     hostname: localhost-0
 
 "%dev":
