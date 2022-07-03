@@ -47,7 +47,7 @@ public interface Configuration {
     /**
      * Logs that should not be processed at all
      */
-    List<String> denyFilters();
+    List<LogDenyFilter> denyFilters();
 
     /**
      * Used by ID generator to guarantee unique id across clusters. cluster-sequence is added to pod's ordinal number
@@ -68,6 +68,10 @@ public interface Configuration {
         String loggerNamePrefix();
 
         LogLevel level();
+    }
+
+    interface LogDenyFilter {
+        String loggerNamePrefix();
     }
 
 }

@@ -19,6 +19,7 @@ package org.jboss.pnc.bifrost.kafkaconsumer;
 
 import java.util.List;
 
+import org.jboss.pnc.bifrost.kafkaconsumer.Configuration.LogDenyFilter;
 import org.jboss.pnc.bifrost.source.db.LogLine;
 
 /**
@@ -26,9 +27,9 @@ import org.jboss.pnc.bifrost.source.db.LogLine;
  */
 public class DenyFilter {
 
-    private List<String> logFilters;
+    private List<LogDenyFilter> logFilters;
 
-    public DenyFilter(List<String> logFilters) {
+    public DenyFilter(List<LogDenyFilter> logFilters) {
         this.logFilters = logFilters;
     }
 
@@ -36,8 +37,8 @@ public class DenyFilter {
         if (logFilters.isEmpty()) {
             return false;
         }
-        for (String logFilter : logFilters) {
-            if (record.getLoggerName().toLowerCase().startsWith(logFilter.toLowerCase())) {
+        for (LogDenyFilter logFilter : logFilters) {
+            if (record.getLoggerName().toLowerCase().startsWith(logFilter.loggerNamePrefix().toLowerCase())) {
                 return true;
             }
         }

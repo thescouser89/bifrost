@@ -52,8 +52,8 @@ public class FilterTest {
 
     @Test
     public void shouldDenyLogs() {
-        List<String> anyMatch = new ArrayList<>();
-        anyMatch.add("org.jboss.pnc.bpm.eventlogger.ProcessProgressLogger");
+        List<Configuration.LogDenyFilter> anyMatch = new ArrayList<>();
+        anyMatch.add(logDenyFilter("org.jboss.pnc.bpm.eventlogger.ProcessProgressLogger"));
         DenyFilter filter = new DenyFilter(anyMatch);
 
         Assertions.assertTrue(
@@ -86,6 +86,15 @@ public class FilterTest {
             @Override
             public LogLevel level() {
                 return level;
+            }
+        };
+    }
+
+    static Configuration.LogDenyFilter logDenyFilter(String loggerNamePrefix) {
+        return new Configuration.LogDenyFilter() {
+            @Override
+            public String loggerNamePrefix() {
+                return loggerNamePrefix;
             }
         };
     }
