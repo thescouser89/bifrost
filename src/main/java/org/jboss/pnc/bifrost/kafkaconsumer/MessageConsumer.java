@@ -34,6 +34,8 @@ import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.validation.ConstraintViolationException;
 
+import static org.jboss.pnc.bifrost.common.Strings.encodeToUTF8;
+
 /**
  * Consume from a Kafka topic, parse the data and store it in the database
  */
@@ -97,6 +99,7 @@ public class MessageConsumer {
             }
             if (acceptFilter.match(logLine)) {
                 try {
+                    logLine.setLine(encodeToUTF8(logLine.getLine()));
                     logLine.setLogEntry(logEntryRepository.get(logLine.getLogEntry()));
                     logLine.persistAndFlush();
                     storedCounter.increment();
