@@ -41,4 +41,18 @@ public class Strings {
 
         return utf8EncodedString;
     }
+
+    /**
+     * Sanitize a string
+     *
+     * @param string
+     * @return
+     */
+    public static String sanitize(String rawString) {
+        if (rawString == null) {
+            return null;
+        }
+
+        return rawString.replaceAll("\u0000", "");
+    }
 }
