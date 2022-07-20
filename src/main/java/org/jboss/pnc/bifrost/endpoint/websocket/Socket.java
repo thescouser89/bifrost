@@ -50,6 +50,7 @@ import java.util.function.Consumer;
 public class Socket {
 
     private static final String className = Socket.class.getName();
+    public static final String CONNECTION_CLOSED_BY_USER = "Connection reset by peer";
 
     private Logger logger = LoggerFactory.getLogger(Socket.class);
 
@@ -92,7 +93,11 @@ public class Socket {
     @OnError
     public void onError(Session session, Throwable error) {
         errCounter.increment();
-        logger.error("Socket communication error.", error);
+        if (CONNECTION_CLOSED_BY_USER.equals(error.getMessage())) {
+            logger.warn("Socket closed by user.", error);
+        } else {
+            logger.error("Socket communication error.", error);
+        }
         unsubscribeSession(session.getId());
     }
 
