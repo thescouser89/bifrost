@@ -54,7 +54,7 @@ import java.util.Optional;
                 @Index(name = "idx_logentry_buildId", columnList = "buildId") })
 @NamedQuery(
         name = "LogEntry.findExisting",
-        query = "FROM LogEntry e" + " WHERE e.processContext = :processContext"
+        query = "SELECT e" + " FROM LogEntry e" + " WHERE e.processContext = :processContext"
                 + "   AND e.processContextVariant = :processContextVariant"
                 + "   AND e.requestContext = :requestContext" + "   AND e.temporary = :temporary"
                 + "   AND e.buildId = :buildId",
