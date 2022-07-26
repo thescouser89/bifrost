@@ -57,7 +57,7 @@ public class MessageConsumer {
     StoredCounter storedCounter;
 
     @Inject
-    private LogEntryRepository logEntryRepository;
+    LogEntryRepository logEntryRepository;
 
     Filter acceptFilter;
 
