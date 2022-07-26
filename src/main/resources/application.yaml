@@ -40,10 +40,6 @@ quarkus:
   http:
     host: localhost
     port: 8081
-  micrometer:
-    export:
-      json:
-        enabled: true
   datasource:
     db-kind: ${QUARKUS_DATASOURCE:postgresql}
     jdbc.url: ${QUARKUS_DATASOURCE_URL:}
