@@ -52,13 +52,6 @@ import java.util.Optional;
                 @Index(name = "idx_logentry_processContextVariant", columnList = "processContextVariant"),
                 @Index(name = "idx_logentry_requestContext", columnList = "requestContext"),
                 @Index(name = "idx_logentry_buildId", columnList = "buildId") })
-@NamedQuery(
-        name = "LogEntry.findExisting",
-        query = "SELECT e" + " FROM LogEntry e" + " WHERE e.processContext = :processContext"
-                + "   AND e.processContextVariant = :processContextVariant"
-                + "   AND e.requestContext = :requestContext" + "   AND e.temporary = :temporary"
-                + "   AND e.buildId = :buildId",
-        hints = @QueryHint(name = "org.hibernate.cacheable", value = "true"))
 @Cacheable
 public class LogEntry extends PanacheEntityBase {
 
@@ -80,12 +73,29 @@ public class LogEntry extends PanacheEntityBase {
     Long buildId;
 
     public static Optional<LogEntry> findExisting(LogEntry logEntry) {
-        Parameters parameters = Parameters.with("processContext", logEntry.processContext)
-                .and("processContextVariant", logEntry.processContextVariant)
-                .and("requestContext", logEntry.requestContext)
-                .and("temporary", logEntry.temporary)
-                .and("buildId", logEntry.buildId);
-        return find("#LogEntry.findExisting", parameters).firstResultOptional();
+        StringBuilder query = new StringBuilder("processContext = :processContext");
+        Parameters parameters = Parameters.with("processContext", logEntry.processContext);
+
+        parameters = handleNullField(logEntry.processContextVariant, "processContextVariant", query, parameters);
+        parameters = handleNullField(logEntry.requestContext, "requestContext", query, parameters);
+        parameters = handleNullField(logEntry.temporary, "temporary", query, parameters);
+        parameters = handleNullField(logEntry.buildId, "buildId", query, parameters);
+
+        return find(query.toString(), parameters).withHint("org.hibernate.cacheable", true).firstResultOptional();
+    }
+
+    private static Parameters handleNullField(
+            Object field,
+            String fieldName,
+            StringBuilder query,
+            Parameters parameters) {
+        if (field == null) {
+            query.append(" and ").append(fieldName).append(" is null");
+        } else {
+            query.append(" and ").append(fieldName).append(" = :").append(fieldName);
+            parameters = parameters.and(fieldName, field);
+        }
+        return parameters;
     }
 
 }
