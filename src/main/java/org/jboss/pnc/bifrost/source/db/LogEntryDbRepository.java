@@ -18,6 +18,8 @@
 package org.jboss.pnc.bifrost.source.db;
 
 import io.quarkus.arc.Priority;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Alternative;
@@ -31,6 +33,8 @@ import javax.transaction.Transactional;
 @ApplicationScoped
 public class LogEntryDbRepository implements LogEntryRepository {
 
+    private static final Logger LOG = LoggerFactory.getLogger(LogEntryDbRepository.class);
+
     /**
      * Return an already persisted log entry if it exists otherwise persists it. Checking for existing logEntry is using
      * cached query to avoid a select before each insert. Query cache may not be synchronized between all instances in
@@ -39,6 +43,7 @@ public class LogEntryDbRepository implements LogEntryRepository {
     @Transactional
     public LogEntry get(LogEntry logEntry) {
         return LogEntry.findExisting(logEntry).orElseGet(() -> {
+            LOG.trace("Persisting LogEntry: " + logEntry);
             logEntry.persist();
             return logEntry;
         });

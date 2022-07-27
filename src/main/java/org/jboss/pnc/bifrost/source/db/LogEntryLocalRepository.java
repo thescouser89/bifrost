@@ -33,7 +33,7 @@ import java.util.Map;
 @ApplicationScoped
 public class LogEntryLocalRepository implements LogEntryRepository {
 
-    private Map<LogEntry, LogEntry> cache = new HashMap<>();
+    private final Map<LogEntry, LogEntry> cache = new HashMap<>();
 
     /**
      * Return persisted log entry. If logEntry is not cached yet, it is persisted and then returned. There is
