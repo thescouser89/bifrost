@@ -25,7 +25,7 @@ import java.util.function.Consumer;
 /**
  *
  * @author Honza Brázdil &lt;jbrazdil@redhat.com&gt;
- * 
+ *
  * @param <T> parameter type
  */
 
