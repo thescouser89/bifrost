@@ -21,8 +21,6 @@ quarkus:
     category:
       org.jboss.pnc:
         level: TRACE
-      org.elasticsearch:
-        level: INFO
       org.apache.http:
         level: INFO
     console:
@@ -33,10 +31,6 @@ quarkus:
   hibernate-orm:
     database:
       generation: validate
-  index-dependency:
-    elasticsearch:
-      artifact-id: elasticsearch
-      group-id: org.elasticsearch
   http:
     host: localhost
     port: 8081
@@ -45,12 +39,6 @@ quarkus:
     jdbc.url: ${QUARKUS_DATASOURCE_URL:}
     username: ${QUARKUS_DATASOURCE_USERNAME:}
     password: ${QUARKUS_DATASOURCE_PASSWORD:}
-elasticsearch:
-  hosts: https://host:443
-  indexes: test-*
-  #keyStorePath =
-  #keyStorePass =
-  #keyPass =
 bifrost:
   backoffrunnable:
     delayMillis: 1000
