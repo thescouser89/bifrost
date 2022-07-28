@@ -60,7 +60,7 @@ public class RestTest {
     /*
      * WORKAROUND: use static block instead of BeforeAll to avoid the exception below The IllegalStateException happens
      * when this test is run the first, if any other test run before it works
-     * 
+     *
      * java.lang.ExceptionInInitializerError at org.jboss.pnc.bifrost.endpoint.RestTest.init(RestTest.java:45) Caused
      * by: java.lang.IllegalStateException: No configuration is available for this class loader at
      * org.jboss.pnc.bifrost.endpoint.RestTest.init(RestTest.java:45)

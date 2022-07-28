@@ -43,7 +43,7 @@ public class HibernateStatsUtils {
 
     /**
      * Get all the Hibernate Entities statistics aggregated in a sorted Map
-     * 
+     *
      * @param statistics
      * @return a sorted map containing all the Hibernate entities stats
      */
@@ -141,7 +141,7 @@ public class HibernateStatsUtils {
 
     /**
      * Get all the Hibernate Entities second level cache statistics aggregated in a sorted Map
-     * 
+     *
      * @param statistics
      * @return a sorted map containing all the Hibernate second level cache statistics
      */
@@ -230,7 +230,7 @@ public class HibernateStatsUtils {
 
     /**
      * Get all the Hibernate collections statistics aggregated in a sorted Map
-     * 
+     *
      * @param statistics
      * @return a sorted map containing all the Hibernate collections statistics
      */
@@ -323,7 +323,7 @@ public class HibernateStatsUtils {
 
     /**
      * Get all the Hibernate generic statistics aggregated in a sorted Map
-     * 
+     *
      * @param statistics
      * @return a sorted map containing Hibernate generic stats
      */
