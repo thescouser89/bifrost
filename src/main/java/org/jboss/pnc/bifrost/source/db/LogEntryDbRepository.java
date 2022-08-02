@@ -18,6 +18,8 @@
 package org.jboss.pnc.bifrost.source.db;
 
 import io.quarkus.arc.Priority;
+
+import org.jboss.pnc.common.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,6 +44,10 @@ public class LogEntryDbRepository implements LogEntryRepository {
      */
     @Transactional
     public LogEntry get(LogEntry logEntry) {
+        // Avoid duplicated logEntry values with empty and 0
+        if (Strings.isEmpty(logEntry.processContextVariant)) {
+            logEntry.setProcessContextVariant("0");
+        }
         return LogEntry.findExisting(logEntry).orElseGet(() -> {
             LOG.trace("Persisting LogEntry: " + logEntry);
             logEntry.persist();

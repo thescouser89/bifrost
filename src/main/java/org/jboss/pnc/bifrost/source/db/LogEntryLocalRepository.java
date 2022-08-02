@@ -22,6 +22,9 @@ import io.quarkus.arc.Priority;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Alternative;
 import javax.transaction.Transactional;
+
+import org.jboss.pnc.common.Strings;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -43,6 +46,10 @@ public class LogEntryLocalRepository implements LogEntryRepository {
     @Override
     @Transactional
     public LogEntry get(LogEntry logEntry) {
+        // Avoid duplicated logEntry values with empty and 0
+        if (Strings.isEmpty(logEntry.processContextVariant)) {
+            logEntry.setProcessContextVariant("0");
+        }
         return cache.computeIfAbsent(logEntry, e -> {
             logEntry.persist();
             return logEntry;
