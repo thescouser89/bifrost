@@ -76,6 +76,8 @@ bifrost:
         sql: true
         bind-parameters: true
       statistics: true
+    devservices:
+      enabled: false
   bifrost:
     sourceClass: org.jboss.pnc.bifrost.source.db.DatabaseSource
   kafka2db:
@@ -91,3 +93,4 @@ bifrost:
     log:
       console:
         json: false
+
