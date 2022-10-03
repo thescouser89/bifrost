@@ -17,6 +17,8 @@
  */
 package org.jboss.pnc.bifrost.endpoint.provider;
 
+import io.opentelemetry.extension.annotations.SpanAttribute;
+import io.opentelemetry.extension.annotations.WithSpan;
 import io.quarkus.test.Mock;
 import org.jboss.pnc.api.bifrost.dto.Line;
 import org.jboss.pnc.api.bifrost.enums.Direction;
@@ -45,13 +47,14 @@ public class DataProviderMock extends DataProvider {
     }
 
     @Override
+    @WithSpan()
     public void get(
-            String matchFilters,
-            String prefixFilters,
-            Optional<Line> afterLine,
-            Direction direction,
-            Optional<Integer> maxLines,
-            Consumer<Line> onLine) throws IOException {
+            @SpanAttribute(value = "matchFilters") String matchFilters,
+            @SpanAttribute(value = "prefixFilters") String prefixFilters,
+            @SpanAttribute(value = "afterLine") Optional<Line> afterLine,
+            @SpanAttribute(value = "direction") Direction direction,
+            @SpanAttribute(value = "maxLines") Optional<Integer> maxLines,
+            @SpanAttribute(value = "onLine") Consumer<Line> onLine) throws IOException {
         if (throwOnCall.isPresent()) {
             throw throwOnCall.get();
         } else {
@@ -60,12 +63,13 @@ public class DataProviderMock extends DataProvider {
     }
 
     @Override
+    @WithSpan()
     protected void readFromSource(
-            String matchFilters,
-            String prefixFilters,
-            int fetchSize,
-            Optional<Line> lastResult,
-            Consumer<Line> onLine) throws IOException {
+            @SpanAttribute(value = "matchFilters") String matchFilters,
+            @SpanAttribute(value = "prefixFilters") String prefixFilters,
+            @SpanAttribute(value = "fetchSize") int fetchSize,
+            @SpanAttribute(value = "lastResult") Optional<Line> lastResult,
+            @SpanAttribute(value = "onLine") Consumer<Line> onLine) throws IOException {
 
         for (int i = 0; i < fetchSize; i++) {
             if (lines.isEmpty()) {

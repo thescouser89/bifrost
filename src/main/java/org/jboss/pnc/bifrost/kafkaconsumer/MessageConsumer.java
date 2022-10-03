@@ -21,6 +21,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.annotation.Timed;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.opentelemetry.extension.annotations.SpanAttribute;
+import io.opentelemetry.extension.annotations.WithSpan;
 import io.smallrye.common.annotation.Blocking;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.jboss.pnc.bifrost.source.db.LogEntryRepository;
@@ -81,7 +83,8 @@ public class MessageConsumer {
     @Blocking
     @Incoming("logs")
     @Transactional
-    public void consume(String json) {
+    @WithSpan()
+    public void consume(@SpanAttribute(value = "json") String json) {
         logger.trace("Received json line: " + json);
         try {
             LogLine logLine = mapper.readValue(json, LogLine.class);
