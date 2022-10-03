@@ -20,6 +20,9 @@ package org.jboss.pnc.bifrost.endpoint;
 import io.micrometer.core.annotation.Timed;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.opentelemetry.extension.annotations.SpanAttribute;
+import io.opentelemetry.extension.annotations.WithSpan;
+
 import org.jboss.pnc.api.bifrost.dto.Line;
 import org.jboss.pnc.api.bifrost.dto.MetaData;
 import org.jboss.pnc.api.bifrost.enums.Direction;
@@ -183,6 +186,7 @@ public class RestImpl implements Bifrost {
     }
 
     @Timed
+    @WithSpan()
     protected void fillQueueWithLines(
             String matchFilters,
             String prefixFilters,

@@ -20,6 +20,9 @@ package org.jboss.pnc.bifrost.endpoint.provider;
 import io.micrometer.core.annotation.Timed;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.opentelemetry.extension.annotations.SpanAttribute;
+import io.opentelemetry.extension.annotations.WithSpan;
+
 import org.jboss.pnc.api.bifrost.dto.Line;
 import org.jboss.pnc.api.bifrost.enums.Direction;
 import org.jboss.pnc.bifrost.Config;
@@ -83,13 +86,14 @@ public class DataProvider {
     }
 
     @Timed
+    @WithSpan()
     public void subscribe(
-            String matchFilters,
-            String prefixFilters,
-            Optional<Line> afterLine,
-            Consumer<Line> onLine,
-            Subscription subscription,
-            Optional<Integer> maxLines) {
+            @SpanAttribute(value = "matchFilters") String matchFilters,
+            @SpanAttribute(value = "prefixFilters") String prefixFilters,
+            @SpanAttribute(value = "afterLine") Optional<Line> afterLine,
+            @SpanAttribute(value = "onLine") Consumer<Line> onLine,
+            @SpanAttribute(value = "subscription") Subscription subscription,
+            @SpanAttribute(value = "maxLines") Optional<Integer> maxLines) {
 
         final int[] fetchedLines = { 0 };
 
@@ -130,12 +134,13 @@ public class DataProvider {
      * "prefixFilters": loggerName.keyword: org.jboss.pnc.causeway|org.jboss.pnc._userlog_, level:INFO|ERROR|WARN,
      * "matchFilters": mdc.buildId:317211334116737472, mdc.processContext:317211334116737024
      */
+    @WithSpan()
     protected void readFromSource(
-            String matchFilters,
-            String prefixFilters,
-            int fetchSize,
-            Optional<Line> lastResult,
-            Consumer<Line> onLine) throws IOException {
+            @SpanAttribute(value = "matchFilters") String matchFilters,
+            @SpanAttribute(value = "prefixFilters") String prefixFilters,
+            @SpanAttribute(value = "fetchSize") int fetchSize,
+            @SpanAttribute(value = "lastResult") Optional<Line> lastResult,
+            @SpanAttribute(value = "onLine") Consumer<Line> onLine) throws IOException {
         source.get(
                 Strings.toMap(matchFilters),
                 Strings.toMap(prefixFilters),
@@ -149,13 +154,14 @@ public class DataProvider {
      * Blocking call, <code>onLine<code/> is called in the calling thread.
      */
     @Timed
+    @WithSpan()
     public void get(
-            String matchFilters,
-            String prefixFilters,
-            Optional<Line> afterLine,
-            Direction direction,
-            Optional<Integer> maxLines,
-            Consumer<Line> onLine) throws IOException {
+            @SpanAttribute(value = "matchFilters") String matchFilters,
+            @SpanAttribute(value = "prefixFilters") String prefixFilters,
+            @SpanAttribute(value = "afterLine") Optional<Line> afterLine,
+            @SpanAttribute(value = "direction") Direction direction,
+            @SpanAttribute(value = "maxLines") Optional<Integer> maxLines,
+            @SpanAttribute(value = "onLine") Consumer<Line> onLine) throws IOException {
 
         final Reference<Line> lastLine;
         if (afterLine.isPresent()) {

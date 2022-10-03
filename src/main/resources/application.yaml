@@ -27,7 +27,7 @@ quarkus:
         level: INFO
     console:
       level: INFO
-      format: '%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%e%n'
+      format: '%d{HH:mm:ss,SSS} %-5p traceId=%X{traceId}, parentId=%X{parentId}, spanId=%X{spanId}, sampled=%X{sampled} [%c] (%t) %s%e%n'
       enable: 'true'
     level: TRACE
   hibernate-orm:
@@ -45,6 +45,20 @@ quarkus:
     jdbc.url: ${QUARKUS_DATASOURCE_URL:}
     username: ${QUARKUS_DATASOURCE_USERNAME:}
     password: ${QUARKUS_DATASOURCE_PASSWORD:}
+
+  opentelemetry:
+    enabled: true
+    tracer:
+      enabled: true
+      # reflect sampling on collector
+      resource-attributes: "sampler_ratio=0.05,service.name=bifrost"
+      sampler:
+        ratio: 0.05
+      exporter:
+        otlp:
+          # Send telemetry data to an opentelemetry-collector
+          #endpoint: http://localhost:4317
+
 elasticsearch:
   hosts: https://host:443
   indexes: test-*
