@@ -20,7 +20,6 @@ package org.jboss.pnc.bifrost.endpoint;
 import io.micrometer.core.annotation.Timed;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.opentelemetry.extension.annotations.SpanAttribute;
 import io.opentelemetry.extension.annotations.WithSpan;
 
 import org.jboss.pnc.api.bifrost.dto.Line;
