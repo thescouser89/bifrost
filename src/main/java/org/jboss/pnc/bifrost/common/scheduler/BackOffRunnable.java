@@ -20,6 +20,8 @@ package org.jboss.pnc.bifrost.common.scheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.opentelemetry.context.Context;
+
 import java.util.Optional;
 
 /**
@@ -43,7 +45,7 @@ public class BackOffRunnable implements Runnable {
     }
 
     public void setRunnable(Runnable runnable) {
-        this.runnable = runnable;
+        this.runnable = Context.current().wrap(runnable);
     }
 
     @Override
@@ -80,6 +82,6 @@ public class BackOffRunnable implements Runnable {
     }
 
     public void setCancelHook(Runnable cancelHook) {
-        this.cancelHook = Optional.ofNullable(cancelHook);
+        this.cancelHook = Optional.ofNullable(Context.current().wrap(cancelHook));
     }
 }

@@ -20,6 +20,8 @@ package org.jboss.pnc.bifrost.common.scheduler;
 import io.micrometer.core.annotation.Timed;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.opentelemetry.context.Context;
+
 import org.apache.lucene.util.NamedThreadFactory;
 import org.jboss.pnc.bifrost.Config;
 import org.jboss.pnc.bifrost.common.Reference;
@@ -81,8 +83,11 @@ public class Subscriptions {
     @Inject
     public Subscriptions(Config config) {
         subscriptions = new ConcurrentHashMap<>();
-        executor = Executors
-                .newScheduledThreadPool(config.getSourcePollThreads(), new NamedThreadFactory("subscriptions"));
+        executor = Context.current()
+                .wrap(
+                        Executors.newScheduledThreadPool(
+                                config.getSourcePollThreads(),
+                                new NamedThreadFactory("subscriptions")));
     }
 
     public void submit(Runnable task) {
