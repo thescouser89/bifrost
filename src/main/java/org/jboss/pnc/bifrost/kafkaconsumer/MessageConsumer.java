@@ -85,14 +85,14 @@ public class MessageConsumer {
     @Transactional
     @WithSpan()
     public void consume(@SpanAttribute(value = "json") String json) {
-        logger.trace("Received json line: " + json);
+        logger.debug("Received json line: " + json);
         try {
             LogLine logLine = mapper.readValue(json, LogLine.class);
-            logger.trace("Received line: " + logLine.toString());
+            logger.debug("Received line: " + logLine.toString());
 
             // If logLine matches a deny filter, discard silently with no processing
             if (denyFilter.match(logLine)) {
-                logger.trace("Log line matches deny filter: " + logLine.toString());
+                logger.debug("Log line matches deny filter: " + logLine.toString());
                 return;
             }
 

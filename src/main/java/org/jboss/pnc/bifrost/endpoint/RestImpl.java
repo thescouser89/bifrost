@@ -136,7 +136,7 @@ public class RestImpl implements Bifrost {
                     Optional<Line> maybeLine = queue.poll(30, TimeUnit.MINUTES);
                     if (maybeLine.isPresent()) {
                         Line line = maybeLine.get();
-                        logger.trace("Sending line: " + line.asString());
+                        logger.debug("Sending line: " + line.asString());
                         Writer writer = new BufferedWriter(new OutputStreamWriter(outputStream));
                         writer.write(line.asString() + "\n");
                         writer.flush();
@@ -199,7 +199,7 @@ public class RestImpl implements Bifrost {
         Consumer<Line> onLine = line -> {
             try {
                 if (line != null) {
-                    logger.trace("Adding line to output queue: " + line.asString());
+                    logger.debug("Adding line to output queue: " + line.asString());
                     queue.offer(Optional.of(line), 5, TimeUnit.SECONDS); // TODO
                     receivedLines[0]++;
 

@@ -176,7 +176,7 @@ public class Socket {
     }
 
     private void sendLine(RemoteEndpoint.Async remote, Line line, Object requestId, Session session) {
-        logger.trace("Sending line as text message: " + line.asString());
+        logger.debug("Sending line as text message: " + line.asString());
         JsonbJSONRPC2Response jsonrpc2Response = new JsonbJSONRPC2Response(new LineResult(line), requestId);
         remote.sendText(jsonrpc2Response.toJSONString(), lineResponseHandler(session));
     }
