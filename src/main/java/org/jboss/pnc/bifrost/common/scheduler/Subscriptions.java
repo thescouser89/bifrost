@@ -138,14 +138,14 @@ public class Subscriptions {
     }
 
     public void unsubscribe(Subscription subscription, UnsubscribeReason reason) {
-        logger.debug("Unsubscribing: " + subscription + " Reason:" + reason);
+        logger.info("Unsubscribing: " + subscription + " Reason:" + reason);
         ScheduledFuture scheduledFuture = subscriptions.remove(subscription);
         if (UnsubscribeReason.NO_DATA_FROM_SOURCE.equals(reason)) {
             subscription.runOnUnsubscribe();
         }
         if (scheduledFuture != null) {
             scheduledFuture.cancel(true);
-            logger.debug("Cancelled: " + subscription);
+            logger.info("Cancelled: " + subscription);
         }
     }
 

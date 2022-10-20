@@ -49,7 +49,7 @@ public class LogEntryDbRepository implements LogEntryRepository {
             logEntry.setProcessContextVariant("0");
         }
         return LogEntry.findExisting(logEntry).orElseGet(() -> {
-            LOG.trace("Persisting LogEntry: " + logEntry);
+            LOG.debug("Persisting LogEntry: " + logEntry);
             logEntry.persist();
             return logEntry;
         });

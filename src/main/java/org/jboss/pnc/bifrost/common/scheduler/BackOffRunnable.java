@@ -57,13 +57,13 @@ public class BackOffRunnable implements Runnable {
             validateTimeout();
             if (backOffNextCycles > 0L) {
                 backOffNextCycles--;
-                logger.trace("Cycle skipped.");
+                logger.debug("Cycle skipped.");
                 return;
             }
             Long backOff = (System.currentTimeMillis() - lastResult) / config.getDelayMillis();
 
             backOffNextCycles = Long.min(backOff - 1, config.getMaxBackOffCycles());
-            logger.trace("Running task ...");
+            logger.info("Running task ...");
             runnable.run();
         } catch (Exception e) {
             logger.error("Error executing task.", e);
