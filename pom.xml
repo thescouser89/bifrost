@@ -238,6 +238,8 @@
         <extensions>true</extensions>
         <configuration>
           <finalName>bifrost</finalName>
+          <!-- needed to publish to maven central -->
+          <skipOriginalJarRename>true</skipOriginalJarRename>
         </configuration>
         <executions>
           <execution>
