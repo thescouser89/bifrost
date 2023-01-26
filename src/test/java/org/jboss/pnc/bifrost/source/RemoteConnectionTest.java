@@ -82,7 +82,7 @@ public class RemoteConnectionTest {
         };
         // dataProvider.get("", "", Optional.empty(), Direction.DESC, Optional.of(10), onLine);
         Line after = Line.newBuilder().id("log#AXMG530ewm5cr6w_UJtL").timestamp("2020-06-30T20:24:37.197Z").build();
-        dataProvider.get("", "", Optional.of(after), Direction.DESC, Optional.of(15), onLine);
+        dataProvider.get("", "", Optional.of(after), Direction.DESC, Optional.of(15), Optional.empty(), onLine);
 
         List<Line> received = new ArrayList<>();
         for (int i = 0; i < 15; i++) {

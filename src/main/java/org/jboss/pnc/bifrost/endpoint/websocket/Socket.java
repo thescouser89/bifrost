@@ -141,7 +141,14 @@ public class Socket {
         Object methodParameter = null;
         try {
             methodParameter = method.getParameterType().getConstructor(new Class[] {}).newInstance(new Object[] {});
-            BeanUtils.populate(methodParameter, request.getNamedParams());
+
+            var namedParameters = request.getNamedParams();
+
+            // Don't try to populate 'null' parameters because null Strings would result in empty Strings and Integers
+            // in 0. We want to pass 'null' values to the method.
+            namedParameters.entrySet().removeIf(entry -> entry.getValue() == null);
+
+            BeanUtils.populate(methodParameter, namedParameters);
         } catch (NoSuchMethodException | InstantiationException | IllegalAccessException
                 | InvocationTargetException e) {
             errCounter.increment();

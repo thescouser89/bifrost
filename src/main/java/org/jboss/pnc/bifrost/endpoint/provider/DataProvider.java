@@ -93,7 +93,9 @@ public class DataProvider {
             @SpanAttribute(value = "afterLine") Optional<Line> afterLine,
             @SpanAttribute(value = "onLine") Consumer<Line> onLine,
             @SpanAttribute(value = "subscription") Subscription subscription,
-            @SpanAttribute(value = "maxLines") Optional<Integer> maxLines) {
+            @SpanAttribute(value = "maxLines") Optional<Integer> maxLines,
+            @SpanAttribute(value = "batchDelay") Optional<Integer> batchDelay,
+            @SpanAttribute(value = "batchSize") Optional<Integer> batchSize) {
 
         final int[] fetchedLines = { 0 };
 
@@ -112,7 +114,7 @@ public class DataProvider {
                 readFromSource(
                         matchFilters,
                         prefixFilters,
-                        getFetchSize(fetchedLines[0], maxLines),
+                        getFetchSize(fetchedLines[0], maxLines, batchSize),
                         lastResult,
                         onLineInternal);
                 logger.debug(
@@ -125,7 +127,7 @@ public class DataProvider {
             }
         };
 
-        subscriptions.subscribe(subscription, searchTask, afterLine, onLine, backOffRunnableConfig);
+        subscriptions.subscribe(subscription, searchTask, afterLine, onLine, backOffRunnableConfig, batchDelay);
     }
 
     /**
@@ -161,6 +163,7 @@ public class DataProvider {
             @SpanAttribute(value = "afterLine") Optional<Line> afterLine,
             @SpanAttribute(value = "direction") Direction direction,
             @SpanAttribute(value = "maxLines") Optional<Integer> maxLines,
+            @SpanAttribute(value = "batchSize") Optional<Integer> batchSize,
             @SpanAttribute(value = "onLine") Consumer<Line> onLine) throws IOException {
 
         final Reference<Line> lastLine;
@@ -180,7 +183,7 @@ public class DataProvider {
             lastLine.set(line);
         };
         do {
-            int fetchSize = getFetchSize(fetchedLines[0], maxLines);
+            int fetchSize = getFetchSize(fetchedLines[0], maxLines, batchSize);
             if (fetchSize < 1) {
                 break;
             }
@@ -194,8 +197,8 @@ public class DataProvider {
         } while (lastLine.get() != null && !lastLine.get().isLast());
     }
 
-    private int getFetchSize(int fetchedLines, Optional<Integer> maxLines) {
-        int defaultFetchSize = config.getDefaultSourceFetchSize();
+    private int getFetchSize(int fetchedLines, Optional<Integer> maxLines, Optional<Integer> batchSize) {
+        int defaultFetchSize = batchSize.orElse(config.getDefaultSourceFetchSize());
         if (maxLines.isPresent()) {
             int max = maxLines.get();
             if (fetchedLines + defaultFetchSize > max) {

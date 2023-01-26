@@ -61,7 +61,8 @@ public class SubscriptionsTest {
                 parameters.getResultConsumer().accept("Result " + i + ". Last was: " + parameters.getLastResult());
             }
         };
-        subscriptions.subscribe(subscription, task, Optional.empty(), onResult, backOffRunnableConfig);
+        subscriptions
+                .subscribe(subscription, task, Optional.empty(), onResult, backOffRunnableConfig, Optional.empty());
 
         List<String> results = new ArrayList<>();
         while (results.size() < 15) {

@@ -54,6 +54,7 @@ public class DataProviderMock extends DataProvider {
             @SpanAttribute(value = "afterLine") Optional<Line> afterLine,
             @SpanAttribute(value = "direction") Direction direction,
             @SpanAttribute(value = "maxLines") Optional<Integer> maxLines,
+            @SpanAttribute(value = "batchSize") Optional<Integer> batchSize,
             @SpanAttribute(value = "onLine") Consumer<Line> onLine) throws IOException {
         if (throwOnCall.isPresent()) {
             throw throwOnCall.get();

@@ -108,7 +108,8 @@ public class Subscriptions {
             Consumer<TaskParameters<T>> task,
             Optional<T> initialLastResult,
             Consumer<T> onResult,
-            BackOffRunnableConfig backOffRunnableConfig) {
+            BackOffRunnableConfig backOffRunnableConfig,
+            Optional<Integer> batchDelay) {
 
         BackOffRunnable backOffRunnable = new BackOffRunnable(backOffRunnableConfig);
 
@@ -128,11 +129,10 @@ public class Subscriptions {
 
         backOffRunnable.setRunnable(internalTask);
         backOffRunnable.setCancelHook(() -> unsubscribe(subscription, UnsubscribeReason.NO_DATA_FROM_SOURCE));
-
         ScheduledFuture<?> scheduledFuture = executor.scheduleAtFixedRate(
                 backOffRunnable,
                 0,
-                backOffRunnableConfig.getPollIntervalMillis(),
+                batchDelay.map(Long::valueOf).orElse(backOffRunnableConfig.getPollIntervalMillis()),
                 TimeUnit.MILLISECONDS);
         subscriptions.put(subscription, scheduledFuture);
     }
