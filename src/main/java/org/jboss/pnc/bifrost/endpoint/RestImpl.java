@@ -140,7 +140,7 @@ public class RestImpl implements Bifrost {
                         Line line = maybeLine.get();
                         logger.debug("Sending line: " + line.asString());
                         Writer writer = new BufferedWriter(new OutputStreamWriter(outputStream));
-                        writer.write(line.asString() + "\n");
+                        writer.write(line.asString());
                         writer.flush();
                         if (line.isLast() && follow == false) { // when follow is true, the connection must be
                                                                 // terminated from
