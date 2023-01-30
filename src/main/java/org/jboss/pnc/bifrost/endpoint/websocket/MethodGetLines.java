@@ -84,6 +84,7 @@ public class MethodGetLines extends MethodBase implements Method<GetLinesDto> {
                         Optional.ofNullable(in.getAfterLine()),
                         in.getDirection(),
                         Optional.ofNullable(in.getMaxLines()),
+                        Optional.ofNullable(in.getBatchSize()),
                         onLine);
             } catch (Exception e) {
                 errCounter.increment();

@@ -93,6 +93,8 @@ public class RestImpl implements Bifrost {
             Line afterLine,
             Direction direction,
             Integer maxLines,
+            Integer batchSize,
+            Integer batchDelay,
             boolean follow,
             String timeoutProbeString) {
 
@@ -177,6 +179,7 @@ public class RestImpl implements Bifrost {
                 prefixFilters,
                 afterLine,
                 maxLines,
+                batchDelay,
                 follow,
                 queue,
                 addEndOfDataMarker,
@@ -191,6 +194,7 @@ public class RestImpl implements Bifrost {
             String prefixFilters,
             Line afterLine,
             Integer maxLines,
+            Integer batchDelay,
             boolean follow,
             ArrayBlockingQueue<Optional<Line>> queue,
             Runnable addEndOfDataMarker,
@@ -231,7 +235,9 @@ public class RestImpl implements Bifrost {
                 Optional.ofNullable(afterLine),
                 onLine,
                 subscription,
-                Optional.ofNullable(maxLines));
+                Optional.ofNullable(maxLines),
+                Optional.ofNullable(batchDelay),
+                Optional.empty());
     }
 
     private ScheduledThreadPoolExecutor getExecutorService() {
@@ -254,17 +260,20 @@ public class RestImpl implements Bifrost {
             String prefixFilters,
             Line afterLine,
             Direction direction,
-            Integer maxLines) throws IOException {
+            Integer maxLines,
+            Integer batchSize,
+            Integer batchDelay) throws IOException {
         validateAndFixInputDate(afterLine);
 
         List<Line> lines = new ArrayList<>();
-        Consumer<Line> onLine = line -> lines.add(line);
+        Consumer<Line> onLine = lines::add;
         dataProvider.get(
                 matchFilters,
                 prefixFilters,
                 Optional.ofNullable(afterLine),
                 direction,
                 Optional.ofNullable(maxLines),
+                Optional.ofNullable(batchSize),
                 onLine);
         return lines;
     }
@@ -275,7 +284,9 @@ public class RestImpl implements Bifrost {
             String prefixFilters,
             Line afterLine,
             Direction direction,
-            Integer maxLines) throws IOException {
+            Integer maxLines,
+            Integer batchSize,
+            Integer batchDelay) throws IOException {
 
         validateAndFixInputDate(afterLine);
 
@@ -301,6 +312,7 @@ public class RestImpl implements Bifrost {
                 Optional.ofNullable(afterLine),
                 direction,
                 Optional.ofNullable(maxLines),
+                Optional.ofNullable(batchSize),
                 onLine);
 
         return new MetaData(md5.digest());

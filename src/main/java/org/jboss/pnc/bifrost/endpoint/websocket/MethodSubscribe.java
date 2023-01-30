@@ -96,7 +96,15 @@ public class MethodSubscribe extends MethodBase implements Method<SubscribeDto> 
         };
 
         Optional<Line> afterLine = Optional.ofNullable(subscribeDto.getAfterLine());
-        dataProvider.subscribe(matchFilters, prefixFilters, afterLine, onLine, subscription, Optional.empty());
+        dataProvider.subscribe(
+                matchFilters,
+                prefixFilters,
+                afterLine,
+                onLine,
+                subscription,
+                Optional.empty(),
+                Optional.ofNullable(subscribeDto.getBatchDelay()),
+                Optional.ofNullable(subscribeDto.getBatchSize()));
 
         return new SubscribeResultDto(subscription.getTopic());
     }

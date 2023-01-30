@@ -34,4 +34,8 @@ public class SubscribeDto {
 
     private Line afterLine;
 
+    private Integer batchDelay;
+
+    private Integer batchSize;
+
 }

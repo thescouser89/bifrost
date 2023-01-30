@@ -48,7 +48,8 @@ import java.time.OffsetDateTime;
         indexes = {
                 @Index(name = "idx_logline_eventtimestamp", columnList = "eventTimestamp"),
                 @Index(name = "idx_logline_sequence", columnList = "sequence"),
-                @Index(name = "idx_logline_loggerName", columnList = "loggerName") })
+                @Index(name = "idx_logline_loggerName", columnList = "loggerName"),
+                @Index(name = "idx_logline_fkey_logentry_id", columnList = "logentry_id") })
 @JsonDeserialize(using = LogLineDeserializer.class)
 @Cacheable
 public class LogLine extends PanacheEntityBase {

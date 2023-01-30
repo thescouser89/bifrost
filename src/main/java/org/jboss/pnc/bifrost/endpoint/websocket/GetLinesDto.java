@@ -39,4 +39,6 @@ public class GetLinesDto {
 
     private Direction direction;
 
+    private Integer batchSize;
+
 }
