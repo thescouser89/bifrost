@@ -94,8 +94,8 @@ public class DataProvider {
             @SpanAttribute(value = "onLine") Consumer<Line> onLine,
             @SpanAttribute(value = "subscription") Subscription subscription,
             @SpanAttribute(value = "maxLines") Optional<Integer> maxLines,
-            @SpanAttribute(value = "batchDelay") Optional<Integer> batchDelay,
-            @SpanAttribute(value = "batchSize") Optional<Integer> batchSize) {
+            @SpanAttribute(value = "batchSize") Optional<Integer> batchSize,
+            @SpanAttribute(value = "batchDelay") Optional<Integer> batchDelay) {
 
         final int[] fetchedLines = { 0 };
 

@@ -103,8 +103,8 @@ public class MethodSubscribe extends MethodBase implements Method<SubscribeDto> 
                 onLine,
                 subscription,
                 Optional.empty(),
-                Optional.ofNullable(subscribeDto.getBatchDelay()),
-                Optional.ofNullable(subscribeDto.getBatchSize()));
+                Optional.ofNullable(subscribeDto.getBatchSize()),
+                Optional.ofNullable(subscribeDto.getBatchDelay()));
 
         return new SubscribeResultDto(subscription.getTopic());
     }

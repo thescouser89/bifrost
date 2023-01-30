@@ -71,7 +71,7 @@ public class RestErrorsTest {
         Bifrost rest = rtarget.proxy(Bifrost.class);
         String receivedExceptionMessage = null;
         try {
-            rest.getLines("", "", null, Direction.ASC, 10, null, null);
+            rest.getLines("", "", null, Direction.ASC, 10, null);
         } catch (WebApplicationException e) {
             ByteArrayInputStream entityStream = (ByteArrayInputStream) e.getResponse().getEntity();
             receivedExceptionMessage = Json.mapper().readValue(entityStream, String.class);

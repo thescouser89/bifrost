@@ -179,6 +179,7 @@ public class RestImpl implements Bifrost {
                 prefixFilters,
                 afterLine,
                 maxLines,
+                batchSize,
                 batchDelay,
                 follow,
                 queue,
@@ -194,6 +195,7 @@ public class RestImpl implements Bifrost {
             String prefixFilters,
             Line afterLine,
             Integer maxLines,
+            Integer batchSize,
             Integer batchDelay,
             boolean follow,
             ArrayBlockingQueue<Optional<Line>> queue,
@@ -236,8 +238,8 @@ public class RestImpl implements Bifrost {
                 onLine,
                 subscription,
                 Optional.ofNullable(maxLines),
-                Optional.ofNullable(batchDelay),
-                Optional.empty());
+                Optional.ofNullable(batchSize),
+                Optional.ofNullable(batchDelay));
     }
 
     private ScheduledThreadPoolExecutor getExecutorService() {
@@ -261,8 +263,7 @@ public class RestImpl implements Bifrost {
             Line afterLine,
             Direction direction,
             Integer maxLines,
-            Integer batchSize,
-            Integer batchDelay) throws IOException {
+            Integer batchSize) throws IOException {
         validateAndFixInputDate(afterLine);
 
         List<Line> lines = new ArrayList<>();
@@ -285,8 +286,7 @@ public class RestImpl implements Bifrost {
             Line afterLine,
             Direction direction,
             Integer maxLines,
-            Integer batchSize,
-            Integer batchDelay) throws IOException {
+            Integer batchSize) throws IOException {
 
         validateAndFixInputDate(afterLine);
 
