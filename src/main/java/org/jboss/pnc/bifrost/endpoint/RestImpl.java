@@ -179,11 +179,11 @@ public class RestImpl implements Bifrost {
                 prefixFilters,
                 afterLine,
                 maxLines,
+                batchSize,
                 batchDelay,
                 follow,
                 queue,
-                addEndOfDataMarker,
-                subscription);
+                addEndOfDataMarker, subscription);
         return Response.ok(stream).build();
     }
 
@@ -194,6 +194,7 @@ public class RestImpl implements Bifrost {
             String prefixFilters,
             Line afterLine,
             Integer maxLines,
+            Integer batchSize,
             Integer batchDelay,
             boolean follow,
             ArrayBlockingQueue<Optional<Line>> queue,
@@ -236,8 +237,9 @@ public class RestImpl implements Bifrost {
                 onLine,
                 subscription,
                 Optional.ofNullable(maxLines),
-                Optional.ofNullable(batchDelay),
-                Optional.empty());
+                Optional.ofNullable(batchSize),
+                Optional.ofNullable(batchDelay)
+        );
     }
 
     private ScheduledThreadPoolExecutor getExecutorService() {
