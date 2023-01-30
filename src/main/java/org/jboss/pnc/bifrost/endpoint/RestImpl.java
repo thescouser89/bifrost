@@ -25,6 +25,7 @@ import io.opentelemetry.extension.annotations.WithSpan;
 import org.jboss.pnc.api.bifrost.dto.Line;
 import org.jboss.pnc.api.bifrost.dto.MetaData;
 import org.jboss.pnc.api.bifrost.enums.Direction;
+import org.jboss.pnc.api.bifrost.enums.Format;
 import org.jboss.pnc.api.bifrost.rest.Bifrost;
 import org.jboss.pnc.bifrost.common.DateUtil;
 import org.jboss.pnc.bifrost.common.Reference;
@@ -92,6 +93,7 @@ public class RestImpl implements Bifrost {
             String prefixFilters,
             Line afterLine,
             Direction direction,
+            Format format,
             Integer maxLines,
             Integer batchSize,
             Integer batchDelay,
@@ -138,9 +140,9 @@ public class RestImpl implements Bifrost {
                     Optional<Line> maybeLine = queue.poll(30, TimeUnit.MINUTES);
                     if (maybeLine.isPresent()) {
                         Line line = maybeLine.get();
-                        logger.debug("Sending line: " + line.asString());
+                        logger.trace("Sending line: " + line.asString(format));
                         Writer writer = new BufferedWriter(new OutputStreamWriter(outputStream));
-                        writer.write(line.asString() + "\n");
+                        writer.write(line.asString(format));
                         writer.flush();
                         if (line.isLast() && follow == false) { // when follow is true, the connection must be
                                                                 // terminated from
@@ -205,7 +207,7 @@ public class RestImpl implements Bifrost {
         Consumer<Line> onLine = line -> {
             try {
                 if (line != null) {
-                    logger.debug("Adding line to output queue: " + line.asString());
+                    logger.trace("Adding line to output queue: " + line.asString());
                     queue.offer(Optional.of(line), 5, TimeUnit.SECONDS); // TODO
                     receivedLines[0]++;
 

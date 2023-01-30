@@ -41,7 +41,7 @@ public class LineProducer {
                 .id(UUID.randomUUID().toString())
                 .timestamp(Long.toString(System.currentTimeMillis()))
                 .logger(loggerName)
-                .message("Message " + lineNumber)
+                .message("Message " + lineNumber + '\n')
                 .last(last)
                 .mdc(mdc)
                 .build();
