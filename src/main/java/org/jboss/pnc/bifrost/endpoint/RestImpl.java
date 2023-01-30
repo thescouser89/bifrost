@@ -183,7 +183,8 @@ public class RestImpl implements Bifrost {
                 batchDelay,
                 follow,
                 queue,
-                addEndOfDataMarker, subscription);
+                addEndOfDataMarker,
+                subscription);
         return Response.ok(stream).build();
     }
 
@@ -238,8 +239,7 @@ public class RestImpl implements Bifrost {
                 subscription,
                 Optional.ofNullable(maxLines),
                 Optional.ofNullable(batchSize),
-                Optional.ofNullable(batchDelay)
-        );
+                Optional.ofNullable(batchDelay));
     }
 
     private ScheduledThreadPoolExecutor getExecutorService() {
@@ -263,8 +263,7 @@ public class RestImpl implements Bifrost {
             Line afterLine,
             Direction direction,
             Integer maxLines,
-            Integer batchSize,
-            Integer batchDelay) throws IOException {
+            Integer batchSize) throws IOException {
         validateAndFixInputDate(afterLine);
 
         List<Line> lines = new ArrayList<>();
@@ -287,8 +286,7 @@ public class RestImpl implements Bifrost {
             Line afterLine,
             Direction direction,
             Integer maxLines,
-            Integer batchSize,
-            Integer batchDelay) throws IOException {
+            Integer batchSize) throws IOException {
 
         validateAndFixInputDate(afterLine);
 

@@ -76,7 +76,7 @@ public class RestTest {
         ResteasyWebTarget rtarget = (ResteasyWebTarget) target;
         Bifrost rest = rtarget.proxy(Bifrost.class);
 
-        List<Line> mockLines = rest.getLines("", "", null, Direction.ASC, 10, null, null);
+        List<Line> mockLines = rest.getLines("", "", null, Direction.ASC, 10, null);
         mockLines.forEach(line -> System.out.println(line.asString()));
         Assertions.assertEquals(5, mockLines.size());
         Assertions.assertEquals("abc123", mockLines.get(0).getMdc().get("processContext"));
