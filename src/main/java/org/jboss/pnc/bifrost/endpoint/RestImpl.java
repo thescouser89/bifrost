@@ -140,10 +140,13 @@ public class RestImpl implements Bifrost {
                     Optional<Line> maybeLine = queue.poll(30, TimeUnit.MINUTES);
                     if (maybeLine.isPresent()) {
                         Line line = maybeLine.get();
-                        logger.trace("Sending line: " + line.asString(format));
+                        String message = line.asString(format);
+                        logger.trace("Sending line: " + message);
+
                         Writer writer = new BufferedWriter(new OutputStreamWriter(outputStream));
-                        writer.write(line.asString(format));
+                        writer.write(handleNewLine(message));
                         writer.flush();
+
                         if (line.isLast() && follow == false) { // when follow is true, the connection must be
                                                                 // terminated from
                                                                 // the client side
@@ -188,6 +191,18 @@ public class RestImpl implements Bifrost {
                 addEndOfDataMarker,
                 subscription);
         return Response.ok(stream).build();
+    }
+
+    private String handleNewLine(String message) {
+        if (message == null) {
+            return null;
+        }
+
+        if (message.charAt(message.length() - 1) == '\n') {
+            return message;
+        }
+
+        return message.concat(System.lineSeparator());
     }
 
     @Timed
