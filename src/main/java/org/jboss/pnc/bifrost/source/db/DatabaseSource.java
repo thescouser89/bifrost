@@ -164,6 +164,7 @@ public class DatabaseSource implements Source {
         Optional.ofNullable(row.getLogEntry().getProcessContextVariant())
                 .ifPresent(v -> mdc.put("processContextVariant", v));
         Optional.ofNullable(row.getLogEntry().getBuildId()).ifPresent(v -> mdc.put("buildId", Long.toString(v)));
+        Optional.ofNullable(row.getLevel()).ifPresent(v -> mdc.put("level", v.toString()));
         mdc.put("requestContext", row.getLogEntry().getRequestContext());
 
         return Line.newBuilder()
