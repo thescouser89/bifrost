@@ -194,11 +194,11 @@ public class RestImpl implements Bifrost {
     }
 
     private String handleNewLine(String message) {
-        if (message == null) {
-            return null;
+        if (message == null || message.isEmpty()) {
+            return "\n";
         }
 
-        if (message.charAt(message.length() - 1) == '\n') {
+        if (message.endsWith("\n")) {
             return message;
         }
 
