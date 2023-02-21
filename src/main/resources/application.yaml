@@ -45,6 +45,8 @@ quarkus:
     jdbc.url: ${QUARKUS_DATASOURCE_URL:}
     username: ${QUARKUS_DATASOURCE_USERNAME:}
     password: ${QUARKUS_DATASOURCE_PASSWORD:}
+  shutdown:
+    timeout: 30
 
   opentelemetry:
     enabled: true
