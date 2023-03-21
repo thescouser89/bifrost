@@ -23,6 +23,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import javax.ws.rs.ForbiddenException;
+import javax.ws.rs.NotAllowedException;
+import javax.ws.rs.NotAuthorizedException;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
@@ -39,10 +44,29 @@ public class AllExceptionMapper implements ExceptionMapper<Exception> {
 
     @Override
     public Response toResponse(Exception e) {
-        log.error("An exception occurred.", e);
+        int responseCode = INTERNAL_SERVER_ERROR.getStatusCode();
+
+        if (e instanceof WebApplicationException) {
+            responseCode = ((WebApplicationException) e).getResponse().getStatus();
+            if (e instanceof NotFoundException) {
+                log.info("Resource requested by a client was not found.", e);
+                // return with empty body
+                return ((WebApplicationException) e).getResponse();
+            } else if (e instanceof ForbiddenException) {
+                log.warn("Access to a resource requested by a client has been forbidden.", e);
+            } else if (e instanceof NotAllowedException) {
+                log.warn("Client requesting a resource method that is not allowed.", e);
+            } else if (e instanceof NotAuthorizedException) {
+                log.warn("Request authorization failure.", e);
+            } else {
+                log.warn("WebApplicationException occurred when processing REST response", e);
+            }
+        } else {
+            log.error("An exception occurred.", e);
+        }
 
         try {
-            return Response.status(INTERNAL_SERVER_ERROR)
+            return Response.status(responseCode)
                     .entity(mapper.writeValueAsString(e.getMessage()))
                     .type(MediaType.APPLICATION_JSON)
                     .build();
