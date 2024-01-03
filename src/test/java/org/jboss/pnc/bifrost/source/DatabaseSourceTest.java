@@ -172,6 +172,15 @@ public class DatabaseSourceTest {
     @Test
     public void shouldGetLinesAfterTimeStamp() throws Exception {
         OffsetDateTime time0 = OffsetDateTime.now();
+        /*
+         * Round the nano of the timestamp to zero to avoid flaky tests timestamp in java is stored with nano precision,
+         * but timestamp in the database is stored with micro precision. Due to rounding errors when comparing the nano
+         * precision in Java with the micro precision in the db, from time to time the test will return 3 lines instead
+         * of 4.
+         *
+         * We avoid the rounding errors by just setting the nano part to zero. Good enough for tests!
+         */
+        time0 = time0.minusNanos(time0.getNano());
         logger.info("Time0: {}.", time0);
         OffsetDateTime time1 = time0.plusMinutes(5);
         dbUtils.insertLines(1, 1, DEFAULT_LOGGER, time0);
@@ -187,9 +196,11 @@ public class DatabaseSourceTest {
         });
 
         Map<String, List<String>> noFilters = Collections.emptyMap();
-
         Line searchAfter = Line.newBuilder().timestamp(time1.toString()).build();
         databaseSource.get(noFilters, noFilters, Optional.of(searchAfter), Direction.ASC, 100, onLine);
+        for (Line line : lines) {
+            logger.info("Line obtained from database: " + line.getTimestamp());
+        }
         Assertions.assertEquals(4, lines.size());
     }
 
