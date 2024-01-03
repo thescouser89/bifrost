@@ -21,6 +21,7 @@ import io.micrometer.core.annotation.Timed;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.jboss.pnc.api.bifrost.dto.Line;
+import org.jboss.pnc.api.bifrost.enums.Direction;
 import org.jboss.pnc.bifrost.common.scheduler.Subscriptions;
 import org.jboss.pnc.bifrost.endpoint.provider.DataProvider;
 import org.slf4j.Logger;
@@ -82,7 +83,7 @@ public class MethodGetLines extends MethodBase implements Method<GetLinesDto> {
                         in.getMatchFilters(),
                         in.getPrefixFilters(),
                         Optional.ofNullable(in.getAfterLine()),
-                        in.getDirection(),
+                        in.getDirection() == null ? Direction.ASC : in.getDirection(),
                         Optional.ofNullable(in.getMaxLines()),
                         Optional.ofNullable(in.getBatchSize()),
                         onLine);
