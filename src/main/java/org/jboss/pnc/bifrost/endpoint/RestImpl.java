@@ -22,15 +22,19 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.opentelemetry.extension.annotations.WithSpan;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+
 import org.jboss.pnc.api.bifrost.dto.Line;
 import org.jboss.pnc.api.bifrost.dto.MetaData;
 import org.jboss.pnc.api.bifrost.enums.Direction;
 import org.jboss.pnc.api.bifrost.enums.Format;
 import org.jboss.pnc.api.bifrost.rest.Bifrost;
+import org.jboss.pnc.api.dto.ComponentVersion;
 import org.jboss.pnc.bifrost.common.DateUtil;
 import org.jboss.pnc.bifrost.common.Reference;
 import org.jboss.pnc.bifrost.common.scheduler.Subscription;
 import org.jboss.pnc.bifrost.common.scheduler.TimeoutExecutor;
+import org.jboss.pnc.bifrost.constants.BuildInformationConstants;
 import org.jboss.pnc.bifrost.endpoint.provider.DataProvider;
 import org.jboss.pnc.common.security.Md5;
 import org.slf4j.Logger;
@@ -49,6 +53,7 @@ import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.security.NoSuchAlgorithmException;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -64,6 +69,8 @@ import java.util.function.Consumer;
  */
 @Path("/")
 public class RestImpl implements Bifrost {
+    @ConfigProperty(name = "quarkus.application.name")
+    String name;
 
     private static final String className = RestImpl.class.getName();
 
@@ -333,6 +340,16 @@ public class RestImpl implements Bifrost {
                 onLine);
 
         return new MetaData(md5.digest());
+    }
+
+    @Override
+    public ComponentVersion getVersion() {
+        return ComponentVersion.builder()
+                .name(name)
+                .version(BuildInformationConstants.VERSION)
+                .commit(BuildInformationConstants.COMMIT_HASH)
+                .builtOn(ZonedDateTime.parse(BuildInformationConstants.BUILD_TIME))
+                .build();
     }
 
     public static void validateAndFixInputDate(Line afterLine) {
