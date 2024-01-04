@@ -268,6 +268,9 @@ public class DatabaseSource implements Source {
     }
 
     private Sort.Direction getSortDirection(Direction direction) {
+        if (direction == null) {
+            return Sort.Direction.Ascending;
+        }
         switch (direction) {
             case ASC:
                 return Sort.Direction.Ascending;
