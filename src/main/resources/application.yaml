@@ -110,3 +110,15 @@ bifrost:
       console:
         json: false
 
+mp:
+  messaging:
+    incoming:
+      logs:
+        connector: smallrye-kafka
+
+"%test":
+  mp:
+    messaging:
+      incoming:
+        logs:
+          connector: smallrye-kafka
