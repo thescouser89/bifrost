@@ -51,7 +51,6 @@ import javax.persistence.Table;
                 @Index(name = "idx_logline_loggerName", columnList = "loggerName"),
                 @Index(name = "idx_logline_fkey_logentry_id", columnList = "logentry_id") })
 @JsonDeserialize(using = LogLineDeserializer.class)
-@Cacheable
 public class LogLine extends PanacheEntityBase {
 
     @Id
