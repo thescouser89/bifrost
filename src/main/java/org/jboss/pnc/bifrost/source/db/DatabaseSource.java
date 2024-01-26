@@ -47,6 +47,7 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.context.Dependent;
 import javax.enterprise.context.control.ActivateRequestContext;
 import javax.inject.Inject;
+import javax.persistence.EntityManager;
 
 /**
  * @author <a href="mailto:matejonnet@gmail.com">Matej Lazar</a>
@@ -61,6 +62,9 @@ public class DatabaseSource implements Source {
 
     @Inject
     FieldMapping fieldMapping;
+
+    @Inject
+    EntityManager em;
 
     private Counter errCounter;
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ISO_OFFSET_DATE_TIME
@@ -135,6 +139,9 @@ public class DatabaseSource implements Source {
             logger.debug("There are no results.");
             onLine.accept(null);
         }
+
+        // [NCL-8159] clear session cache!
+        em.clear();
     }
 
     private void sanitizeFilters(Map<String, List<String>> matchFilters, Map<String, List<String>> prefixFilters) {
