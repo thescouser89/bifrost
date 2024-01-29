@@ -20,6 +20,7 @@ package org.jboss.pnc.bifrost.source.db;
 import io.micrometer.core.annotation.Timed;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.quarkus.hibernate.orm.panache.Panache;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Parameters;
@@ -47,7 +48,6 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.context.Dependent;
 import javax.enterprise.context.control.ActivateRequestContext;
 import javax.inject.Inject;
-import javax.persistence.EntityManager;
 
 /**
  * @author <a href="mailto:matejonnet@gmail.com">Matej Lazar</a>
@@ -62,9 +62,6 @@ public class DatabaseSource implements Source {
 
     @Inject
     FieldMapping fieldMapping;
-
-    @Inject
-    EntityManager em;
 
     private Counter errCounter;
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ISO_OFFSET_DATE_TIME
@@ -141,7 +138,7 @@ public class DatabaseSource implements Source {
         }
 
         // [NCL-8159] clear session cache!
-        em.clear();
+        Panache.getEntityManager().clear();
     }
 
     private void sanitizeFilters(Map<String, List<String>> matchFilters, Map<String, List<String>> prefixFilters) {
