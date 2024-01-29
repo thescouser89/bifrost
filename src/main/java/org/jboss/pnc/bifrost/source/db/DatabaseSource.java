@@ -127,6 +127,8 @@ public class DatabaseSource implements Source {
         while (rowsIterator.hasNext() && rowNum < fetchSize) {
             rowNum++;
             LogLine row = rowsIterator.next();
+            // try again to get the entity manager to clear the first-level cache
+            LogLine.getEntityManager().detach(row);
             boolean last = !rowsIterator.hasNext();
             Line line = getLine(row, last);
             onLine.accept(line);
@@ -139,6 +141,8 @@ public class DatabaseSource implements Source {
 
         // [NCL-8159] clear session cache!
         Panache.getEntityManager().clear();
+        // why do both? first one didn't do anything
+        LogLine.getEntityManager().clear();
     }
 
     private void sanitizeFilters(Map<String, List<String>> matchFilters, Map<String, List<String>> prefixFilters) {
