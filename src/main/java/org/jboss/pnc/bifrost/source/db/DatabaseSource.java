@@ -126,6 +126,9 @@ public class DatabaseSource implements Source {
         while (rowsIterator.hasNext() && rowNum < fetchSize) {
             rowNum++;
             LogLine row = rowsIterator.next();
+            // [NCL-8159] try again to get the entity manager to clear the first-level cache, otherwise it can get
+            // really big
+            LogLine.getEntityManager().detach(row);
             boolean last = !rowsIterator.hasNext();
             Line line = getLine(row, last);
             onLine.accept(line);
