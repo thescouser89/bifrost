@@ -36,6 +36,8 @@ import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.validation.ConstraintViolationException;
 
+import java.util.List;
+
 import static org.jboss.pnc.bifrost.common.Strings.sanitize;
 
 /**
@@ -84,7 +86,15 @@ public class MessageConsumer {
     @Incoming("logs")
     @Transactional
     @WithSpan()
-    public void consume(@SpanAttribute(value = "json") String json) {
+    public void consume(@SpanAttribute(value = "json") List<String> batchJsonLines) {
+        logger.info("Received {} messages per batch", batchJsonLines.size());
+
+        for (String json : batchJsonLines) {
+            consumeSingleMessage(json);
+        }
+    }
+
+    private void consumeSingleMessage(String json) {
         logger.debug("Received json line: " + json);
         try {
             LogLine logLine = mapper.readValue(json, LogLine.class);
@@ -104,7 +114,7 @@ public class MessageConsumer {
                 try {
                     logLine.setLine(sanitize(logLine.getLine()));
                     logLine.setLogEntry(logEntryRepository.get(logLine.getLogEntry()));
-                    logLine.persistAndFlush();
+                    logLine.persist();
                     storedCounter.increment();
                 } catch (ConstraintViolationException e) {
                     logger.warn("Skipping log line due to: " + e.getMessage() + ". Line: " + logLine);
@@ -116,5 +126,4 @@ public class MessageConsumer {
             throw new RuntimeException(e);
         }
     }
-
 }

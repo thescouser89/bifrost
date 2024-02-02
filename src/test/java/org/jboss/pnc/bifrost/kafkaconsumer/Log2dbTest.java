@@ -59,7 +59,7 @@ public class Log2dbTest {
     ObjectMapper mapper;
 
     @Inject
-    @Channel("logs")
+    @Channel("logs-in")
     Emitter<String> emitter;
 
     @Inject
@@ -83,6 +83,10 @@ public class Log2dbTest {
         emitMessages(10, "org.apache"); // excluded by config
         emitMessages(10, "org.jboss.pnc");
         semaphore.acquire();
+
+        // give some time for the commit to finish
+        Thread.sleep(1000);
+
         List<LogLine> stored = LogLine.listAll();
         Assertions.assertEquals(10, stored.size());
         stored.forEach(r -> {
