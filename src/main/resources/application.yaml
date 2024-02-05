@@ -76,6 +76,20 @@ bifrost:
   defaultSourceFetchSize: 100
   sourcePollThreads: 4
 '%test':
+  mp:
+    messaging:
+      incoming:
+        logs:
+          connector: smallrye-kafka
+          topic: logs-test
+          auto:
+            offset:
+              reset: earliest
+      outgoing:
+        logs-in:
+          connector: smallrye-kafka
+          topic: logs-test
+          merge: true
   quarkus:
     log:
       min-level: TRACE
@@ -93,7 +107,7 @@ bifrost:
         bind-parameters: true
       statistics: true
     devservices:
-      enabled: false
+      enabled: true
   bifrost:
     sourceClass: org.jboss.pnc.bifrost.source.db.DatabaseSource
   kafka2db:
