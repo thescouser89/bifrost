@@ -71,9 +71,12 @@ public class MessageConsumer {
 
     private Counter errCounter;
 
+    private Counter micrometerStoredCounter;
+
     @PostConstruct
     void initMetrics() {
         errCounter = registry.counter(className + ".error.count");
+        micrometerStoredCounter = registry.counter(className + ".messages-ingested");
         acceptFilter = new AcceptFilter(configuration.acceptFilters());
         denyFilter = new DenyFilter(configuration.denyFilters());
     }
@@ -116,6 +119,7 @@ public class MessageConsumer {
                     logLine.setLogEntry(logEntryRepository.get(logLine.getLogEntry()));
                     logLine.persist();
                     storedCounter.increment();
+                    micrometerStoredCounter.increment();
                 } catch (ConstraintViolationException e) {
                     logger.warn("Skipping log line due to: " + e.getMessage() + ". Line: " + logLine);
                 }
