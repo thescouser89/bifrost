@@ -20,6 +20,7 @@ package org.jboss.pnc.bifrost.kafkaconsumer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.annotation.Timed;
 import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.opentelemetry.extension.annotations.SpanAttribute;
 import io.opentelemetry.extension.annotations.WithSpan;
@@ -68,10 +69,14 @@ public class MessageConsumer {
     DenyFilter denyFilter;
 
     private Counter errCounter;
+    private Counter micrometerStoredCounter;
+
+    private Gauge messagesIngested;
 
     @PostConstruct
     void initMetrics() {
         errCounter = registry.counter(className + ".error.count");
+        micrometerStoredCounter = registry.counter(className + "messages-ingested");
         acceptFilter = new AcceptFilter(configuration.acceptFilters());
         denyFilter = new DenyFilter(configuration.denyFilters());
     }
@@ -106,6 +111,7 @@ public class MessageConsumer {
                     logLine.setLogEntry(logEntryRepository.get(logLine.getLogEntry()));
                     logLine.persistAndFlush();
                     storedCounter.increment();
+                    micrometerStoredCounter.increment();
                 } catch (ConstraintViolationException e) {
                     logger.warn("Skipping log line due to: " + e.getMessage() + ". Line: " + logLine);
                 }
