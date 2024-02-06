@@ -31,6 +31,11 @@ quarkus:
       enable: 'true'
     level: TRACE
   hibernate-orm:
+    jdbc:
+      # batch insert / updates: instead of sending several SQL statements
+      # in one transaction, we group it into 1 SQL statement with max batch
+      # size specified below
+      statement-batch-size: 100
     database:
       generation: validate
   index-dependency:
