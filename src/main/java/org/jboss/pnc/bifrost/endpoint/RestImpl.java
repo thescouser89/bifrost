@@ -69,6 +69,12 @@ import java.util.function.Consumer;
  */
 @Path("/")
 public class RestImpl implements Bifrost {
+
+    /**
+     * Queue size between the consumer and the producer for getAllLines method
+     */
+    private static final int GET_ALL_LINES_QUEUE_SIZE = 1024;
+
     @ConfigProperty(name = "quarkus.application.name")
     String name;
 
@@ -109,7 +115,7 @@ public class RestImpl implements Bifrost {
 
         validateAndFixInputDate(afterLine);
 
-        ArrayBlockingQueue<Optional<Line>> queue = new ArrayBlockingQueue(1024);
+        ArrayBlockingQueue<Optional<Line>> queue = new ArrayBlockingQueue(GET_ALL_LINES_QUEUE_SIZE);
 
         Runnable addEndOfDataMarker = () -> {
             try {
@@ -120,8 +126,9 @@ public class RestImpl implements Bifrost {
             }
         };
 
-        Subscription subscription = new Subscription(addEndOfDataMarker);
+        Subscription endOfDataSubscription = new Subscription(addEndOfDataMarker);
 
+        // stream just reads from the queue, and writes to the output to download
         StreamingOutput stream = outputStream -> {
 
             Reference<TimeoutExecutor.Task> timeoutProbeTask = new Reference<>();
@@ -136,7 +143,7 @@ public class RestImpl implements Bifrost {
                         timeoutProbeTask.get().cancel();
                         warnCounter.increment();
                         logger.warn("Cannot send connection probe, client might closed the connection.", e);
-                        complete(subscription, outputStream);
+                        complete(endOfDataSubscription, outputStream);
                     }
                 };
                 timeoutProbeTask.set(timeoutExecutor.submit(sendProbe, 15000, TimeUnit.MILLISECONDS));
@@ -144,29 +151,46 @@ public class RestImpl implements Bifrost {
 
             while (true) {
                 try {
-                    Optional<Line> maybeLine = queue.poll(30, TimeUnit.MINUTES);
-                    if (maybeLine.isPresent()) {
-                        Line line = maybeLine.get();
-                        String message = line.asString(format);
-                        logger.trace("Sending line: " + message);
+                    ArrayList<Optional<Line>> lines = new ArrayList<>(GET_ALL_LINES_QUEUE_SIZE);
 
-                        Writer writer = new BufferedWriter(new OutputStreamWriter(outputStream));
-                        writer.write(handleNewLine(message));
-                        writer.flush();
+                    if (!queue.isEmpty()) {
+                        // get all the lines in the queue
+                        queue.drainTo(lines);
+                    } else {
+                        // wait for a new line to be added
+                        lines.add(queue.poll(30, TimeUnit.MINUTES));
+                    }
 
-                        if (line.isLast() && follow == false) { // when follow is true, the connection must be
-                                                                // terminated from
-                                                                // the client side
+                    Writer writer = new BufferedWriter(new OutputStreamWriter(outputStream));
+
+                    // batch sending the data
+                    for (Optional<Line> maybeLine : lines) {
+                        if (maybeLine.isEmpty()) {
+                            // empty line indicating end of results
+                            writer.flush();
+                            logger.info("Closing connection, no results.");
                             timeoutProbeTask.ifPresent(t -> t.cancel());
-                            complete(subscription, outputStream);
+                            complete(endOfDataSubscription, outputStream);
                             break;
+                        } else {
+                            Line line = maybeLine.get();
+                            String message = line.asString(format);
+                            logger.trace("Sending line: " + message);
+
+                            writer.write(handleNewLine(message));
+
+                            if (line.isLast() && follow == false) { // when follow is true, the connection must be
+                                // terminated from
+                                // the client side
+                                writer.flush();
+                                timeoutProbeTask.ifPresent(t -> t.cancel());
+                                complete(endOfDataSubscription, outputStream);
+                                break;
+                            }
+                            timeoutProbeTask.ifPresent(t -> t.update());
                         }
-                        timeoutProbeTask.ifPresent(t -> t.update());
-                    } else { // empty line indicating end of results
-                        logger.info("Closing connection, no results.");
-                        timeoutProbeTask.ifPresent(t -> t.cancel());
-                        complete(subscription, outputStream);
-                        break;
+                        // finally flush all the lines
+                        writer.flush();
                     }
                 } catch (IOException e) {
                     warnCounter.increment();
@@ -174,13 +198,13 @@ public class RestImpl implements Bifrost {
                             "Cannot write output. Client might closed the connection. Unsubscribing ... "
                                     + e.getMessage());
                     timeoutProbeTask.ifPresent(t -> t.cancel());
-                    complete(subscription, outputStream);
+                    complete(endOfDataSubscription, outputStream);
                     break;
                 } catch (InterruptedException e) {
                     errCounter.increment();
                     logger.error("Cannot read from queue.", e);
                     timeoutProbeTask.ifPresent(t -> t.cancel());
-                    complete(subscription, outputStream);
+                    complete(endOfDataSubscription, outputStream);
                     break;
                 }
             }
@@ -196,7 +220,7 @@ public class RestImpl implements Bifrost {
                 follow,
                 queue,
                 addEndOfDataMarker,
-                subscription);
+                endOfDataSubscription);
         return Response.ok(stream).build();
     }
 
@@ -226,6 +250,8 @@ public class RestImpl implements Bifrost {
             Runnable addEndOfDataMarker,
             Subscription subscription) {
         int[] receivedLines = { 0 };
+
+        // logic for when line is received, to send it to the queue
         Consumer<Line> onLine = line -> {
             try {
                 if (line != null) {
