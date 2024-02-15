@@ -73,7 +73,7 @@ public class RestImpl implements Bifrost {
     /**
      * Queue size between the consumer and the producer for getAllLines method
      */
-    private static final int GET_ALL_LINES_QUEUE_SIZE = 1024;
+    private static final int GET_ALL_LINES_QUEUE_SIZE = 8192;
 
     @ConfigProperty(name = "quarkus.application.name")
     String name;
