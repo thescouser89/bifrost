@@ -32,6 +32,7 @@ import org.jboss.pnc.bifrost.source.db.converter.ValueConverter;
 import org.jboss.pnc.bifrost.source.db.converter.idConverter;
 import org.jboss.resteasy.annotations.providers.multipart.MultipartForm;
 
+import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
@@ -47,7 +48,7 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
 @Path("/upload")
-@RolesAllowed({ UserRoles.USERS_ADMIN, UserRoles.USERS_BIFROST })
+@PermitAll
 public class LogUpload {
     @ConfigProperty(name = "quarkus.http.limits.max-body-size")
     MemorySize maxPostValue;
