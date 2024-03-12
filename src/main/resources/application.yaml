@@ -128,4 +128,23 @@ bifrost:
     log:
       console:
         json: false
+    datasource:
+      db-kind: postgresql
+      #jdbc.url: ${QUARKUS_DATASOURCE_URL:}
+      username: quarkus
+      password: quarkus
+      devservices:
+        enabled: true
+    hibernate-orm:
+      database:
+        generation: drop-and-create
+  kafka2db:
+    accept-filters:
+      - logger-name-prefix: org.jboss.pnc
+        level: INFO
+    deny-filters:
+      - logger-name-prefix: org.jboss.pnc.bpm.eventlogger.ProcessProgressLogger
+    hostname: localhost-0
+  bifrost:
+    sourceClass: org.jboss.pnc.bifrost.source.db.DatabaseSource
 
