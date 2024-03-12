@@ -37,11 +37,6 @@ public class FinalLogUpload {
     @NotBlank
     private String md5sum;
 
-    @FormParam("sha512sum")
-    @PartType("text/plain")
-    @NotBlank
-    private String sha512sum;
-
     @FormParam("endTime")
     @PartType("text/plain")
     @NotNull

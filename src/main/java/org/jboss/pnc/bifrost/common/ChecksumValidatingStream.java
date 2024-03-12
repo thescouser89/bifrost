@@ -31,45 +31,31 @@ import java.security.NoSuchAlgorithmException;
 public class ChecksumValidatingStream extends FilterInputStream {
 
     private final MessageDigest md5;
-    private final MessageDigest sha512;
 
     private final String md5sum;
-    private final String sha512sum;
 
-    private ChecksumValidatingStream(
-            InputStream stream,
-            MessageDigest md5,
-            MessageDigest sha512,
-            String md5sum,
-            String sha512sum) {
+    private ChecksumValidatingStream(InputStream stream, MessageDigest md5, String md5sum) {
         super(stream);
         this.md5 = md5;
-        this.sha512 = sha512;
         this.md5sum = md5sum;
-        this.sha512sum = sha512sum;
     }
 
-    public static ChecksumValidatingStream validate(InputStream is, String md5sum, String sha512sum) {
+    public static ChecksumValidatingStream validate(InputStream is, String md5sum) {
         MessageDigest md5;
-        MessageDigest sha512;
         try {
             md5 = MessageDigest.getInstance("MD5");
-            sha512 = MessageDigest.getInstance("SHA-512");
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
         DigestInputStream md5dis = new DigestInputStream(is, md5);
-        DigestInputStream sha512dis = new DigestInputStream(md5dis, sha512);
-        return new ChecksumValidatingStream(sha512dis, md5, sha512, md5sum, sha512sum);
+        return new ChecksumValidatingStream(md5dis, md5, md5sum);
     }
 
     public void validate() throws ValidationException {
         String md5computedSum = DatatypeConverter.printHexBinary(md5.digest());
-        String sha512computedSum = DatatypeConverter.printHexBinary(sha512.digest());
-        if (!md5computedSum.equalsIgnoreCase(md5sum) || !sha512computedSum.equalsIgnoreCase(sha512sum)) {
+        if (!md5computedSum.equalsIgnoreCase(md5sum)) {
             throw new ValidationException(
-                    "Stream validation failed, expected " + md5sum + "/" + sha512sum + " got " + md5computedSum + "/"
-                            + sha512computedSum + ".");
+                    "Stream validation failed, expected " + md5sum + " got " + md5computedSum + ".");
         }
 
     }

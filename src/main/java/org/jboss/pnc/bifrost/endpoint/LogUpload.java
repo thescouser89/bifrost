@@ -70,10 +70,9 @@ public class LogUpload {
         finalLog.eventTimestamp = logUpload.getEndTime();
         finalLog.loggerName = logUpload.getLoggerName();
         finalLog.md5sum = logUpload.getMd5sum();
-        finalLog.sha512sum = logUpload.getSha512sum();
 
         ChecksumValidatingStream stream = ChecksumValidatingStream
-                .validate(logUpload.getLogfile(), logUpload.getMd5sum(), logUpload.getSha512sum());
+                .validate(logUpload.getLogfile(), logUpload.getMd5sum());
 
         // Configure the proxy to read up to the max body post size. The proxy behaves well if the input
         // stream size is less than that size

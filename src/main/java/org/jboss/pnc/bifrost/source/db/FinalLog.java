@@ -43,9 +43,6 @@ public class FinalLog extends PanacheEntity {
     @Column(length = 32, nullable = false)
     public String md5sum;
 
-    @Column(length = 128, nullable = false)
-    public String sha512sum;
-
     @ElementCollection
     public List<String> tags;
 
