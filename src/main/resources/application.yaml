@@ -45,6 +45,10 @@ quarkus:
   http:
     host: localhost
     port: 8081
+    cors:
+      ~: true
+      origins: "/.*/"
+
   datasource:
     db-kind: ${QUARKUS_DATASOURCE:postgresql}
     jdbc.url: ${QUARKUS_DATASOURCE_URL:}

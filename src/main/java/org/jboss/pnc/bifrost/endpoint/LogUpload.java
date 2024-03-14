@@ -30,7 +30,6 @@ import org.jboss.pnc.bifrost.source.db.LogEntry;
 import org.jboss.pnc.bifrost.source.db.LogEntryRepository;
 import org.jboss.pnc.bifrost.source.db.converter.ValueConverter;
 import org.jboss.pnc.bifrost.source.db.converter.idConverter;
-import org.jboss.resteasy.annotations.providers.multipart.MultipartForm;
 
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
@@ -63,7 +62,7 @@ public class LogUpload {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Transactional
-    public String uploadFinalLog(@MultipartForm @Valid FinalLogUpload logUpload, @Context HttpHeaders headers) {
+    public String uploadFinalLog(@Valid FinalLogUpload logUpload, @Context HttpHeaders headers) {
         Log.info("Receiving logfile");
 
         FinalLog finalLog = new FinalLog();

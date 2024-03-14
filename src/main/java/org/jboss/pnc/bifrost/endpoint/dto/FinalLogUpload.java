@@ -18,41 +18,39 @@
 package org.jboss.pnc.bifrost.endpoint.dto;
 
 import lombok.Data;
-import org.jboss.resteasy.annotations.providers.multipart.PartType;
+import org.jboss.resteasy.reactive.PartType;
+import org.jboss.resteasy.reactive.RestForm;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.FormParam;
-import javax.ws.rs.core.MediaType;
 import java.io.InputStream;
 import java.time.OffsetDateTime;
-import java.util.List;
 
 @Data
 public class FinalLogUpload {
 
-    @FormParam("md5sum")
+    @RestForm("md5sum")
     @PartType("text/plain")
     @NotBlank
     private String md5sum;
 
-    @FormParam("endTime")
+    @RestForm("endTime")
     @PartType("text/plain")
     @NotNull
     private OffsetDateTime endTime;
 
-    @FormParam("loggerName")
+    @RestForm("loggerName")
     @PartType("text/plain")
     @NotBlank
     private String loggerName;
 
-    @FormParam("tag")
+    @RestForm("tag")
     @PartType("text/plain")
     @NotEmpty
     private String tag;
 
-    @FormParam("logfile")
+    @RestForm("logfile")
     // @PartType(MediaType.APPLICATION_OCTET_STREAM)
     public InputStream logfile;
 }
