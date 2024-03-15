@@ -20,6 +20,7 @@ package org.jboss.pnc.bifrost.source.db;
 import io.quarkus.arc.Priority;
 
 import org.jboss.pnc.common.Strings;
+import org.jboss.pnc.common.concurrent.Sequence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,6 +51,8 @@ public class LogEntryDbRepository implements LogEntryRepository {
         }
         return LogEntry.findExisting(logEntry).orElseGet(() -> {
             LOG.debug("Persisting LogEntry: " + logEntry);
+            // set a proper id since it's probably not set when we are trying to search for an existing log entry
+            logEntry.id = Sequence.nextId();
             logEntry.persist();
             return logEntry;
         });
