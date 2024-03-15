@@ -358,7 +358,7 @@ public class RestImpl implements Bifrost {
     @Produces(MediaType.TEXT_PLAIN)
     @GET
     @Path("/final-log/{buildId}/{tag}")
-    public Response getFinalLog(@PathParam("build-id") String buildId, @PathParam("tag") String tag) {
+    public Response getFinalLog(@PathParam("buildId") String buildId, @PathParam("tag") String tag) {
 
         java.nio.file.Path path;
         FileOutputStream outputStream;
