@@ -32,6 +32,7 @@ import org.jboss.pnc.bifrost.common.scheduler.BackOffRunnableConfig;
 import org.jboss.pnc.bifrost.common.scheduler.Subscription;
 import org.jboss.pnc.bifrost.common.scheduler.Subscriptions;
 import org.jboss.pnc.bifrost.source.Source;
+import org.jboss.pnc.bifrost.source.db.FinalLog;
 import org.jboss.pnc.common.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +40,9 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.transaction.Transactional;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -195,6 +198,12 @@ public class DataProvider {
                     fetchSize,
                     onLineInternal);
         } while (lastLine.get() != null && !lastLine.get().isLast());
+    }
+
+    @Timed
+    @WithSpan()
+    @Transactional
+    public void copyFinalLogsToOutputStream(String buildId, String tag, OutputStream outputStream) {
     }
 
     private int getFetchSize(int fetchedLines, Optional<Integer> maxLines, Optional<Integer> batchSize) {

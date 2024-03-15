@@ -36,22 +36,32 @@ import org.jboss.pnc.bifrost.common.scheduler.Subscription;
 import org.jboss.pnc.bifrost.common.scheduler.TimeoutExecutor;
 import org.jboss.pnc.bifrost.constants.BuildInformationConstants;
 import org.jboss.pnc.bifrost.endpoint.provider.DataProvider;
+import org.jboss.pnc.bifrost.source.db.FinalLog;
+import org.jboss.pnc.common.pnc.LongBase32IdConverter;
 import org.jboss.pnc.common.security.Md5;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
+import javax.transaction.Transactional;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.ServerErrorException;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import java.io.BufferedWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.nio.file.Files;
 import java.security.NoSuchAlgorithmException;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -340,6 +350,37 @@ public class RestImpl implements Bifrost {
                 onLine);
 
         return new MetaData(md5.digest());
+    }
+
+    @Override
+    @Transactional
+    @Consumes
+    @Produces(MediaType.TEXT_PLAIN)
+    @GET
+    @Path("/final-log/{buildId}/{tag}")
+    public Response getFinalLog(@PathParam("build-id") String buildId, @PathParam("tag") String tag) {
+
+        java.nio.file.Path path;
+        FileOutputStream outputStream;
+
+        try {
+            path = Files.createTempFile("temp-upload-file", "out");
+            outputStream = new FileOutputStream(path.toFile());
+
+            // build id and process context should be the same
+            FinalLog.copyFinalLogsToOutputStream(LongBase32IdConverter.toLong(buildId), tag, outputStream);
+
+        } catch (Exception e) {
+            return Response.serverError().entity(e.getMessage()).build();
+        }
+
+        return Response.ok().entity((StreamingOutput) output -> {
+            try {
+                Files.copy(path, output);
+            } finally {
+                Files.delete(path);
+            }
+        }).build();
     }
 
     @Override
