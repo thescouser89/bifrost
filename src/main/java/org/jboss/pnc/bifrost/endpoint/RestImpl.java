@@ -41,7 +41,6 @@ import org.jboss.pnc.bifrost.endpoint.provider.DataProvider;
 import org.jboss.pnc.bifrost.source.db.FinalLog;
 import org.jboss.pnc.common.pnc.LongBase32IdConverter;
 import org.jboss.pnc.common.security.Md5;
-import org.jboss.resteasy.annotations.GZIP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -361,12 +360,8 @@ public class RestImpl implements Bifrost {
     @Produces(MediaType.TEXT_PLAIN)
     @GET
     @Path("/final-log/{buildId}/{tag}")
-    @GZIP
     /**
      * Get the final log of the build + tag
-     *
-     * Note: @GZIP annotation needed for resteasy classic. remove it when we switch to resteasy reactive
-     * https://quarkus.io/version/2.16/guides/resteasy#gzip-support
      */
     public Response getFinalLog(@PathParam("buildId") String buildId, @PathParam("tag") String tag) {
 
