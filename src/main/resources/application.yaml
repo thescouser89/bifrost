@@ -45,6 +45,10 @@ quarkus:
   http:
     host: localhost
     port: 8081
+    # gzip replies
+    enable-compression: true
+    # accept gzipped uploaded data to Quarkus
+    enable-decompression: true
   datasource:
     db-kind: ${QUARKUS_DATASOURCE:postgresql}
     jdbc.url: ${QUARKUS_DATASOURCE_URL:}
