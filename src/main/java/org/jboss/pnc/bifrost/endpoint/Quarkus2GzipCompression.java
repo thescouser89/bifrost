@@ -27,6 +27,7 @@ import javax.ws.rs.ext.Provider;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
+import java.util.List;
 import java.util.zip.GZIPOutputStream;
 
 
@@ -47,9 +48,10 @@ public class Quarkus2GzipCompression implements ContainerResponseFilter {
         if (encoding != null && encoding.contains("gzip")) {
             Log.info("Gzip compression enabled");
             Log.infof(encoding);
-            responseContext.getHeaders().put(HttpHeaders.CONTENT_ENCODING, Arrays.asList("gzip"));
             OutputStream outputStream = responseContext.getEntityStream();
             responseContext.setEntityStream(new GZIPOutputStream(outputStream));
+            responseContext.getHeaders().put(HttpHeaders.CONTENT_ENCODING, List.of("gzip"));
+            Log.infof("%s", responseContext.getHeaders());
         }
     }
 }
