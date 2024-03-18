@@ -49,12 +49,6 @@ quarkus:
     enable-compression: true
     # accept gzipped uploaded data to Quarkus (only active for resteasy reactive)
     enable-decompression: true
-  resteasy:
-    # gzip replies (only active for resteasy classic)
-    # https://quarkus.io/version/2.16/guides/resteasy#gzip-support
-    gzip:
-      enabled: true
-      max-input: 200M
 
   datasource:
     db-kind: ${QUARKUS_DATASOURCE:postgresql}
