@@ -23,7 +23,6 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.opentelemetry.extension.annotations.WithSpan;
 
 import io.quarkus.narayana.jta.QuarkusTransaction;
-import io.quarkus.vertx.http.Compressed;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import org.jboss.pnc.api.bifrost.dto.Line;
@@ -46,7 +45,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
-import javax.transaction.Transactional;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -57,13 +55,11 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import java.io.BufferedWriter;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
-import java.nio.file.Files;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.time.ZonedDateTime;

@@ -17,6 +17,8 @@
  */
 package org.jboss.pnc.bifrost.endpoint;
 
+import io.quarkus.logging.Log;
+
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
@@ -26,6 +28,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.zip.GZIPOutputStream;
+
 
 /**
  * From: https://github.com/quarkusio/quarkus/issues/9671#issuecomment-762970234
@@ -38,11 +41,15 @@ public class Quarkus2GzipCompression implements ContainerResponseFilter {
     @Override
     public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext)
             throws IOException {
+
         String encoding = requestContext.getHeaderString(HttpHeaders.ACCEPT_ENCODING);
+
         if (encoding != null && encoding.contains("gzip")) {
+            Log.info("Gzip compression enabled");
             responseContext.getHeaders().put(HttpHeaders.CONTENT_ENCODING, Arrays.asList("gzip"));
             OutputStream outputStream = responseContext.getEntityStream();
             responseContext.setEntityStream(new GZIPOutputStream(outputStream));
+
         }
     }
 }
