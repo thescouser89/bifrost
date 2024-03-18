@@ -22,6 +22,7 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.opentelemetry.extension.annotations.WithSpan;
 
+import io.quarkus.narayana.jta.QuarkusTransaction;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import org.jboss.pnc.api.bifrost.dto.Line;
@@ -63,6 +64,7 @@ import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -353,32 +355,20 @@ public class RestImpl implements Bifrost {
     }
 
     @Override
-    @Transactional
     @Consumes
     @Produces(MediaType.TEXT_PLAIN)
     @GET
     @Path("/final-log/{buildId}/{tag}")
     public Response getFinalLog(@PathParam("buildId") String buildId, @PathParam("tag") String tag) {
 
-        java.nio.file.Path path;
-        FileOutputStream outputStream;
-
-        try {
-            path = Files.createTempFile("temp-upload-file", "out");
-            outputStream = new FileOutputStream(path.toFile());
-
-            // build id and process context should be the same
-            FinalLog.copyFinalLogsToOutputStream(LongBase32IdConverter.toLong(buildId), tag, outputStream);
-
-        } catch (Exception e) {
-            return Response.serverError().entity(e.getMessage()).build();
-        }
-
         return Response.ok().entity((StreamingOutput) output -> {
             try {
-                Files.copy(path, output);
-            } finally {
-                Files.delete(path);
+                QuarkusTransaction.begin();
+                // build id and process context should be the same
+                FinalLog.copyFinalLogsToOutputStream(LongBase32IdConverter.toLong(buildId), tag, output);
+                QuarkusTransaction.commit();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
             }
         }).build();
     }
