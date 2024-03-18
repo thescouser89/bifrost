@@ -46,10 +46,10 @@ public class Quarkus2GzipCompression implements ContainerResponseFilter {
 
         if (encoding != null && encoding.contains("gzip")) {
             Log.info("Gzip compression enabled");
+            Log.infof(encoding);
             responseContext.getHeaders().put(HttpHeaders.CONTENT_ENCODING, Arrays.asList("gzip"));
             OutputStream outputStream = responseContext.getEntityStream();
             responseContext.setEntityStream(new GZIPOutputStream(outputStream));
-
         }
     }
 }
