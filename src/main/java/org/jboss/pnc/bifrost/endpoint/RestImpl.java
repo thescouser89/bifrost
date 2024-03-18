@@ -360,6 +360,7 @@ public class RestImpl implements Bifrost {
     @Produces(MediaType.TEXT_PLAIN)
     @GET
     @Path("/final-log/{buildId}/{tag}")
+    @Compressed
     /**
      * Get the final log of the build + tag
      */
