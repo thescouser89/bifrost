@@ -18,16 +18,14 @@
 package org.jboss.pnc.bifrost.endpoint.dto;
 
 import lombok.Data;
-import org.jboss.resteasy.annotations.providers.multipart.PartType;
+import org.jboss.resteasy.reactive.PartType;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.FormParam;
-import javax.ws.rs.core.MediaType;
 import java.io.InputStream;
 import java.time.OffsetDateTime;
-import java.util.List;
 
 @Data
 public class FinalLogUpload {
