@@ -23,17 +23,14 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.hibernate.engine.jdbc.BlobProxy;
 import org.jboss.pnc.api.constants.MDCHeaderKeys;
 import org.jboss.pnc.bifrost.common.ChecksumValidatingStream;
-import org.jboss.pnc.bifrost.constants.UserRoles;
 import org.jboss.pnc.bifrost.endpoint.dto.FinalLogUpload;
 import org.jboss.pnc.bifrost.source.db.FinalLog;
 import org.jboss.pnc.bifrost.source.db.LogEntry;
 import org.jboss.pnc.bifrost.source.db.LogEntryRepository;
 import org.jboss.pnc.bifrost.source.db.converter.ValueConverter;
 import org.jboss.pnc.bifrost.source.db.converter.idConverter;
-import org.jboss.resteasy.annotations.providers.multipart.MultipartForm;
 
 import javax.annotation.security.PermitAll;
-import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
@@ -64,7 +61,7 @@ public class LogUpload {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Transactional
-    public String uploadFinalLog(@MultipartForm @Valid FinalLogUpload logUpload, @Context HttpHeaders headers) {
+    public String uploadFinalLog(@Valid FinalLogUpload logUpload, @Context HttpHeaders headers) {
         Log.info("Receiving logfile");
 
         FinalLog finalLog = new FinalLog();
