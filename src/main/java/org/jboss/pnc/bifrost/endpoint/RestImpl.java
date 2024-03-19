@@ -356,14 +356,7 @@ public class RestImpl implements Bifrost {
     }
 
     @Override
-    @Consumes
-    @Produces(MediaType.TEXT_PLAIN)
-    @GET
-    @Path("/final-log/{buildId}/{tag}")
-    /**
-     * Get the final log of the build + tag
-     */
-    public Response getFinalLog(@PathParam("buildId") String buildId, @PathParam("tag") String tag) {
+    public Response getFinalLog(String buildId, String tag) {
 
         return Response.ok().entity((StreamingOutput) output -> {
             try {
@@ -375,6 +368,14 @@ public class RestImpl implements Bifrost {
                 throw new RuntimeException(e);
             }
         }).build();
+    }
+
+    @Override
+    public long getFinalLogSize(String buildId, String tag) {
+        return FinalLog.getFinalLogsWithoutPreviousRetries(LongBase32IdConverter.toLong(buildId), tag)
+                .stream()
+                .mapToLong(m -> m.size)
+                .sum();
     }
 
     @Override

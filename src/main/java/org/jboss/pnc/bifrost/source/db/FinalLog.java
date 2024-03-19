@@ -56,6 +56,8 @@ public class FinalLog extends PanacheEntity {
     @Lob
     public Blob logContent;
 
+    public long size;
+
     public static void copyFinalLogsToOutputStream(long processContext, String tag, OutputStream outputStream)
             throws SQLException, IOException {
         Collection<FinalLog> logs = getFinalLogsWithoutPreviousRetries(processContext, tag);

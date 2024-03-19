@@ -7,6 +7,7 @@ CREATE TABLE finallog (
     logentry_id bigint NOT NULL,
     md5sum character varying(32) NOT NULL,
     loggername character varying(255) NOT NULL,
+    size bigint NOT NULL,
     logcontent oid
 );
 
