@@ -17,25 +17,26 @@
  */
 package org.jboss.pnc.bifrost.common;
 
-import io.quarkus.logging.Log;
-import org.jboss.pnc.bifrost.endpoint.LogUpload;
-
 import javax.validation.ValidationException;
 import javax.xml.bind.DatatypeConverter;
-import java.io.FilterInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-public class ChecksumValidatingStream extends FilterInputStream {
+public class ChecksumValidatingStream extends InputStream {
+
+    protected volatile InputStream in;
 
     private final MessageDigest md5;
 
     private final String md5sum;
 
+    private long size = 0;
+
     private ChecksumValidatingStream(InputStream stream, MessageDigest md5, String md5sum) {
-        super(stream);
+        this.in = stream;
         this.md5 = md5;
         this.md5sum = md5sum;
     }
@@ -57,6 +58,48 @@ public class ChecksumValidatingStream extends FilterInputStream {
             throw new ValidationException(
                     "Stream validation failed, expected " + md5sum + " got " + md5computedSum + ".");
         }
-
     }
+
+    public long readSize() {
+        return size;
+    }
+
+    public int read() throws IOException {
+        int read = this.in.read();
+        if (read >= 0) {
+            size++;
+        }
+        return read;
+    }
+
+    public int read(byte[] b) throws IOException {
+        int read = this.read(b, 0, b.length);
+        if (read >= 0) {
+            size += read;
+        }
+        return read;
+    }
+
+    public int read(byte[] b, int off, int len) throws IOException {
+        int read = this.in.read(b, off, len);
+        if (read >= 0) {
+            size += read;
+        }
+        return read;
+    }
+
+    public long skip(long n) throws IOException {
+        long skip = this.in.skip(n);
+        size += skip;
+        return skip;
+    }
+
+    public int available() throws IOException {
+        return this.in.available();
+    }
+
+    public void close() throws IOException {
+        this.in.close();
+    }
+
 }

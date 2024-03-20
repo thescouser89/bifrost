@@ -86,6 +86,7 @@ public class LogUpload {
         } catch (ValidationException ex) {
             throw new BadRequestException("The uploaded log has wrong checksums: " + ex.getMessage(), ex);
         }
+        finalLog.size = stream.readSize();
         return "ok";
     }
 
