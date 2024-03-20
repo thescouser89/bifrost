@@ -46,24 +46,16 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
-import javax.transaction.Transactional;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
 import javax.ws.rs.ServerErrorException;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import java.io.BufferedWriter;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
-import java.nio.file.Files;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.time.ZonedDateTime;
@@ -357,6 +349,11 @@ public class RestImpl implements Bifrost {
 
     @Override
     public Response getFinalLog(String buildId, String tag) {
+
+        // if logs not present, return status 404
+        if (FinalLog.getFinalLogsWithoutPreviousRetries(LongBase32IdConverter.toLong(buildId), tag).isEmpty()) {
+            return Response.status(404).build();
+        }
 
         return Response.ok().entity((StreamingOutput) output -> {
             try {
