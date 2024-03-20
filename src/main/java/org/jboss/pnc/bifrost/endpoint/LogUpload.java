@@ -86,7 +86,10 @@ public class LogUpload {
         } catch (ValidationException ex) {
             throw new BadRequestException("The uploaded log has wrong checksums: " + ex.getMessage(), ex);
         }
+
+        FinalLog.getEntityManager().refresh(finalLog);
         finalLog.size = stream.readSize();
+
         return "ok";
     }
 
