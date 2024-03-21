@@ -46,7 +46,7 @@ import javax.ws.rs.core.MediaType;
 import java.util.Arrays;
 import java.util.Set;
 
-@Path("/upload")
+@Path("/final-log")
 @PermitAll
 public class LogUpload {
     @ConfigProperty(name = "quarkus.http.limits.max-body-size")
@@ -57,7 +57,7 @@ public class LogUpload {
 
     private final ValueConverter<Long> idConverter = new idConverter();
 
-    @Path("/final-log")
+    @Path("/upload")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.MULTIPART_FORM_DATA)
