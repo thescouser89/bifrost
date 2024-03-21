@@ -18,13 +18,18 @@
 package org.jboss.pnc.bifrost.source.db;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
+import io.quarkus.panache.common.Parameters;
 import io.quarkus.panache.common.Sort;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.sql.Blob;
@@ -33,6 +38,7 @@ import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Entity
@@ -51,7 +57,7 @@ public class FinalLog extends PanacheEntity {
     public String md5sum;
 
     @ElementCollection
-    public List<String> tags;
+    public Set<String> tags;
 
     @Lob
     public Blob logContent;

@@ -17,6 +17,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 @QuarkusTest
 public class FinalLogTest {
@@ -91,7 +92,7 @@ public class FinalLogTest {
         finalLog.eventTimestamp = OffsetDateTime.now();
         finalLog.loggerName = loggerName;
         finalLog.md5sum = "a";
-        finalLog.tags = List.of(tag);
+        finalLog.tags = Set.of(tag);
 
         finalLog.persist();
 

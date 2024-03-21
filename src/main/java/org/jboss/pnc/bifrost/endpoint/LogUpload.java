@@ -44,6 +44,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import java.util.Arrays;
+import java.util.Set;
 
 @Path("/upload")
 @PermitAll
@@ -71,7 +72,7 @@ public class LogUpload {
         finalLog.md5sum = logUpload.getMd5sum();
 
         if (logUpload.getTag() != null) {
-            finalLog.tags = Arrays.asList(logUpload.getTag().split(","));
+            finalLog.tags = Set.of(logUpload.getTag().split(","));
         }
 
         ChecksumValidatingStream stream = ChecksumValidatingStream
