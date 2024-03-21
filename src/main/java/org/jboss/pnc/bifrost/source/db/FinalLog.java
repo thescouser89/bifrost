@@ -57,6 +57,8 @@ public class FinalLog extends PanacheEntity {
     public String md5sum;
 
     @ElementCollection
+    @OnDelete(action = OnDeleteAction.CASCADE) // TODO remove with JoinColumn on Hibernate version 6+ (ticket: HHH-5529)
+    @JoinColumn(name = "finallog_id")
     public Set<String> tags;
 
     @Lob
@@ -101,5 +103,26 @@ public class FinalLog extends PanacheEntity {
             logMap.put(finalLog.loggerName, finalLog);
         }
         return logMap.values();
+    }
+
+    public static long deleteByProcessContext(long processContext, String tag, boolean temporaryOnly) {
+        // language=HQL
+        String logEntryQuery = "select id from LogEntry where processContext = :processContext";
+        Parameters parameters = Parameters.with("processContext", processContext);
+        if (temporaryOnly) {
+            logEntryQuery += " and temporary = :temporary";
+            parameters.and("temporary", true);
+        }
+
+        // unfortunately JPA/HQL DELETE queries do not support Joins in FROM clause, so we have fallback to subquery
+        // in WHERE clause
+        // language=HQL
+        String query = "from FinalLog where logEntry.id in (" + logEntryQuery + ")";
+        if (tag != null) {
+            query += " and :tag in elements(tags)";
+            parameters.and("tag", tag);
+        }
+
+        return delete(query, parameters);
     }
 }
