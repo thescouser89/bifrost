@@ -65,6 +65,6 @@ public class Lifecycle {
      * Extract pod ordinal number managed by StatefulSet out of hostname.
      */
     public static int podOrdinalNumber(String hostname) {
-        return Integer.parseInt(hostname.substring(hostname.lastIndexOf("-")));
+        return Integer.parseInt(hostname.substring(hostname.lastIndexOf("-") + 1));
     }
 }
