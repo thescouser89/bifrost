@@ -17,6 +17,8 @@
  */
 package org.jboss.pnc.bifrost.endpoint;
 
+import com.sun.jdi.ThreadReference;
+import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import io.quarkus.logging.Log;
 import io.quarkus.runtime.configuration.MemorySize;
 import io.quarkus.security.Authenticated;
@@ -50,7 +52,9 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 @Path("/final-log")
@@ -105,10 +109,7 @@ public class LogUpload {
     @Path("/{processContext}/delete")
     @DELETE
     @RolesAllowed("**") // FIXME change to specific allowed roles
-    public void deleteFinalLog(
-            @PathParam("processContext") String processContext,
-            // IF tag is null, then all logs are deleted
-            @QueryParam("tag") @NotBlank String tag) {
+    public Response deleteFinalLog(@PathParam("processContext") String processContext) {
         // parse process context
         long processContextLong;
         if (processContext.startsWith("build-")) {
@@ -121,10 +122,16 @@ public class LogUpload {
                         "Process context " + processContext + "is not a number nor a Build process.");
             }
         }
+        List<LogEntry> logEntries = LogEntry.list("processContext", processContextLong);
+        if (logEntries.stream().noneMatch(LogEntry::getTemporary)) {
+            throw new BadRequestException("Can't delete logs of persistent entries.");
+        }
 
         log.debug("Deleting final logs with processContext: {} (long -> {})", processContext, processContextLong);
-        long deleted = FinalLog.deleteByProcessContext(processContextLong, tag, true);
+        long deleted = FinalLog.deleteByProcessContext(processContextLong, null, true);
         log.debug("Deleted {} rows with processContext {} (long -> {}).", deleted, processContext, processContextLong);
+
+        return Response.noContent().build();
     }
 
     private LogEntry getLogEntry(HttpHeaders headers) {
