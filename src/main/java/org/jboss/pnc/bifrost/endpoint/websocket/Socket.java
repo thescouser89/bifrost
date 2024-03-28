@@ -96,7 +96,7 @@ public class Socket {
         if (CONNECTION_CLOSED_BY_USER.equals(error.getMessage())) {
             logger.warn("Socket closed by user.", error);
         } else {
-            logger.error("Socket communication error.", error);
+            logger.warn("Socket communication error.", error);
         }
         unsubscribeSession(session.getId());
     }
