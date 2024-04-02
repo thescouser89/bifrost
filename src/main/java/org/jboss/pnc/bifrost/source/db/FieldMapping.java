@@ -24,7 +24,7 @@ import org.jboss.pnc.bifrost.source.db.converter.LongConverter;
 import org.jboss.pnc.bifrost.source.db.converter.OffsetDateTimeConverter;
 import org.jboss.pnc.bifrost.source.db.converter.StringConverter;
 import org.jboss.pnc.bifrost.source.db.converter.ValueConverter;
-import org.jboss.pnc.bifrost.source.db.converter.idConverter;
+import org.jboss.pnc.bifrost.source.db.converter.IdConverter;
 import org.jboss.pnc.common.Strings;
 
 import java.util.Map;
@@ -48,7 +48,7 @@ public class FieldMapping {
         var integerConverter = new IntegerConverter();
         var longConverter = new LongConverter();
         var offsetDateTimeConverter = new OffsetDateTimeConverter();
-        var idConverter = new idConverter();
+        var idConverter = new IdConverter();
         var logLevelConverter = new LogLevelConverter();
 
         // .keyword is used for backward compatibility
