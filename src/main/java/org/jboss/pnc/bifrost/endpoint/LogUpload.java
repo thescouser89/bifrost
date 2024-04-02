@@ -102,7 +102,8 @@ public class LogUpload {
 
     @Path("/{processContext}/delete")
     @DELETE
-    @RolesAllowed("**") // FIXME change to specific allowed roles
+    @RolesAllowed("**")
+    @Transactional // FIXME change to specific allowed roles
     public Response deleteFinalLog(@PathParam("processContext") String processContext) {
         // parse process context
         Long processContextLong = idConverter.convert(processContext);
