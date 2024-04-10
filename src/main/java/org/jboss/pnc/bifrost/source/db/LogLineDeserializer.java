@@ -23,7 +23,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import org.jboss.pnc.bifrost.common.DateParser;
 import org.jboss.pnc.bifrost.source.db.converter.ValueConverter;
-import org.jboss.pnc.bifrost.source.db.converter.idConverter;
+import org.jboss.pnc.bifrost.source.db.converter.IdConverter;
 import org.jboss.pnc.common.Json;
 import org.jboss.pnc.common.Strings;
 import org.jboss.pnc.common.concurrent.Sequence;
@@ -45,7 +45,7 @@ public class LogLineDeserializer extends StdDeserializer<LogLine> {
 
     private final Logger logger = LoggerFactory.getLogger(LogLineDeserializer.class);
 
-    private final ValueConverter<Long> idConverter = new idConverter();
+    private final ValueConverter<Long> idConverter = new IdConverter();
 
     public LogLineDeserializer() {
         super(LogLine.class);

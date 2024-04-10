@@ -22,7 +22,7 @@ import org.jboss.pnc.common.pnc.LongBase32IdConverter;
 /**
  * @author <a href="mailto:matejonnet@gmail.com">Matej Lazar</a>
  */
-public class idConverter implements ValueConverter<Long> {
+public class IdConverter implements ValueConverter<Long> {
 
     @Override
     public Long convert(String value) {
