@@ -112,6 +112,9 @@ public class LogUpload {
         }
 
         List<LogEntry> logEntries = LogEntry.list("processContext", processContextLong);
+        if (logEntries.isEmpty()) {
+            return Response.noContent().build();
+        }
         if (logEntries.stream().noneMatch(LogEntry::getTemporary)) {
             throw new BadRequestException("Can't delete logs of persistent entries.");
         }
