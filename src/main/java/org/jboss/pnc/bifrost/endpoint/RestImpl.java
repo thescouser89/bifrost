@@ -348,34 +348,6 @@ public class RestImpl implements Bifrost {
     }
 
     @Override
-    public Response getFinalLog(String buildId, String tag) {
-
-        // if logs not present, return status 404
-        if (FinalLog.getFinalLogsWithoutPreviousRetries(LongBase32IdConverter.toLong(buildId), tag).isEmpty()) {
-            return Response.status(404).build();
-        }
-
-        return Response.ok().entity((StreamingOutput) output -> {
-            try {
-                QuarkusTransaction.begin();
-                // build id and process context should be the same
-                FinalLog.copyFinalLogsToOutputStream(LongBase32IdConverter.toLong(buildId), tag, output);
-                QuarkusTransaction.commit();
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-        }).build();
-    }
-
-    @Override
-    public long getFinalLogSize(String buildId, String tag) {
-        return FinalLog.getFinalLogsWithoutPreviousRetries(LongBase32IdConverter.toLong(buildId), tag)
-                .stream()
-                .mapToLong(m -> m.size)
-                .sum();
-    }
-
-    @Override
     public ComponentVersion getVersion() {
         return ComponentVersion.builder()
                 .name(name)

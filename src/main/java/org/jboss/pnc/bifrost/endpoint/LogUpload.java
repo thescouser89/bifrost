@@ -18,6 +18,7 @@
 package org.jboss.pnc.bifrost.endpoint;
 
 import io.quarkus.logging.Log;
+import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.runtime.configuration.MemorySize;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -30,6 +31,7 @@ import org.jboss.pnc.bifrost.source.db.LogEntry;
 import org.jboss.pnc.bifrost.source.db.LogEntryRepository;
 import org.jboss.pnc.bifrost.source.db.converter.ValueConverter;
 import org.jboss.pnc.bifrost.source.db.converter.IdConverter;
+import org.jboss.pnc.common.pnc.LongBase32IdConverter;
 
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
@@ -40,6 +42,7 @@ import javax.validation.ValidationException;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -48,6 +51,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Set;
 
@@ -124,6 +129,40 @@ public class LogUpload {
         log.debug("Deleted {} rows with processContext {} (long -> {}).", deleted, processContext, processContextLong);
 
         return Response.noContent().build();
+    }
+
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    @Consumes
+    @Path("/{buildId}/{tag}")
+    public Response getFinalLog(@PathParam("buildId") String buildId, @PathParam("tag") String tag) {
+
+        // if logs not present, return status 404
+        if (FinalLog.getFinalLogsWithoutPreviousRetries(LongBase32IdConverter.toLong(buildId), tag).isEmpty()) {
+            return Response.status(404).build();
+        }
+
+        return Response.ok().entity((StreamingOutput) output -> {
+            try {
+                QuarkusTransaction.begin();
+                // build id and process context should be the same
+                FinalLog.copyFinalLogsToOutputStream(LongBase32IdConverter.toLong(buildId), tag, output);
+                QuarkusTransaction.commit();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }).build();
+    }
+
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    @Consumes
+    @Path("/{buildId}/{tag}/size")
+    public long getFinalLogSize(@PathParam("buildId") String buildId, @PathParam("tag") String tag) {
+        return FinalLog.getFinalLogsWithoutPreviousRetries(LongBase32IdConverter.toLong(buildId), tag)
+                .stream()
+                .mapToLong(m -> m.size)
+                .sum();
     }
 
     private LogEntry getLogEntry(HttpHeaders headers) {
