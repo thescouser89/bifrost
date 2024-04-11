@@ -23,6 +23,7 @@ import io.quarkus.runtime.configuration.MemorySize;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.hibernate.engine.jdbc.BlobProxy;
+import org.jboss.pnc.api.bifrost.rest.FinalLogRest;
 import org.jboss.pnc.api.constants.MDCHeaderKeys;
 import org.jboss.pnc.bifrost.common.ChecksumValidatingStream;
 import org.jboss.pnc.bifrost.endpoint.dto.FinalLogUpload;
@@ -57,10 +58,9 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Set;
 
-@Path("/final-log")
 @PermitAll
 @Slf4j
-public class LogUpload {
+public class FinalLogImpl implements FinalLogRest {
     @ConfigProperty(name = "quarkus.http.limits.max-body-size")
     MemorySize maxPostValue;
 
@@ -133,10 +133,7 @@ public class LogUpload {
         return Response.noContent().build();
     }
 
-    @GET
-    @Produces(MediaType.TEXT_PLAIN)
-    @Consumes
-    @Path("/{buildId}/{tag}")
+    @Override
     public Response getFinalLog(@PathParam("buildId") String buildId, @PathParam("tag") String tag) {
 
         // if logs not present, return status 404
@@ -156,10 +153,7 @@ public class LogUpload {
         }).build();
     }
 
-    @GET
-    @Produces(MediaType.TEXT_PLAIN)
-    @Consumes
-    @Path("/{buildId}/{tag}/size")
+    @Override
     public long getFinalLogSize(@PathParam("buildId") String buildId, @PathParam("tag") String tag) {
         return FinalLog.getFinalLogsWithoutPreviousRetries(LongBase32IdConverter.toLong(buildId), tag)
                 .stream()
