@@ -31,6 +31,7 @@ import org.jboss.pnc.bifrost.source.db.LogEntry;
 import org.jboss.pnc.bifrost.source.db.LogEntryRepository;
 import org.jboss.pnc.bifrost.source.db.converter.ValueConverter;
 import org.jboss.pnc.bifrost.source.db.converter.IdConverter;
+import org.jboss.pnc.common.concurrent.Sequence;
 import org.jboss.pnc.common.pnc.LongBase32IdConverter;
 
 import javax.annotation.security.PermitAll;
@@ -77,6 +78,7 @@ public class LogUpload {
         Log.info("Receiving logfile");
 
         FinalLog finalLog = new FinalLog();
+        finalLog.id = Sequence.nextId();
         finalLog.logEntry = getLogEntry(headers);
         finalLog.eventTimestamp = logUpload.getEndTime();
         finalLog.loggerName = logUpload.getLoggerName();

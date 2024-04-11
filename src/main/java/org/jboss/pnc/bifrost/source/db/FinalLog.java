@@ -17,7 +17,7 @@
  */
 package org.jboss.pnc.bifrost.source.db;
 
-import io.quarkus.hibernate.orm.panache.PanacheEntity;
+import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import io.quarkus.panache.common.Parameters;
 import io.quarkus.panache.common.Sort;
 import org.hibernate.annotations.OnDelete;
@@ -26,10 +26,10 @@ import org.hibernate.annotations.OnDeleteAction;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
-import javax.persistence.Table;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.sql.Blob;
@@ -42,7 +42,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Entity
-public class FinalLog extends PanacheEntity {
+public class FinalLog extends PanacheEntityBase {
+
+    @Id
+    public long id;
 
     @ManyToOne(optional = false)
     public LogEntry logEntry;
