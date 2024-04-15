@@ -54,7 +54,8 @@ quarkus:
       origins: "/.*/"
   datasource:
     db-kind: ${QUARKUS_DATASOURCE:postgresql}
-    jdbc.url: ${QUARKUS_DATASOURCE_URL:}
+    jdbc:
+      url: ${QUARKUS_DATASOURCE_URL:}
     username: ${QUARKUS_DATASOURCE_USERNAME:}
     password: ${QUARKUS_DATASOURCE_PASSWORD:}
   shutdown:
