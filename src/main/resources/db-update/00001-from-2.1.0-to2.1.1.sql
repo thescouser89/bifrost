@@ -29,7 +29,7 @@ CREATE TABLE finallog_tags (
 );
 
 ALTER TABLE ONLY finallog_tags
-    ADD CONSTRAINT fknt0uv2u9oi71w6ybwbi6h08bf FOREIGN KEY (finallog_id) REFERENCES finallog(id);
+    ADD CONSTRAINT fknt0uv2u9oi71w6ybwbi6h08bf FOREIGN KEY (finallog_id) REFERENCES finallog(id) ON DELETE CASCADE;
 
 
 CREATE SEQUENCE hibernate_sequence
