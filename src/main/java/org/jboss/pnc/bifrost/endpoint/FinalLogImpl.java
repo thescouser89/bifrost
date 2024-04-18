@@ -44,7 +44,6 @@ import javax.validation.ValidationException;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -73,6 +72,7 @@ public class FinalLogImpl implements FinalLogRest {
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @RolesAllowed({ "pnc-app-bifrost-final-log-create", "pnc-users-admin" })
     @Transactional
     public String uploadFinalLog(@Valid FinalLogUpload logUpload, @Context HttpHeaders headers) {
         Log.info("Receiving logfile");
@@ -109,7 +109,7 @@ public class FinalLogImpl implements FinalLogRest {
 
     @Path("/{processContext}/delete")
     @DELETE
-    @RolesAllowed("**")
+    @RolesAllowed({ "pnc-app-bifrost-final-log-delete", "pnc-users-admin" })
     @Transactional // FIXME change to specific allowed roles
     public Response deleteFinalLog(@PathParam("processContext") String processContext) {
         // parse process context
