@@ -135,10 +135,17 @@ public class FinalLogImpl implements FinalLogRest {
 
     @Override
     public Response getFinalLog(@PathParam("buildId") String buildId, @PathParam("tag") String tag) {
-
-        // if logs not present, return status 404
-        if (FinalLog.getFinalLogsWithoutPreviousRetries(LongBase32IdConverter.toLong(buildId), tag).isEmpty()) {
+        Long context = LongBase32IdConverter.toLong(buildId);
+        // if context is not present, return status 404
+        if (!LogEntry.isPresent(context)) {
             return Response.status(404).build();
+        }
+
+        // if logs are not present, return status 204
+        {
+            if (FinalLog.getFinalLogsWithoutPreviousRetries(context, tag).isEmpty()) {
+                return Response.noContent().build();
+            }
         }
 
         return Response.ok().entity((StreamingOutput) output -> {

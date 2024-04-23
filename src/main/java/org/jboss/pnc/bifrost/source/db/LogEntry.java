@@ -98,4 +98,7 @@ public class LogEntry extends PanacheEntityBase {
         return parameters;
     }
 
+    public static boolean isPresent(Long processContext) {
+        return count("processContext = :processContext", Parameters.with("processContext", processContext)) > 0;
+    }
 }
