@@ -39,4 +39,13 @@ CREATE SEQUENCE hibernate_sequence
     NO MAXVALUE
     CACHE 1;
 
+--- Finallog Table indexes
+CREATE INDEX idx_finallog_logentryid ON finallog(logentry_id);
+CREATE INDEX idx_finallog_eventtimestamp ON finallog(eventtimestamp);
+CREATE INDEX idx_finallog_loggername ON finallog(loggername);
+
+--- Finallog_tags Table indexes
+--- the table is missing primary key so this index is required
+CREATE INDEX idx_finallogtags_id ON finallog_tags(finallog_id);
+
 COMMIT;
