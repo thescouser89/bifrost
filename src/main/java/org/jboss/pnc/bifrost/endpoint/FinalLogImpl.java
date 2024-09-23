@@ -53,6 +53,10 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Set;
@@ -134,6 +138,7 @@ public class FinalLogImpl implements FinalLogRest {
     }
 
     @Override
+    @Transactional
     public Response getFinalLog(@PathParam("buildId") String buildId, @PathParam("tag") String tag) {
         Long context = LongBase32IdConverter.toLong(buildId);
         // if context is not present, return status 404
@@ -142,21 +147,32 @@ public class FinalLogImpl implements FinalLogRest {
         }
 
         // if logs are not present, return status 204
-        {
-            if (FinalLog.getFinalLogsWithoutPreviousRetries(context, tag).isEmpty()) {
-                return Response.noContent().build();
-            }
+        if (FinalLog.getFinalLogsWithoutPreviousRetries(context, tag).isEmpty()) {
+            return Response.noContent().build();
         }
 
-        return Response.ok().entity((StreamingOutput) output -> {
-            try {
-                QuarkusTransaction.begin();
-                // build id and process context should be the same
-                FinalLog.copyFinalLogsToOutputStream(LongBase32IdConverter.toLong(buildId), tag, output);
-                QuarkusTransaction.commit();
+        // at this point, we are running in a transaction. We copy the blob content to a file
+        File tempFile;
+        try {
+            tempFile = File.createTempFile("final-log", ".tmp");
+
+            try (FileOutputStream fout = new FileOutputStream(tempFile)) {
+                FinalLog.copyFinalLogsToOutputStream(LongBase32IdConverter.toLong(buildId), tag, fout);
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        return Response.ok().entity((StreamingOutput) output -> {
+            // at this point, we are not running in a transaction. We can however stream the content of the file to
+            // the output
+            try (FileInputStream fin = new FileInputStream(tempFile)) {
+                fin.transferTo(output);
+            }
+            // cleanup
+            tempFile.delete();
         }).build();
     }
 
