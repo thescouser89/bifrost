@@ -92,6 +92,7 @@ public class FinalLogImpl implements FinalLogRest {
             finalLog.tags = Set.of(logUpload.getTag().split(","));
         }
 
+        long logUploadStarted = System.currentTimeMillis();
         ChecksumValidatingStream stream = ChecksumValidatingStream
                 .validate(logUpload.getLogfile(), logUpload.getMd5sum());
 
@@ -99,6 +100,17 @@ public class FinalLogImpl implements FinalLogRest {
         // stream size is less than that size
         finalLog.logContent = BlobProxy.generateProxy(stream, maxPostValue.asLongValue());
         finalLog.persistAndFlush();
+        long logUploadEnded = System.currentTimeMillis();
+        if (log.isDebugEnabled()) {
+            long duration = logUploadEnded - logUploadStarted;
+            long logSize = stream.readSize();
+            log.debug(
+                    "Log sized {} KB uploaded in {} s {} ms, that is {} KB/s",
+                    logSize / 1000,
+                    duration / 1000,
+                    duration % 1000,
+                    logSize / duration);
+        }
         try {
             stream.validate();
         } catch (ValidationException ex) {
