@@ -4,19 +4,14 @@ import io.quarkus.test.junit.QuarkusTest;
 import org.hibernate.engine.jdbc.BlobProxy;
 import org.jboss.pnc.bifrost.source.db.FinalLog;
 import org.jboss.pnc.bifrost.source.db.LogEntry;
-import org.jboss.pnc.common.Random;
 import org.jboss.pnc.common.concurrent.Sequence;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
 import javax.transaction.Transactional;
-import javax.validation.constraints.NotNull;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
 @QuarkusTest

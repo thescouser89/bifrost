@@ -18,7 +18,6 @@
 package org.jboss.pnc.bifrost.endpoint;
 
 import io.quarkus.logging.Log;
-import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.runtime.configuration.MemorySize;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.config.inject.ConfigProperty;

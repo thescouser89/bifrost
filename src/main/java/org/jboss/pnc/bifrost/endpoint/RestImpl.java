@@ -22,8 +22,6 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.opentelemetry.extension.annotations.WithSpan;
 
-import io.quarkus.narayana.jta.QuarkusTransaction;
-import io.quarkus.vertx.http.Compressed;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import org.jboss.pnc.api.bifrost.dto.Line;
@@ -38,8 +36,6 @@ import org.jboss.pnc.bifrost.common.scheduler.Subscription;
 import org.jboss.pnc.bifrost.common.scheduler.TimeoutExecutor;
 import org.jboss.pnc.bifrost.constants.BuildInformationConstants;
 import org.jboss.pnc.bifrost.endpoint.provider.DataProvider;
-import org.jboss.pnc.bifrost.source.db.FinalLog;
-import org.jboss.pnc.common.pnc.LongBase32IdConverter;
 import org.jboss.pnc.common.security.Md5;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,7 +53,6 @@ import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;

@@ -32,7 +32,6 @@ import org.jboss.pnc.bifrost.common.scheduler.BackOffRunnableConfig;
 import org.jboss.pnc.bifrost.common.scheduler.Subscription;
 import org.jboss.pnc.bifrost.common.scheduler.Subscriptions;
 import org.jboss.pnc.bifrost.source.Source;
-import org.jboss.pnc.bifrost.source.db.FinalLog;
 import org.jboss.pnc.common.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

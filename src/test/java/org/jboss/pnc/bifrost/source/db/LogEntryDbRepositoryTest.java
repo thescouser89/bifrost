@@ -2,7 +2,6 @@ package org.jboss.pnc.bifrost.source.db;
 
 import io.quarkus.test.junit.QuarkusTest;
 import org.jboss.pnc.common.Random;
-import org.jboss.pnc.common.concurrent.Sequence;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
