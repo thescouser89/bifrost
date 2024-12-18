@@ -28,7 +28,6 @@ import lombok.ToString;
 import org.hibernate.annotations.Type;
 
 import java.time.OffsetDateTime;
-import javax.persistence.Cacheable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;

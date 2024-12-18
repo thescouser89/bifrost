@@ -1,13 +1,9 @@
 package org.jboss.pnc.bifrost.endpoint;
 
-import io.quarkus.logging.Log;
-import io.quarkus.narayana.jta.QuarkusTransaction;
-import io.quarkus.test.TestTransaction;
 import io.quarkus.test.junit.QuarkusTest;
 import org.hibernate.engine.jdbc.BlobProxy;
 import org.jboss.pnc.bifrost.source.db.FinalLog;
 import org.jboss.pnc.bifrost.source.db.LogEntry;
-import org.jboss.pnc.bifrost.source.db.converter.IdConverter;
 import org.jboss.pnc.common.concurrent.Sequence;
 import org.jboss.pnc.common.pnc.LongBase32IdConverter;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,7 +17,6 @@ import java.util.Set;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @QuarkusTest
 public class FinalLogRestTest {

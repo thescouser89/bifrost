@@ -17,8 +17,6 @@
  */
 package org.jboss.pnc.bifrost.source.db.converter;
 
-import java.time.OffsetDateTime;
-
 /**
  * @author <a href="mailto:matejonnet@gmail.com">Matej Lazar</a>
  */
