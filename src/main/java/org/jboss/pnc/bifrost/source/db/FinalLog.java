@@ -61,7 +61,6 @@ public class FinalLog extends PanacheEntityBase {
 
     @ElementCollection
     @OnDelete(action = OnDeleteAction.CASCADE) // TODO remove with JoinColumn on Hibernate version 6+ (ticket: HHH-5529)
-    @JoinColumn(name = "finallog_id")
     public Set<String> tags;
 
     @Lob
