@@ -17,8 +17,6 @@
  */
 package org.jboss.pnc.bifrost.source;
 
-import io.quarkus.test.common.QuarkusTestResource;
-import io.quarkus.test.h2.H2DatabaseTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import org.jboss.pnc.api.bifrost.dto.Line;
 import org.jboss.pnc.api.bifrost.enums.Direction;
@@ -41,7 +39,6 @@ import java.util.function.Consumer;
  * @author <a href="mailto:matejonnet@gmail.com">Matej Lazar</a>
  */
 @QuarkusTest
-@QuarkusTestResource(H2DatabaseTestResource.class)
 public class SourceTest {
 
     private final Logger logger = LoggerFactory.getLogger(SourceTest.class);

@@ -20,8 +20,6 @@ package org.jboss.pnc.bifrost.source.db;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import io.quarkus.panache.common.Parameters;
 import io.quarkus.panache.common.Sort;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -59,7 +57,6 @@ public class FinalLog extends PanacheEntityBase {
     public String md5sum;
 
     @ElementCollection
-    @OnDelete(action = OnDeleteAction.CASCADE) // TODO remove with JoinColumn on Hibernate version 6+ (ticket: HHH-5529)
     public Set<String> tags;
 
     @Lob
@@ -124,6 +121,8 @@ public class FinalLog extends PanacheEntityBase {
             parameters.and("tag", tag);
         }
 
-        return delete(query, parameters);
+        List<FinalLog> toDelete = list(query, parameters);
+        toDelete.forEach(PanacheEntityBase::delete);
+        return toDelete.size();
     }
 }

@@ -52,12 +52,6 @@ quarkus:
     cors:
       ~: true
       origins: "/.*/"
-  datasource:
-    db-kind: ${QUARKUS_DATASOURCE:postgresql}
-    jdbc:
-      url: ${QUARKUS_DATASOURCE_URL:}
-    username: ${QUARKUS_DATASOURCE_USERNAME:}
-    password: ${QUARKUS_DATASOURCE_PASSWORD:}
   shutdown:
     timeout: 30
 
@@ -89,6 +83,15 @@ bifrost:
     timeOutMillis: 300000
   defaultSourceFetchSize: 100
   sourcePollThreads: 4
+
+'%prod':
+  datasource:
+    db-kind: ${QUARKUS_DATASOURCE:postgresql}
+    jdbc:
+      url: ${QUARKUS_DATASOURCE_URL:}
+    username: ${QUARKUS_DATASOURCE_USERNAME:}
+    password: ${QUARKUS_DATASOURCE_PASSWORD:}
+
 '%test':
   mp:
     messaging:
@@ -110,16 +113,13 @@ bifrost:
       console:
         json: false
     datasource:
-      jdbc:
-        url: jdbc:h2:tcp://localhost/mem:test
-      db-kind: h2
+      db-kind: postgresql
+      devservices:
+        show-logs: true
+        enabled: true
     hibernate-orm:
       database:
         generation: drop-and-create
-      log:
-        sql: true
-        bind-parameters: true
-      statistics: true
     devservices:
       enabled: true
   bifrost:

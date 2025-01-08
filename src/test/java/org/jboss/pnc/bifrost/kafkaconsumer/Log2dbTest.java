@@ -18,8 +18,6 @@
 package org.jboss.pnc.bifrost.kafkaconsumer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.quarkus.test.common.QuarkusTestResource;
-import io.quarkus.test.h2.H2DatabaseTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
@@ -50,7 +48,6 @@ import java.util.concurrent.Semaphore;
  * @author <a href="mailto:matejonnet@gmail.com">Matej Lazar</a>
  */
 @QuarkusTest
-@QuarkusTestResource(H2DatabaseTestResource.class)
 public class Log2dbTest {
 
     private final Logger logger = LoggerFactory.getLogger(Log2dbTest.class);
