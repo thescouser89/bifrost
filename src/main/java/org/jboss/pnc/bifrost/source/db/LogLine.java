@@ -25,17 +25,16 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.Type;
 
-import java.sql.Types;
 import java.time.OffsetDateTime;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Index;
-import jakarta.persistence.Lob;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.Lob;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Getter
@@ -69,7 +68,7 @@ public class LogLine extends PanacheEntityBase {
     String loggerName;
 
     @Lob
-    @JdbcTypeCode(Types.LONGVARCHAR)
+    @Type(type = "org.hibernate.type.TextType")
     String line;
 
 }

@@ -17,6 +17,8 @@
  */
 package org.jboss.pnc.bifrost.source;
 
+import io.quarkus.test.common.QuarkusTestResource;
+import io.quarkus.test.h2.H2DatabaseTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import org.jboss.pnc.api.bifrost.dto.Line;
 import org.jboss.pnc.api.bifrost.enums.Direction;
@@ -30,8 +32,8 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
+import javax.inject.Inject;
+import javax.transaction.Transactional;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -49,6 +51,7 @@ import java.util.stream.Collectors;
  * @author <a href="mailto:matejonnet@gmail.com">Matej Lazar</a>
  */
 @QuarkusTest
+@QuarkusTestResource(H2DatabaseTestResource.class)
 public class DatabaseSourceTest {
 
     private static Logger logger = LoggerFactory.getLogger(DatabaseSourceTest.class);
