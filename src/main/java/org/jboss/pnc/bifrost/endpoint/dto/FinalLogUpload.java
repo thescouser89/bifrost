@@ -23,34 +23,35 @@ import org.jboss.resteasy.reactive.PartType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import jakarta.ws.rs.FormParam;
+import org.jboss.resteasy.reactive.RestForm;
+
 import java.io.InputStream;
 import java.time.OffsetDateTime;
 
 @Data
 public class FinalLogUpload {
 
-    @FormParam("md5sum")
+    @RestForm
     @PartType("text/plain")
     @NotBlank
     private String md5sum;
 
-    @FormParam("endTime")
+    @RestForm
     @PartType("text/plain")
     @NotNull
     private OffsetDateTime endTime;
 
-    @FormParam("loggerName")
+    @RestForm
     @PartType("text/plain")
     @NotBlank
     private String loggerName;
 
-    @FormParam("tag")
+    @RestForm
     @PartType("text/plain")
     @NotEmpty
     private String tag;
 
-    @FormParam("logfile")
+    @RestForm
     // @PartType(MediaType.APPLICATION_OCTET_STREAM)
     public InputStream logfile;
 }
