@@ -27,16 +27,16 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-import jakarta.persistence.Cacheable;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Index;
-import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotNull;
+import javax.persistence.Cacheable;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 import java.util.Optional;
 
-@EqualsAndHashCode(exclude = "id", callSuper = false)
+@EqualsAndHashCode(exclude = "id")
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Getter
 @Setter

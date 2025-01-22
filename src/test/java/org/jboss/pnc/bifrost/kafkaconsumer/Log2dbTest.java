@@ -18,6 +18,8 @@
 package org.jboss.pnc.bifrost.kafkaconsumer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.quarkus.test.common.QuarkusTestResource;
+import io.quarkus.test.h2.H2DatabaseTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
@@ -35,8 +37,8 @@ import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.inject.Inject;
-import jakarta.persistence.EntityManager;
+import javax.inject.Inject;
+import javax.persistence.EntityManager;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -48,6 +50,7 @@ import java.util.concurrent.Semaphore;
  * @author <a href="mailto:matejonnet@gmail.com">Matej Lazar</a>
  */
 @QuarkusTest
+@QuarkusTestResource(H2DatabaseTestResource.class)
 public class Log2dbTest {
 
     private final Logger logger = LoggerFactory.getLogger(Log2dbTest.class);

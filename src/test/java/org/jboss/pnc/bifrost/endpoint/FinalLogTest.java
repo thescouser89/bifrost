@@ -8,7 +8,7 @@ import org.jboss.pnc.common.concurrent.Sequence;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import jakarta.transaction.Transactional;
+import javax.transaction.Transactional;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.util.Collection;
@@ -37,7 +37,7 @@ public class FinalLogTest {
 
         Collection<FinalLog> logs = FinalLog.getFinalLogsWithoutPreviousRetries(processContext, "alignment");
 
-        Assertions.assertEquals(1, logs.size());
+        Assertions.assertEquals(logs.size(), 1);
 
         FinalLog logFetched = logs.stream().findFirst().get();
 
@@ -45,7 +45,7 @@ public class FinalLogTest {
 
         // verify logs are the same
         String logLine = new String(logFetched.logContent.getBinaryStream().readAllBytes());
-        Assertions.assertEquals("hello 3", logLine);
+        Assertions.assertEquals(logLine, "hello 3");
     }
 
     @Test
@@ -59,7 +59,7 @@ public class FinalLogTest {
 
         Collection<FinalLog> logs = FinalLog.getFinalLogsWithoutPreviousRetries(processContext, "build");
 
-        Assertions.assertEquals(2, logs.size());
+        Assertions.assertEquals(logs.size(), 2);
         FinalLog[] fetchedLogsArray = logs.toArray(new FinalLog[0]);
 
         String logLineFirst = new String(fetchedLogsArray[0].logContent.getBinaryStream().readAllBytes());
@@ -81,7 +81,7 @@ public class FinalLogTest {
 
         long deleted = FinalLog.deleteByProcessContext(processContext, null, false);
 
-        Assertions.assertEquals(3, deleted);
+        Assertions.assertEquals(deleted, 3);
     }
 
     @Test
@@ -96,7 +96,7 @@ public class FinalLogTest {
 
         long deleted = FinalLog.deleteByProcessContext(processContext, "build", false);
 
-        Assertions.assertEquals(2, deleted);
+        Assertions.assertEquals(deleted, 2);
     }
 
     @Test
@@ -111,7 +111,7 @@ public class FinalLogTest {
 
         long deleted = FinalLog.deleteByProcessContext(processContext, null, true);
 
-        Assertions.assertEquals(0, deleted);
+        Assertions.assertEquals(deleted, 0);
     }
 
     @Test
@@ -131,7 +131,7 @@ public class FinalLogTest {
 
         long deleted = FinalLog.deleteByProcessContext(processContext, null, true);
 
-        Assertions.assertEquals(3, deleted);
+        Assertions.assertEquals(deleted, 3);
     }
 
     private static LogEntry createLogEntry(long processContext, String processContextVariant) {
