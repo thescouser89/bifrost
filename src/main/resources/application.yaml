@@ -59,15 +59,15 @@ quarkus:
     enabled: true
     resource:
       attributes: "sampler_ratio=0.05,service.name=bifrost"
+    exporter:
+      otlp:
+        # Send telemetry data to an opentelemetry-collector
+        #endpoint: http://localhost:4317
     traces:
       enabled: true
       # reflect sampling on collector
       sampler:
         ratio: 0.05
-      exporter:
-        otlp:
-          # Send telemetry data to an opentelemetry-collector
-          #endpoint: http://localhost:4317
 
 elasticsearch:
   hosts: https://host:443
