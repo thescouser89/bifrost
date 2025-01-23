@@ -54,8 +54,10 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Set;
@@ -91,9 +93,16 @@ public class FinalLogImpl implements FinalLogRest {
             finalLog.tags = Set.of(logUpload.getTag().split(","));
         }
 
+        InputStream fileInputStream;
+
+        try {
+            fileInputStream = new FileInputStream(logUpload.getLogfile().uploadedFile().toFile());
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
         long logUploadStarted = System.currentTimeMillis();
-        ChecksumValidatingStream stream = ChecksumValidatingStream
-                .validate(logUpload.getLogfile(), logUpload.getMd5sum());
+        ChecksumValidatingStream stream = ChecksumValidatingStream.validate(fileInputStream, logUpload.getMd5sum());
 
         // Configure the proxy to read up to the max body post size. The proxy behaves well if the input
         // stream size is less than that size
