@@ -23,7 +23,7 @@ import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.hibernate.engine.jdbc.BlobProxy;
+import org.hibernate.engine.jdbc.proxy.BlobProxy;
 import org.jboss.pnc.api.bifrost.rest.FinalLogRest;
 import org.jboss.pnc.api.constants.MDCHeaderKeys;
 import org.jboss.pnc.bifrost.common.ChecksumValidatingStream;
