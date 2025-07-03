@@ -1,7 +1,7 @@
 package org.jboss.pnc.bifrost.endpoint;
 
 import io.quarkus.test.junit.QuarkusTest;
-import org.hibernate.engine.jdbc.BlobProxy;
+import org.hibernate.engine.jdbc.proxy.BlobProxy;
 import org.jboss.pnc.bifrost.source.db.FinalLog;
 import org.jboss.pnc.bifrost.source.db.LogEntry;
 import org.jboss.pnc.common.concurrent.Sequence;
