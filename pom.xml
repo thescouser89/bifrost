@@ -20,7 +20,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.jboss.pnc.bifrost</groupId>
   <artifactId>bifrost-server</artifactId>
-  <version>3.2.2-SNAPSHOT</version>
+  <version>3.3.0-SNAPSHOT</version>
 
   <name>bifrost</name>
   <description>Elasticsearch subscriptions service</description>
