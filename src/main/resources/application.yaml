@@ -50,7 +50,7 @@ quarkus:
     # accept gzipped uploaded data to Quarkus (only active for resteasy reactive)
     enable-decompression: true
     cors:
-      ~: true
+      enabled: true
       origins: "/.*/"
   shutdown:
     timeout: 30
