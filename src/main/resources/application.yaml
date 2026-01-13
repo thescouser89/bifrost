@@ -36,8 +36,8 @@ quarkus:
       # in one transaction, we group it into 1 SQL statement with max batch
       # size specified below
       statement-batch-size: 100
-    database:
-      generation: validate
+    schema-management:
+      strategy: validate
   index-dependency:
     elasticsearch:
       artifact-id: elasticsearch
@@ -118,8 +118,8 @@ bifrost:
         show-logs: true
         enabled: true
     hibernate-orm:
-      database:
-        generation: drop-and-create
+      schema-management:
+        strategy: drop-and-create
     devservices:
       enabled: true
   bifrost:
@@ -145,8 +145,8 @@ bifrost:
       devservices:
         enabled: true
     hibernate-orm:
-      database:
-        generation: drop-and-create
+      schema-management:
+        strategy: drop-and-create
   kafka2db:
     accept-filters:
       - logger-name-prefix: org.jboss.pnc
