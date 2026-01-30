@@ -139,13 +139,13 @@
       <groupId>org.jboss.pnc</groupId>
       <artifactId>pnc-api</artifactId>
       <classifier>jakarta</classifier>
-      <version>3.2.0</version>
+      <version>3.4.0</version>
     </dependency>
     <dependency>
       <groupId>org.jboss.pnc</groupId>
       <artifactId>pnc-common</artifactId>
       <classifier>jakarta</classifier>
-      <version>3.2.0</version>
+      <version>3.4.0</version>
       <exclusions>
         <exclusion>  <!-- don't pull in regular pnc-api, we need the jakarta one -->
           <groupId>org.jboss.pnc</groupId>
