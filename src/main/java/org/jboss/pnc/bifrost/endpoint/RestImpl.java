@@ -37,6 +37,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import jakarta.annotation.PostConstruct;
+import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Path;
@@ -388,6 +389,7 @@ public class RestImpl implements Bifrost {
         return new MetaData(md5.digest());
     }
 
+    @PermitAll
     @Override
     public ComponentVersion getVersion() {
         return ComponentVersion.builder()
